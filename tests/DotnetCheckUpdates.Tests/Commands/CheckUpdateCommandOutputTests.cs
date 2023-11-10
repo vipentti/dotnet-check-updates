@@ -18,6 +18,8 @@ namespace DotnetCheckUpdates.Tests.Commands;
 
 public class CheckUpdateCommandOutputTests
 {
+    public static readonly string PathRoot = TestPathRoot();
+
     [Fact]
     public async Task OutputsToAnsiConsoleWhenNothingWasUpgraded()
     {
@@ -61,11 +63,11 @@ public class CheckUpdateCommandOutputTests
 
         result.Should().Be(0);
 
-        var expected = @"
+        var expected = $@"
 Projects
-`-- C:\some\path\project.csproj
+`-- {PathRoot}some\path\project.csproj
 Projects
-`-- C:\some\path\project.csproj
+`-- {PathRoot}some\path\project.csproj
     `-- All packages match their latest versions.
 
 ".Trim().Replace("\r\n", "\n");
@@ -125,9 +127,9 @@ Projects
 
         var expected = $@"
 Projects
-`-- C:\some\path\project.csproj
+`-- {PathRoot}some\path\project.csproj
 Projects
-`-- C:\some\path\project.csproj
+`-- {PathRoot}some\path\project.csproj
     `-- Flurl        3.0.1  →  3.2.0
         Flurl.Http   3.0.1  →  3.2.1
                                     
@@ -206,17 +208,17 @@ Run dotnet restore to install new versions
 
         result.Should().Be(0);
 
-        var expected = @"
+        var expected = $@"
 Projects
-|-- C:\some\path\test0.csproj
-`-- C:\some\path\test1.csproj
+|-- {PathRoot}some\path\test0.csproj
+`-- {PathRoot}some\path\test1.csproj
 Projects
-|-- C:\some\path\test0.csproj
+|-- {PathRoot}some\path\test0.csproj
 |   `-- Nuke.Common                                     11.0.6
 |       Nuke.Components                                 12.0.6
 |       Vipentti.Nuke.Components                        13.3.1
 |                                                             
-`-- C:\some\path\test1.csproj
+`-- {PathRoot}some\path\test1.csproj
     `-- Microsoft.Extensions.Caching.Memory  6.0.0   →  9.0.0 
         System.Net.Http.Json                 6.0.1   →  10.0.0
                                                               
