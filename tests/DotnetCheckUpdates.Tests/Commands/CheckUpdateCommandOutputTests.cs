@@ -61,7 +61,8 @@ public class CheckUpdateCommandOutputTests
 
         result.Should().Be(0);
 
-        var expected = $@"
+        var expected =
+            $@"
 Projects
 `-- {cwd.PathCombine("project.csproj")}
 Projects
@@ -116,7 +117,8 @@ Projects
 
         result.Should().Be(0);
 
-        var expected = $@"
+        var expected =
+            $@"
 Projects
 `-- {cwd.PathCombine("project.csproj")}
 Projects
@@ -192,7 +194,8 @@ Run dotnet restore to install new versions
 
         result.Should().Be(0);
 
-        var expected = $@"
+        var expected =
+            $@"
 Projects
 |-- {cwd.PathCombine("test0.csproj")}
 `-- {cwd.PathCombine("test1.csproj")}
@@ -217,17 +220,17 @@ Run dotnet-check-updates --cwd {cwd} -u to upgrade
         var actualOutput = console.Output.Trim().Replace("\r\n", "\n");
         var expectedOutput = expected.Trim().Replace("\r\n", "\n");
 
-        var actualLines = actualOutput.Split("\n", StringSplitOptions.None)
+        var actualLines = actualOutput
+            .Split("\n", StringSplitOptions.None)
             .Select(it => it.TrimEnd())
             .ToArray();
-        var expectedLines = expectedOutput.Split("\n", StringSplitOptions.None)
+        var expectedLines = expectedOutput
+            .Split("\n", StringSplitOptions.None)
             .Select(it => it.TrimEnd())
             .ToArray();
 
         using (new AssertionScope())
         {
-
-
             actualLines.Should().BeEquivalentTo(expectedLines);
         }
     }
