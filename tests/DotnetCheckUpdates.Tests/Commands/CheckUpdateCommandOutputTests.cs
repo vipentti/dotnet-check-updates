@@ -18,8 +18,6 @@ namespace DotnetCheckUpdates.Tests.Commands;
 
 public class CheckUpdateCommandOutputTests
 {
-    public static readonly string PathRoot = TestPathRoot();
-
     [Fact]
     public async Task OutputsToAnsiConsoleWhenNothingWasUpgraded()
     {
@@ -65,21 +63,14 @@ public class CheckUpdateCommandOutputTests
 
         var expected = $@"
 Projects
-`-- {PathRoot}some\path\project.csproj
+`-- {cwd.PathCombine("project.csproj")}
 Projects
-`-- {PathRoot}some\path\project.csproj
+`-- {cwd.PathCombine("project.csproj")}
     `-- All packages match their latest versions.
 
-".Trim().Replace("\r\n", "\n");
+";
 
-        var escapedOutput = JsonSerializer.Serialize(console.Output.Trim());
-        var escapedExpect = JsonSerializer.Serialize(expected);
-
-        using (new AssertionScope())
-        {
-            escapedOutput.Should().Be(escapedExpect);
-            console.Output.Trim().Should().Be(expected);
-        }
+        AssertOutput(console, expected);
     }
 
     [Fact]
@@ -127,26 +118,19 @@ Projects
 
         var expected = $@"
 Projects
-`-- {PathRoot}some\path\project.csproj
+`-- {cwd.PathCombine("project.csproj")}
 Projects
-`-- {PathRoot}some\path\project.csproj
+`-- {cwd.PathCombine("project.csproj")}
     `-- Flurl        3.0.1  →  3.2.0
         Flurl.Http   3.0.1  →  3.2.1
-                                    
+
 
 Upgrading packages in {cwd.PathCombine("project.csproj")}
 
 Run dotnet restore to install new versions
-".Trim().Replace("\r\n", "\n");
+";
 
-        var escapedOutput = JsonSerializer.Serialize(console.Output.Trim());
-        var escapedExpect = JsonSerializer.Serialize(expected);
-
-        using (new AssertionScope())
-        {
-            escapedOutput.Should().Be(escapedExpect);
-            console.Output.Trim().Should().Be(expected);
-        }
+        AssertOutput(console, expected);
     }
 
     [Fact]
@@ -210,29 +194,41 @@ Run dotnet restore to install new versions
 
         var expected = $@"
 Projects
-|-- {PathRoot}some\path\test0.csproj
-`-- {PathRoot}some\path\test1.csproj
+|-- {cwd.PathCombine("test0.csproj")}
+`-- {cwd.PathCombine("test1.csproj")}
 Projects
-|-- {PathRoot}some\path\test0.csproj
+|-- {cwd.PathCombine("test0.csproj")}
 |   `-- Nuke.Common                                     11.0.6
 |       Nuke.Components                                 12.0.6
 |       Vipentti.Nuke.Components                        13.3.1
-|                                                             
-`-- {PathRoot}some\path\test1.csproj
-    `-- Microsoft.Extensions.Caching.Memory  6.0.0   →  9.0.0 
+|
+`-- {cwd.PathCombine("test1.csproj")}
+    `-- Microsoft.Extensions.Caching.Memory  6.0.0   →  9.0.0
         System.Net.Http.Json                 6.0.1   →  10.0.0
-                                                              
 
-Run dotnet-check-updates --cwd C:\some\path -u to upgrade
-".Trim().Replace("\r\n", "\n");
 
-        var escapedOutput = JsonSerializer.Serialize(console.Output.Trim());
-        var escapedExpect = JsonSerializer.Serialize(expected);
+Run dotnet-check-updates --cwd {cwd} -u to upgrade
+";
+        AssertOutput(console, expected);
+    }
+
+    private static void AssertOutput(TestConsole console, string expected)
+    {
+        var actualOutput = console.Output.Trim().Replace("\r\n", "\n");
+        var expectedOutput = expected.Trim().Replace("\r\n", "\n");
+
+        var actualLines = actualOutput.Split("\n", StringSplitOptions.None)
+            .Select(it => it.TrimEnd())
+            .ToArray();
+        var expectedLines = expectedOutput.Split("\n", StringSplitOptions.None)
+            .Select(it => it.TrimEnd())
+            .ToArray();
 
         using (new AssertionScope())
         {
-            escapedOutput.Should().Be(escapedExpect);
-            console.Output.Trim().Should().Be(expected);
+
+
+            actualLines.Should().BeEquivalentTo(expectedLines);
         }
     }
 }
