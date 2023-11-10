@@ -1,0 +1,195 @@
+﻿// Copyright 2023 Ville Penttinen
+// Distributed under the MIT License.
+// https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
+
+using System.IO.Abstractions;
+using DotnetCheckUpdates;
+using DotnetCheckUpdates.Commands.CheckUpdate;
+using DotnetCheckUpdates.Core;
+using DotnetCheckUpdates.Core.NuGetUtils;
+using DotnetCheckUpdates.Core.ProjectModel;
+using DotnetCheckUpdates.Core.Utils;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
+using Spectre.Console;
+using Spectre.Console.Cli;
+using Spectre.Console.Rendering;
+
+var services = new ServiceCollection();
+
+var useLoggingEnvVar = Environment.GetEnvironmentVariable("DCU_ENABLE_LOGGING")?.ToLowerInvariant();
+var logLevelEnvVar =
+    Environment.GetEnvironmentVariable("DCU_LOGLEVEL")?.ToLowerInvariant() ?? "Information";
+
+services.AddLogging(logger =>
+{
+    logger.ClearProviders();
+
+    if (useLoggingEnvVar is not null && (useLoggingEnvVar == "true" || useLoggingEnvVar == "1"))
+    {
+        logger.AddConsole().AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
+        if (Enum.TryParse(logLevelEnvVar, ignoreCase: true, out LogLevel level))
+        {
+            logger.SetMinimumLevel(level);
+        }
+        else
+        {
+            logger.SetMinimumLevel(LogLevel.Information);
+        }
+    }
+#if false
+    else
+    {
+        logger.AddConsole().AddFilter("System.Net.Http.HttpClient", LogLevel.Information);
+        logger.SetMinimumLevel(LogLevel.Trace);
+    }
+#endif
+});
+
+services.AddSingleton(_ => new SourceCacheContext());
+services.AddSingleton(_ => Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json"));
+services.AddSingleton<INuGetService, DefaultNuGetService>();
+services.AddSingleton<ISolutionParser, DefaultSolutionParser>();
+services.AddSingleton<PackageUpgradeService>();
+services.AddSingleton<ProjectFileReader>();
+services.AddSingleton<ProjectDiscovery>();
+services.AddSingleton<IFileFinder, FileFinder>();
+services.AddSingleton<IFileSystem>(_ => new FileSystem());
+services
+    .AddHttpClient<NuGetApiClient>(client => client.BaseAddress = new Uri("https://api.nuget.org/"))
+    .ConfigurePrimaryHttpMessageHandler(
+        () =>
+            new HttpClientHandler()
+            {
+                AutomaticDecompression = System.Net.DecompressionMethods.All,
+            }
+    );
+
+using var applicationExitHandler = new ApplicationExitHandler();
+
+services.AddSingleton(applicationExitHandler);
+
+var app = new CommandApp<CheckUpdateCommand>(new TypeRegistrar(services));
+
+app.WithDescription(
+    $"""
+{CliConstants.CliName} checks for possible upgrades of NuGet packages in C# projects.
+
+By default, {CliConstants.CliName} will search the current directory for C# project (.csproj) files.
+If no project files are found, it will then search for solution (.sln) files in the current directory.
+"""
+);
+
+app.Configure(config =>
+{
+    config.SetApplicationName(CliConstants.CliName);
+    config.UseStrictParsing();
+    config.PropagateExceptions();
+    config.ValidateExamples();
+});
+
+var showStackTrace = args.Any(it => it == "--show-stack-trace");
+
+var cmdArgs = args.Where(it => it != "--show-stack-trace").ToArray();
+
+Console.CancelKeyPress += (_, e) =>
+{
+    // We'll stop the process manually by using the CancellationToken
+    e.Cancel = true;
+    applicationExitHandler.Exit(force: true);
+};
+
+try
+{
+    return await app.RunAsync(cmdArgs);
+}
+catch (CommandParseException ex)
+{
+    if (!TryRenderPrettyException(ex))
+    {
+        AnsiConsole.WriteException(ex, ExceptionFormats.Default);
+    }
+
+    AnsiConsole.MarkupLine("Run [cyan]dcu --help[/] to see available options.");
+    AnsiConsole.MarkupLine("");
+    return -1;
+}
+catch (CommandRuntimeException ex)
+{
+    WriteException(ex);
+    return -1;
+}
+catch (TaskCanceledException ex)
+{
+    if (!TryRenderPrettyException(ex))
+    {
+        AnsiConsole.WriteException(ex, ExceptionFormats.Default);
+    }
+    return -1;
+}
+catch (Exception ex)
+{
+    WriteException(ex);
+    return -1;
+}
+
+void WriteException(Exception ex)
+{
+    var showStack = showStackTrace;
+#if DEBUG
+    showStack = true;
+#endif
+    if (showStack || !TryRenderPrettyException(ex))
+    {
+        AnsiConsole.WriteException(ex, ExceptionFormats.Default);
+    }
+}
+
+static bool TryRenderPrettyException(Exception ex)
+{
+    if (GetRenderableErrorMessage(ex) is List<IRenderable?> pretty)
+    {
+        foreach (var item in pretty)
+        {
+            if (item is not null)
+            {
+                AnsiConsole.Write(item);
+            }
+        }
+        return true;
+    }
+
+    return false;
+}
+
+static List<IRenderable?>? GetRenderableErrorMessage(Exception ex, bool convert = true)
+{
+    if (ex is CommandAppException renderable && renderable.Pretty is not null)
+    {
+        return new List<IRenderable?> { renderable.Pretty };
+    }
+
+    if (convert)
+    {
+        var converted = new List<IRenderable?>
+        {
+            new Markup($"[red]Error:[/] {ex.Message.EscapeMarkup()}{Environment.NewLine}")
+        };
+
+        // Got a renderable inner exception
+        if (ex.InnerException is not null)
+        {
+            var innerRenderable = GetRenderableErrorMessage(ex.InnerException, convert: false);
+            if (innerRenderable is not null)
+            {
+                converted.AddRange(innerRenderable);
+            }
+        }
+
+        return converted;
+    }
+
+    return null;
+}

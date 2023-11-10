@@ -1,0 +1,4 @@
+build/
+.nuke/
+.tmp/
+**/GlobalUsings.cs

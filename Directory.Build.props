@@ -1,0 +1,31 @@
+<Project>
+    <!-- General -->
+    <PropertyGroup>
+        <LangVersion>11.0</LangVersion>
+        <Nullable>enable</Nullable>
+        <Features>strict</Features>
+    </PropertyGroup>
+
+    <!-- Build -->
+    <PropertyGroup>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <WarnOnPackingNonPackableProject>true</WarnOnPackingNonPackableProject>
+    </PropertyGroup>
+
+    <!-- Packaging -->
+    <PropertyGroup Label="Packaging">
+        <!-- Enable packaging on a per-project basis. -->
+        <IsPackable>false</IsPackable>
+        <IsPublishable>false</IsPublishable>
+
+        <Authors>Ville Penttinen</Authors>
+        <Copyright>Copyright © 2023 Ville Penttinen</Copyright>
+
+        <RepositoryType>git</RepositoryType>
+        <PackageProjectUrl>https://github.com/vipentti/dotnet-check-updates</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/vipentti/dotnet-check-updates</RepositoryUrl>
+        <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    </PropertyGroup>
+</Project>
