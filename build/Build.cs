@@ -11,15 +11,21 @@ using static Vipentti.Nuke.Components.StandardNames;
 
 namespace build;
 
-[GitHubActions(
+[ExtendedGitHubActions(
     "pull-request",
     GitHubActionsImage.WindowsLatest,
     GitHubActionsImage.UbuntuLatest,
     GitHubActionsImage.MacOsLatest,
     OnPullRequestBranches = new[] { MainBranch, DevelopBranch },
     PublishArtifacts = false,
-    FetchDepth = 0, // fetch full history
-    InvokedTargets = new[]
+    FetchDepth = 0 // fetch full history
+    , SetupDotnetVersions = new[]
+    {
+        "6.x",
+        "7.x",
+        "8.x",
+    }
+    , InvokedTargets = new[]
     {
         nameof(ITest.Test),
         nameof(IUseLinters.InstallLinters),
@@ -32,6 +38,12 @@ namespace build;
     GitHubActionsImage.UbuntuLatest,
     GitHubActionsImage.MacOsLatest
     , OnPushBranches = new[] { MainBranch }
+    , SetupDotnetVersions = new[]
+    {
+        "6.x",
+        "7.x",
+        "8.x",
+    }
 )]
 partial class Build : StandardNukeBuild, IUseCsharpier
 {
