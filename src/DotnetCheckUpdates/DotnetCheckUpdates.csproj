@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;net7.0;net6.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <Deterministic>true</Deterministic>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -47,25 +47,25 @@
     <PackageReference Include="CliWrap" Version="3.6.4" />
     <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.2" />
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
-    <PackageReference Include="Flurl" Version="[3.0.6,)" />
+    <PackageReference Include="Flurl" Version="[3.0.7,)" />
     <PackageReference Include="Flurl.Http" Version="3.2.4" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageReference Include="NuGet.Frameworks" Version="6.7.0" />
     <PackageReference Include="NuGet.Packaging" Version="6.7.0" />
     <PackageReference Include="NuGet.Protocol" Version="6.7.0" />
     <PackageReference Include="NuGet.Versioning" Version="6.7.0" />
     <PackageReference Include="Nuke.SolutionModel" Version="7.0.6" />
-    <PackageReference Include="semver" Version="[2.0.6]" />
-    <PackageReference Include="SpanUtils" Version="0.3.1" />
+    <PackageReference Include="semver" Version="[2.3.0]" />
+    <PackageReference Include="SpanUtils" Version="0.4.0" />
     <PackageReference Include="Spectre.Console" Version="0.47.0" />
     <PackageReference Include="Spectre.Console.Cli" Version="0.47.0" />
     <PackageReference Include="System.IO.Abstractions" Version="19.2.69" />
-    <PackageReference Include="System.Net.Http.Json" Version="[7.0.0,)" />
-    <PackageReference Include="Vipentti.IO.Abstractions.FileSystemGlobbing" Version="1.0.1" />
+    <PackageReference Include="System.Net.Http.Json" Version="[8.0.0,)" />
+    <PackageReference Include="Vipentti.IO.Abstractions.FileSystemGlobbing" Version="1.0.3" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseReproducibleBuild)' == 'true'">
