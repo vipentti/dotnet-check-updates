@@ -29,22 +29,33 @@ internal class NuGetApiClient
         CancellationToken cancellationToken = default
     )
     {
-        var url = "v3-flatcontainer".AppendPathSegments(packageId, version, packageId + ".nuspec");
+        packageId = packageId.ToLowerInvariant();
+        var url = "v3-flatcontainer".AppendPathSegments(
+            packageId,
+            version.ToLowerInvariant(),
+            packageId + ".nuspec"
+        );
+        try
+        {
+            using var stream = await _httpClient.GetStreamAsync(url, cancellationToken);
 
-        using var stream = await _httpClient.GetStreamAsync(url, cancellationToken);
+            var reader = new NuspecReader(stream);
 
-        var reader = new NuspecReader(stream);
+            var asm = reader.GetFrameworkAssemblyGroups();
+            var deps = reader.GetDependencyGroups();
+            var refs = reader.GetReferenceGroups();
 
-        var asm = reader.GetFrameworkAssemblyGroups();
-        var deps = reader.GetDependencyGroups();
-        var refs = reader.GetReferenceGroups();
+            var frameworks = ImmutableHashSet.CreateBuilder<NuGetFramework>();
+            frameworks.AddRange(asm.Select(it => it.TargetFramework));
+            frameworks.AddRange(deps.Select(it => it.TargetFramework));
+            frameworks.AddRange(refs.Select(it => it.TargetFramework));
 
-        var frameworks = ImmutableHashSet.CreateBuilder<NuGetFramework>();
-        frameworks.AddRange(asm.Select(it => it.TargetFramework));
-        frameworks.AddRange(deps.Select(it => it.TargetFramework));
-        frameworks.AddRange(refs.Select(it => it.TargetFramework));
-
-        return frameworks.ToImmutable();
+            return frameworks.ToImmutable();
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpRequestException($"Failed to get {url}", ex);
+        }
     }
 
     public async Task<ImmutableHashSet<NuGetFramework>> GetSupportedFrameworksFromCatalog(
@@ -56,29 +67,36 @@ internal class NuGetApiClient
         var url = "v3".AppendPathSegments(
             "registration5-gz-semver2",
             packageId.ToLowerInvariant(),
-            version + ".json"
+            version.ToLowerInvariant() + ".json"
         );
 
-        using var doc = await _httpClient.GetFromJsonAsync<JsonDocument>(
-            url,
-            s_jsonSerializerOptions,
-            cancellationToken
-        );
-
-        if (
-            doc?.RootElement.TryGetNonNullStringProperty("catalogEntry", out var catalogEntry)
-                is true
-            && Url.IsValid(catalogEntry)
-        )
+        try
         {
-            using var catalogResponse = await _httpClient.GetFromJsonAsync<JsonDocument>(
-                catalogEntry,
+            using var doc = await _httpClient.GetFromJsonAsync<JsonDocument>(
+                url,
+                s_jsonSerializerOptions,
                 cancellationToken
             );
 
-            return catalogResponse.ReadFrameworksFromCatalog();
-        }
+            if (
+                doc?.RootElement.TryGetNonNullStringProperty("catalogEntry", out var catalogEntry)
+                    is true
+                && Url.IsValid(catalogEntry)
+            )
+            {
+                using var catalogResponse = await _httpClient.GetFromJsonAsync<JsonDocument>(
+                    catalogEntry,
+                    cancellationToken
+                );
 
-        return ImmutableHashSet<NuGetFramework>.Empty;
+                return catalogResponse.ReadFrameworksFromCatalog();
+            }
+
+            return ImmutableHashSet<NuGetFramework>.Empty;
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpRequestException($"Failed to get {url}", ex);
+        }
     }
 }

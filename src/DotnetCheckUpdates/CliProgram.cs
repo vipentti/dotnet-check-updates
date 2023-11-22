@@ -17,6 +17,17 @@ using Spectre.Console;
 using Spectre.Console.Cli;
 using Spectre.Console.Rendering;
 
+var definedArgs = new HashSet<string>() { "--show-stack-trace", "--nuget-source", };
+
+var showStackTrace = args.Any(it => it == "--show-stack-trace");
+
+var nugetSource =
+    args.FirstOrDefault(it => it == "--nuget-source") ?? "https://api.nuget.org/v3/index.json";
+
+var nugetApiBaseUrl = new Uri(nugetSource).GetLeftPart(UriPartial.Authority);
+
+var cmdArgs = args.Where(it => !definedArgs.Contains(it)).ToArray();
+
 var services = new ServiceCollection();
 
 var useLoggingEnvVar = Environment.GetEnvironmentVariable("DCU_ENABLE_LOGGING")?.ToLowerInvariant();
@@ -49,7 +60,7 @@ services.AddLogging(logger =>
 });
 
 services.AddSingleton(_ => new SourceCacheContext());
-services.AddSingleton(_ => Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json"));
+services.AddSingleton(_ => Repository.Factory.GetCoreV3(nugetSource));
 services.AddSingleton<INuGetService, DefaultNuGetService>();
 services.AddSingleton<ISolutionParser, DefaultSolutionParser>();
 services.AddSingleton<PackageUpgradeService>();
@@ -58,7 +69,7 @@ services.AddSingleton<ProjectDiscovery>();
 services.AddSingleton<IFileFinder, FileFinder>();
 services.AddSingleton<IFileSystem>(_ => new FileSystem());
 services
-    .AddHttpClient<NuGetApiClient>(client => client.BaseAddress = new Uri("https://api.nuget.org/"))
+    .AddHttpClient<NuGetApiClient>(client => client.BaseAddress = new Uri(nugetApiBaseUrl))
     .ConfigurePrimaryHttpMessageHandler(
         () =>
             new HttpClientHandler()
@@ -89,10 +100,6 @@ app.Configure(config =>
     config.PropagateExceptions();
     config.ValidateExamples();
 });
-
-var showStackTrace = args.Any(it => it == "--show-stack-trace");
-
-var cmdArgs = args.Where(it => it != "--show-stack-trace").ToArray();
 
 Console.CancelKeyPress += (_, e) =>
 {
