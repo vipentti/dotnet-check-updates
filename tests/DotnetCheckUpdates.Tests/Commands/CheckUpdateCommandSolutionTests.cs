@@ -138,7 +138,7 @@ public class CheckUpdateCommandSolutionTests
     }
 
     [Fact]
-    public async Task DoesNothingIfTheProjectFileDoesNotHaveCsprojSuffix()
+    public async Task SupportsFsharpProjectsInSolution()
     {
         var (cwd, fileSystem, command) = SetupCommand(
             new MockSolution("test.sln")
@@ -172,6 +172,46 @@ public class CheckUpdateCommandSolutionTests
         using var _s = new AssertionScope();
         // csharpier-ignore
         await AssertPackages(cwd, fileSystem, "nested/project.fsproj", new[]
+        {
+            ("Test", "2.0.0"),
+        });
+    }
+
+    [Fact]
+    public async Task DoesNothingIfTheProjectFileDoesNotHaveCsprojSuffix()
+    {
+        var (cwd, fileSystem, command) = SetupCommand(
+            new MockSolution("test.sln")
+            {
+                Projects = { new("nested/project.notcsproj") { Packages = { ("Test", "1.0") } } }
+            },
+            new[]
+            {
+                new MockUpgrade("Test")
+                {
+                    Versions = { "2.0" },
+                    SupportedFrameworks = MockUpgrade.DefaultSupportedFrameworks,
+                },
+            }
+        );
+
+        // Act
+        var result = await command.ExecuteAsync(
+            TestCommandContext,
+            new CheckUpdateCommand.Settings
+            {
+                Cwd = cwd,
+                Upgrade = true,
+                Target = UpgradeTarget.Latest
+            }
+        );
+
+        // Assert
+        result.Should().Be(0);
+
+        using var _s = new AssertionScope();
+        // csharpier-ignore
+        await AssertPackages(cwd, fileSystem, "nested/project.notcsproj", new[]
         {
             ("Test", "1.0.0"),
         });

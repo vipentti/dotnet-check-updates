@@ -76,7 +76,8 @@ internal class ProjectDiscovery
     )
     {
         var cspattern = CliConstants.CsProjPattern;
-        var patterns = new List<string> { cspattern };
+        var fspattern = CliConstants.FsProjPattern;
+        var patterns = new List<string> { cspattern, fspattern };
 
         if (recurse)
         {
@@ -87,12 +88,15 @@ internal class ProjectDiscovery
                 for (var i = 0; i < maxDepth; ++i)
                 {
                     cspattern = "*/" + cspattern;
+                    fspattern = "*/" + fspattern;
                     patterns.Add(cspattern);
+                    patterns.Add(fspattern);
                 }
             }
             else
             {
                 patterns[0] = "**/" + CliConstants.CsProjPattern;
+                patterns[1] = "**/" + CliConstants.FsProjPattern;
             }
         }
 
@@ -115,6 +119,10 @@ internal class ProjectDiscovery
                 it =>
                     it.EndsWith(
                         CliConstants.CsProjExtensionWithDot,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                    || it.EndsWith(
+                        CliConstants.FsProjExtensionWithDot,
                         StringComparison.OrdinalIgnoreCase
                     )
             )

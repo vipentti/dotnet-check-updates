@@ -48,7 +48,9 @@ public partial class CheckUpdateCommandTests
             .Received()
             .GetMatchingPaths(
                 Arg.Is(cwd),
-                Arg.Is<IEnumerable<string>>(it => it.SequenceEqual(new[] { "*.csproj", }))
+                Arg.Is<IEnumerable<string>>(
+                    it => it.SequenceEqual(new[] { "*.csproj", "*.fsproj" })
+                )
             );
     }
 
@@ -94,19 +96,48 @@ public partial class CheckUpdateCommandTests
     public static readonly TheoryData<int, string[]> RecursionDepthPatternData =
         new()
         {
-            { 0, new[] { "**/*.csproj", } },
-            { 1, new[] { "*.csproj", "*/*.csproj" } },
-            { 2, new[] { "*.csproj", "*/*.csproj", "*/*/*.csproj" } },
-            { 3, new[] { "*.csproj", "*/*.csproj", "*/*/*.csproj", "*/*/*/*.csproj" } },
+            { 0, new[] { "**/*.csproj", "**/*.fsproj" } },
+            { 1, new[] { "*.csproj", "*.fsproj", "*/*.csproj", "*/*.fsproj" } },
+            {
+                2,
+                new[]
+                {
+                    "*.csproj",
+                    "*.fsproj",
+                    "*/*.csproj",
+                    "*/*.fsproj",
+                    "*/*/*.csproj",
+                    "*/*/*.fsproj",
+                }
+            },
+            {
+                3,
+                new[]
+                {
+                    "*.csproj",
+                    "*.fsproj",
+                    "*/*.csproj",
+                    "*/*.fsproj",
+                    "*/*/*.csproj",
+                    "*/*/*.fsproj",
+                    "*/*/*/*.csproj",
+                    "*/*/*/*.fsproj",
+                }
+            },
             {
                 4,
                 new[]
                 {
                     "*.csproj",
+                    "*.fsproj",
                     "*/*.csproj",
+                    "*/*.fsproj",
                     "*/*/*.csproj",
+                    "*/*/*.fsproj",
                     "*/*/*/*.csproj",
-                    "*/*/*/*/*.csproj"
+                    "*/*/*/*.fsproj",
+                    "*/*/*/*/*.csproj",
+                    "*/*/*/*/*.fsproj",
                 }
             },
         };
