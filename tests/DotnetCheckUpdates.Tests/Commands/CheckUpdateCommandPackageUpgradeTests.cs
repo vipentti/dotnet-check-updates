@@ -114,6 +114,54 @@ public class CheckUpdateCommandPackageUpgradeTests
     }
 
     [Fact]
+    public async Task SupportsFsharProjects()
+    {
+        // Arrange
+        // csharpier-ignore
+        var (cwd, _, fileSystem, command) = SetupCommand(
+            new[]
+            {
+                new MockProject("test1.fsproj", "net5.0")
+                {
+                    Packages =
+                    {
+                        ("MinShort", "1.0.0"),
+                    }
+                }
+            },
+            new[]
+            {
+                new MockUpgrade("MinShort")
+                {
+                    Versions = { "1.1.0", },
+                    SupportedFrameworks = { "netstandard2.0", },
+                },
+            }
+        );
+
+        // Act
+        var result = await command.ExecuteAsync(
+            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            new CheckUpdateCommand.Settings
+            {
+                Cwd = cwd,
+                Upgrade = true,
+                Target = UpgradeTarget.Latest
+            }
+        );
+
+        // Assert
+        result.Should().Be(0);
+
+        using var _s = new AssertionScope();
+        // csharpier-ignore
+        await AssertPackages(cwd, fileSystem, "test1.fsproj", new[]
+        {
+            ("MinShort", "1.1.0"),
+        });
+    }
+
+    [Fact]
     public async Task PrefersLatestNonPreReleaseWhenOriginalIsNotPreRelease()
     {
         // Arrange

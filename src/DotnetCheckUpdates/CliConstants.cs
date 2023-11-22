@@ -15,4 +15,8 @@ internal static class CliConstants
     public const string CsProjExtensionWithoutDot = "csproj";
     public const string CsProjExtensionWithDot = "." + CsProjExtensionWithoutDot;
     public const string CsProjPattern = "*" + CsProjExtensionWithDot;
+
+    public const string FsProjExtensionWithoutDot = "fsproj";
+    public const string FsProjExtensionWithDot = "." + FsProjExtensionWithoutDot;
+    public const string FsProjPattern = "*" + FsProjExtensionWithDot;
 }
