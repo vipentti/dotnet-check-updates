@@ -357,8 +357,8 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
         else
         {
             cmds.AddRange(
-                upgradedProjects.Select(
-                    it => dotnet.WithArguments(new[] { "restore", it.FilePath })
+                upgradedProjects.Select(it =>
+                    dotnet.WithArguments(new[] { "restore", it.FilePath })
                 )
             );
         }

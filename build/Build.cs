@@ -3,6 +3,7 @@
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
 using System.Collections.Generic;
+using Nuke.Common;
 using Nuke.Common.CI.GitHubActions;
 using Nuke.Common.ProjectModel;
 using Nuke.Components;
@@ -16,50 +17,52 @@ namespace build;
     GitHubActionsImage.WindowsLatest,
     GitHubActionsImage.UbuntuLatest,
     GitHubActionsImage.MacOsLatest,
-    OnPullRequestBranches = new[] { MainBranch, DevelopBranch },
+    OnPullRequestBranches = [MainBranch, DevelopBranch],
     PublishArtifacts = false,
     FetchDepth = 0 // fetch full history
-    , SetupDotnetVersions = new[]
-    {
+    , SetupDotnetVersions =
+    [
         "6.x",
         "7.x",
         "8.x",
-    }
-    , InvokedTargets = new[]
-    {
-        nameof(ITest.Test),
+    ]
+    , InvokedTargets =
+    [
+        nameof(IUseLocalDotNetTools.RestoreLocalTools),
         nameof(IUseLinters.InstallLinters),
+        nameof(ITest.Test),
         nameof(IUseLinters.Lint),
         nameof(IValidatePackages.ValidatePackages),
-    })]
+    ])]
 [StandardPublishGitHubActions(
     "publish",
     GitHubActionsImage.WindowsLatest,
     GitHubActionsImage.UbuntuLatest,
     GitHubActionsImage.MacOsLatest
-    , OnPushBranches = new[] { MainBranch }
-    , SetupDotnetVersions = new[]
-    {
+    , OnPushBranches = [MainBranch]
+    , SetupDotnetVersions =
+    [
         "6.x",
         "7.x",
         "8.x",
-    }
+    ]
 )]
-partial class Build : StandardNukeBuild, IUseCsharpier
+partial class Build : StandardNukeBuild, IUseCsharpier, IUseLocalDotNetTools
 {
     public override string OriginalRepositoryName { get; } = "dotnet-check-updates";
     public override string MainReleaseBranch { get; } = MainBranch;
-    public override IEnumerable<Project> ProjectsToPack => new[]
-    {
+    public override IEnumerable<Project> ProjectsToPack =>
+    [
         CurrentSolution.GetSolutionFolder("src").GetProject("DotnetCheckUpdates"),
-    };
+    ];
 
-    public override IEnumerable<IProvideLinter> Linters => new[]
-    {
+    public override IEnumerable<IProvideLinter> Linters =>
+    [
         From<IUseDotNetFormat>().Linter,
         From<IUseCsharpier>().Linter,
-    };
-    bool IUseCsharpier.UseGlobalTool { get; } = true;
+    ];
+
+    bool IUseCsharpier.UseGlobalTool { get; } = false;
 
     public override IEnumerable<Project> TestProjects => CurrentSolution.GetAllProjects("*Tests*");
 

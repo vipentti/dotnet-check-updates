@@ -122,8 +122,8 @@ internal record ProjectFile(
 
         foreach (var element in references)
         {
-            var foundRef = refs.Find(
-                item => item.HasName((string?)element.Attribute("Include") ?? "")
+            var foundRef = refs.Find(item =>
+                item.HasName((string?)element.Attribute("Include") ?? "")
             );
 
             Debug.Assert(foundRef is not null, "PackageReferences should all be found.");

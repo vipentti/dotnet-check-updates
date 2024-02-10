@@ -48,8 +48,8 @@ public partial class CheckUpdateCommandTests
             .Received()
             .GetMatchingPaths(
                 Arg.Is(cwd),
-                Arg.Is<IEnumerable<string>>(
-                    it => it.SequenceEqual(new[] { "*.csproj", "*.fsproj" })
+                Arg.Is<IEnumerable<string>>(it =>
+                    it.SequenceEqual(new[] { "*.csproj", "*.fsproj" })
                 )
             );
     }

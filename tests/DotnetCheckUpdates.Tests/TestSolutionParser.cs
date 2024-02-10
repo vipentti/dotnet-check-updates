@@ -45,8 +45,7 @@ internal class TestSolutionParser : ISolutionParser
             var solution = SolutionModelTasks.ParseSolution(tempFile);
 
             return solution
-                .AllProjects
-                .Select(it => it.Path.ToString().Replace(tempDir, solutionFilePath))
+                .AllProjects.Select(it => it.Path.ToString().Replace(tempDir, solutionFilePath))
                 .ToArray();
         }
         finally

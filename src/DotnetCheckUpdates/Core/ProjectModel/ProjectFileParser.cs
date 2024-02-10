@@ -82,17 +82,14 @@ internal static class ProjectFileParser
         }
 
         var packageReferences = xml.GetPackageReferenceElements()
-            .Select(
-                item =>
-                    (
-                        include: (string?)item.Attribute("Include"),
-                        version: (string?)item.Attribute("Version")
-                    )
+            .Select(item =>
+                (
+                    include: (string?)item.Attribute("Include"),
+                    version: (string?)item.Attribute("Version")
+                )
             )
-            .Where(
-                item =>
-                    !string.IsNullOrWhiteSpace(item.include)
-                    && !string.IsNullOrWhiteSpace(item.version)
+            .Where(item =>
+                !string.IsNullOrWhiteSpace(item.include) && !string.IsNullOrWhiteSpace(item.version)
             )
             .Select(item => new PackageReference(item.include!, item.version!.ToVersionRange()))
             .ToImmutableArray();

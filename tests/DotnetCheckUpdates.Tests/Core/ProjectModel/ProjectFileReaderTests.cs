@@ -33,10 +33,8 @@ public class ProjectFileReaderTests
 
         content.FilePath.Should().Be(projectPath);
         content
-            .TargetFrameworks
-            .Should()
+            .TargetFrameworks.Should()
             .ContainEquivalentOf("net7.0".ToNuGetFramework())
-            .And
-            .HaveCount(1);
+            .And.HaveCount(1);
     }
 }
