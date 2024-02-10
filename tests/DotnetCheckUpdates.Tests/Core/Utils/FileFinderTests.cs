@@ -31,8 +31,8 @@ public class FileFinderTests
         projectFiles.Should().HaveCount(1);
         projectFiles
             .Should()
-            .SatisfyRespectively(
-                fst => fst.Should().Be(RootedTestPath("some/path/project.csproj"))
+            .SatisfyRespectively(fst =>
+                fst.Should().Be(RootedTestPath("some/path/project.csproj"))
             );
     }
 

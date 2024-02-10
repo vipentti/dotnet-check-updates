@@ -21,15 +21,12 @@ public class ProjectFileParserTests
         );
 
         projectFile
-            .TargetFrameworks
-            .Should()
+            .TargetFrameworks.Should()
             .ContainEquivalentOf("net5.0".ToNuGetFramework())
-            .And
-            .HaveCount(1);
+            .And.HaveCount(1);
 
         projectFile
-            .PackageReferences
-            .Should()
+            .PackageReferences.Should()
             .SatisfyRespectively(
                 flurl =>
                 {
@@ -69,15 +66,12 @@ public class ProjectFileParserTests
         );
 
         projectFile
-            .TargetFrameworks
-            .Should()
+            .TargetFrameworks.Should()
             .ContainEquivalentOf("net5.0".ToNuGetFramework())
-            .And
-            .HaveCount(1);
+            .And.HaveCount(1);
 
         projectFile
-            .PackageReferences
-            .Should()
+            .PackageReferences.Should()
             .SatisfyRespectively(
                 it =>
                 {

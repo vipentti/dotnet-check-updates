@@ -55,11 +55,12 @@ internal static class CheckUpdateCommandUtils
 
         var solutionFilePath = cwd.PathCombine(solution.SolutionPath);
 
-        var solutionPath = System.IO.Path.GetDirectoryName(solutionFilePath)!;
+        var solutionPath = Path.GetDirectoryName(solutionFilePath)!;
 
-        var projectsWithPaths = solution
-            .Projects
-            .ToDictionary(kvp => solutionPath.PathCombine(kvp.ProjectPath), kvp => kvp.ToXml());
+        var projectsWithPaths = solution.Projects.ToDictionary(
+            kvp => solutionPath.PathCombine(kvp.ProjectPath),
+            kvp => kvp.ToXml()
+        );
 
         var fileContents = new Dictionary<string, string>(projectsWithPaths)
         {

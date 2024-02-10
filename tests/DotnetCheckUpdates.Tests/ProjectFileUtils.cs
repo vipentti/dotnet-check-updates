@@ -82,7 +82,7 @@ EndGlobal
 #pragma warning restore RCS1197 // Optimize StringBuilder.Append/AppendLine call.
         }
 
-        sb.Length -= System.Environment.NewLine.Length;
+        sb.Length -= Environment.NewLine.Length;
 
         return sb.ToString();
     }

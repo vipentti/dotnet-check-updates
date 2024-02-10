@@ -80,8 +80,7 @@ public class CheckUpdateCommandSettingsTests
         var result = settings.Validate();
         result.Successful.Should().BeFalse();
         result
-            .Message
-            .Should()
+            .Message.Should()
             .Be(
                 "Only one of --project, --solution may be specified. --depth must be between 0 and 16. --concurrency must be between 1 and 32."
             );

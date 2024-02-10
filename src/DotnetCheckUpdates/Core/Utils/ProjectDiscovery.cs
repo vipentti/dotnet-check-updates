@@ -115,16 +115,12 @@ internal class ProjectDiscovery
     {
         var paths = _solutionParser.GetProjectPaths(solutionPath);
         return paths
-            .Where(
-                it =>
-                    it.EndsWith(
-                        CliConstants.CsProjExtensionWithDot,
-                        StringComparison.OrdinalIgnoreCase
-                    )
-                    || it.EndsWith(
-                        CliConstants.FsProjExtensionWithDot,
-                        StringComparison.OrdinalIgnoreCase
-                    )
+            .Where(it =>
+                it.EndsWith(CliConstants.CsProjExtensionWithDot, StringComparison.OrdinalIgnoreCase)
+                || it.EndsWith(
+                    CliConstants.FsProjExtensionWithDot,
+                    StringComparison.OrdinalIgnoreCase
+                )
             )
             .ToArray();
     }
