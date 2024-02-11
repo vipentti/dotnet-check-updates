@@ -21,7 +21,7 @@
         <IsPublishable>false</IsPublishable>
 
         <Authors>Ville Penttinen</Authors>
-        <Copyright>Copyright © 2023 Ville Penttinen</Copyright>
+        <Copyright>Copyright © 2023-2024 Ville Penttinen</Copyright>
 
         <RepositoryType>git</RepositoryType>
         <PackageProjectUrl>https://github.com/vipentti/dotnet-check-updates</PackageProjectUrl>
