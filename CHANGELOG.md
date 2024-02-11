@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 - Implement support for Directory.Build.props files
+- Implement -i|--include and -e|--exclude for filtering specific packages to include or exclude
 
 ## [0.2.2] / 2023-11-22
 - Implement support for F# projects (.fsproj)

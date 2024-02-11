@@ -13,6 +13,29 @@ namespace DotnetCheckUpdates.Commands.CheckUpdate;
 
 internal static class CheckUpdateCommandHelpers
 {
+    public static ImmutableArray<Filter> SplitFilters(string[] strings)
+    {
+        var builder = ImmutableHashSet.CreateBuilder<string>();
+
+        foreach (var str in strings)
+        {
+            foreach (
+                var part in str.Split(
+                    (char[])[' ', ','],
+                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
+                )
+            )
+            {
+                builder.Add(part);
+            }
+        }
+
+        return builder
+            .OrderBy(it => it, StringComparer.OrdinalIgnoreCase)
+            .Select(it => new Filter(it))
+            .ToImmutableArray();
+    }
+
     public static string GetUpgradedVersionString(PackageReference lhs, PackageReference rhs)
     {
         var type = lhs.Version.GetUpgradeTypeTo(rhs.Version);
