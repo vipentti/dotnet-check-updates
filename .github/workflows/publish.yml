@@ -55,8 +55,8 @@ jobs:
             .nuke/temp
             ~/.nuget/packages
           key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj', '**/Directory.Packages.props') }}
-      - name: 'Run: Test, InstallLinters, Lint, Pack, ValidatePackages, Publish'
-        run: ./build.cmd Test InstallLinters Lint Pack ValidatePackages Publish
+      - name: 'Run: RestoreLocalTools, Test, InstallLinters, Lint, Pack, ValidatePackages, Publish'
+        run: ./build.cmd RestoreLocalTools Test InstallLinters Lint Pack ValidatePackages Publish
         env:
           NuGetApiKey: ${{ secrets.NUGET_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -83,8 +83,8 @@ jobs:
             .nuke/temp
             ~/.nuget/packages
           key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj', '**/Directory.Packages.props') }}
-      - name: 'Run: Test, InstallLinters, Lint, Pack, ValidatePackages, Publish'
-        run: ./build.cmd Test InstallLinters Lint Pack ValidatePackages Publish
+      - name: 'Run: RestoreLocalTools, Test, InstallLinters, Lint, Pack, ValidatePackages, Publish'
+        run: ./build.cmd RestoreLocalTools Test InstallLinters Lint Pack ValidatePackages Publish
         env:
           NuGetApiKey: ${{ secrets.NUGET_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -111,8 +111,8 @@ jobs:
             .nuke/temp
             ~/.nuget/packages
           key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj', '**/Directory.Packages.props') }}
-      - name: 'Run: Test, InstallLinters, Lint, Pack, ValidatePackages, Publish'
-        run: ./build.cmd Test InstallLinters Lint Pack ValidatePackages Publish
+      - name: 'Run: RestoreLocalTools, Test, InstallLinters, Lint, Pack, ValidatePackages, Publish'
+        run: ./build.cmd RestoreLocalTools Test InstallLinters Lint Pack ValidatePackages Publish
         env:
           NuGetApiKey: ${{ secrets.NUGET_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
