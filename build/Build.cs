@@ -3,7 +3,6 @@
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
 using System.Collections.Generic;
-using Nuke.Common;
 using Nuke.Common.CI.GitHubActions;
 using Nuke.Common.ProjectModel;
 using Nuke.Components;

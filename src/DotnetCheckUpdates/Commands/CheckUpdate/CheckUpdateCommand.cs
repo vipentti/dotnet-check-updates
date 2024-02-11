@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO.Abstractions;
 using CliWrap;
 using DotnetCheckUpdates.Core;
+using DotnetCheckUpdates.Core.Extensions;
 using DotnetCheckUpdates.Core.ProjectModel;
 using DotnetCheckUpdates.Core.Utils;
 using Microsoft.Extensions.Logging;
@@ -95,7 +96,9 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
 
         string FormatPath(string path) =>
             !settings.ShowAbsolute
-                ? path.Replace(cwd ?? "", "").TrimStart('\\').TrimStart('/')
+                ? path.Replace(cwd ?? "", "")
+                    .TrimStart(Path.DirectorySeparatorChar)
+                    .TrimStart(Path.AltDirectorySeparatorChar)
                 : path;
 
         if (_logger.IsEnabled(LogLevel.Debug))
@@ -125,6 +128,33 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
             );
 
         var projects = await Task.WhenAll(projectFiles.Select(_projectReader.ReadProjectFile));
+        var allSpecifiedTargetFrameworks = projects
+            .SelectMany(it => it.TargetFrameworks)
+            .Distinct()
+            .ToImmutableArray();
+
+        projects = projects.ConvertAll(it =>
+        {
+            // if we have no targetframeworks specified as part of the original project
+            // for example because we are using Directory.Build.props files for common properties
+            // We do best effort and use all frameworks available in any of the project files
+            //
+            // This is not 100% accurate, because we are not evaluating them like MSBuild does
+            // but it should be good enough for most purposes
+            if (it.TargetFrameworks.Length == 0)
+            {
+                if (_logger.IsEnabled(LogLevel.Trace))
+                {
+                    _logger.LogTrace(
+                        "{Project} updated to using TargetFrameworks {@Frameworks}",
+                        it.FilePath,
+                        allSpecifiedTargetFrameworks
+                    );
+                }
+                return it with { TargetFrameworks = allSpecifiedTargetFrameworks };
+            }
+            return it;
+        });
 
         var hasSolutions = solutionProjectMap.Count > 0;
 
@@ -203,7 +233,7 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
                     new() { AutoStart = true, MaxValue = totalPackageCount, }
                 );
 
-                var temp = new List<(
+                var temp = ImmutableArray.CreateBuilder<(
                     ProjectFile project,
                     PackageUpgradeVersionDictionary packages
                 )>(projects.Length);
@@ -224,14 +254,14 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
 
                 Debug.Assert(ctx.IsFinished);
 
-                return temp;
+                return temp.MoveToImmutable();
             });
 
         var upgradedProjects = new List<ProjectFile>();
 
-        var newProjects = projectsWithPackages
-            .Select(it => it.project.UpdatePackageReferences(it.packages))
-            .ToImmutableArray();
+        var newProjects = projectsWithPackages.ConvertAll(it =>
+            it.project.UpdatePackageReferences(it.packages)
+        );
 
         // Output the project package tree
         if (solutionProjectMap.Count > 0)
@@ -332,7 +362,7 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
     }
 
     private async Task RestorePackages(
-        Dictionary<string, string[]> solutionProjectMap,
+        IReadOnlyDictionary<string, string[]> solutionProjectMap,
         bool hasSolutions,
         List<ProjectFile> upgradedProjects,
         Func<string, string> formatPath

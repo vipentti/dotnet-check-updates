@@ -3,17 +3,22 @@
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
 using DotnetCheckUpdates.Core.ProjectModel;
+using Microsoft.Extensions.Logging;
 
 namespace DotnetCheckUpdates.Core.Utils;
 
-internal class ProjectDiscovery
+internal class ProjectDiscovery(
+    ILogger<ProjectDiscovery> logger,
+    IFileFinder fileFinder,
+    ISolutionParser solutionParser
+)
 {
-    private readonly IFileFinder _fileFinder;
-    private readonly ISolutionParser _solutionParser;
+    private readonly IFileFinder _fileFinder = fileFinder;
+    private readonly ISolutionParser _solutionParser = solutionParser;
 
     internal record ProjectDiscoveryResult(
-        List<string> ProjectFiles,
-        Dictionary<string, string[]> SolutionProjectMap
+        ImmutableArray<string> ProjectFiles,
+        ImmutableDictionary<string, string[]> SolutionProjectMap
     );
 
     internal record ProjectDiscoveryRequest
@@ -25,18 +30,12 @@ internal class ProjectDiscovery
         public string? Solution { get; init; }
     }
 
-    public ProjectDiscovery(IFileFinder fileFinder, ISolutionParser solutionParser)
-    {
-        _fileFinder = fileFinder;
-        _solutionParser = solutionParser;
-    }
-
     public async Task<ProjectDiscoveryResult> DiscoverProjectsAndSolutions(
         ProjectDiscoveryRequest request
     )
     {
-        var projectFiles = new List<string>();
-        var solutionProjectMap = new Dictionary<string, string[]>();
+        var projectFiles = ImmutableArray.CreateBuilder<string>();
+        var solutionProjectMap = ImmutableDictionary.CreateBuilder<string, string[]>();
 
         if (!string.IsNullOrWhiteSpace(request.Project))
         {
@@ -66,7 +65,118 @@ internal class ProjectDiscovery
                 }
             }
         }
-        return new(projectFiles, solutionProjectMap);
+
+        var directoryBuildPropFiles = ImmutableHashSet.CreateBuilder<string>();
+
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            logger.LogTrace(
+                "Found {ProjectFiles} and solution keys {Solutions}",
+                projectFiles.Count,
+                string.Join(", ", solutionProjectMap.Keys)
+            );
+        }
+
+        void LogAndAddPropsFile(string path)
+        {
+            if (directoryBuildPropFiles.Add(path))
+            {
+                if (logger.IsEnabled(LogLevel.Trace))
+                {
+                    logger.LogTrace("Found props file {File}", path);
+                }
+            }
+        }
+
+        // Discovering solutions
+        if (solutionProjectMap.Count > 0)
+        {
+            var solutionSpecificDirectoryBuildProps = new Dictionary<string, string[]>();
+
+            foreach (var (solution, solutionProjects) in solutionProjectMap)
+            {
+                directoryBuildPropFiles.Clear();
+
+                var solutionDirectory = Path.GetDirectoryName(solution);
+
+                {
+                    if (
+                        _fileFinder.TryGetPathOfFile(
+                            CliConstants.DirectoryBuildPropsFileName,
+                            solution,
+                            out var path
+                        )
+                    )
+                    {
+                        LogAndAddPropsFile(path);
+                    }
+                }
+
+                foreach (var project in solutionProjects)
+                {
+                    foreach (
+                        var file in _fileFinder.GetFilesFromDirectoryAndAbove(
+                            project,
+                            CliConstants.DirectoryBuildPropsFileName
+                        )
+                    )
+                    {
+                        var fileDirectory = Path.GetDirectoryName(file);
+
+                        LogAndAddPropsFile(file);
+
+                        if (solutionDirectory == fileDirectory)
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                if (directoryBuildPropFiles.Count > 0)
+                {
+                    solutionSpecificDirectoryBuildProps[solution] =
+                    [
+                        .. directoryBuildPropFiles.OrderBy(it => it, StringComparer.Ordinal)
+                    ];
+                }
+            }
+
+            foreach (var (solution, propsFiles) in solutionSpecificDirectoryBuildProps)
+            {
+                var originalProjects = solutionProjectMap[solution];
+                solutionProjectMap[solution] =
+                [
+                    .. originalProjects.Concat(propsFiles).OrderBy(it => it, StringComparer.Ordinal)
+                ];
+                projectFiles.AddRange(propsFiles);
+            }
+        }
+        else
+        {
+            foreach (var projectFile in projectFiles)
+            {
+                if (
+                    _fileFinder.TryGetPathOfFile(
+                        CliConstants.DirectoryBuildPropsFileName,
+                        projectFile,
+                        out var path
+                    )
+                )
+                {
+                    LogAndAddPropsFile(path);
+                }
+            }
+
+            projectFiles.AddRange(directoryBuildPropFiles);
+        }
+
+        // TODO: This can be simplified once we drop support for older frameworks
+#pragma warning disable IDE0305 // Simplify collection initialization
+        return new(
+            projectFiles.OrderBy(it => it, StringComparer.Ordinal).ToImmutableArray(),
+            solutionProjectMap.ToImmutable()
+        );
+#pragma warning restore IDE0305 // Simplify collection initialization
     }
 
     private async Task<IEnumerable<string>> GetProjectFilesByPattern(

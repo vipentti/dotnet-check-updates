@@ -22,7 +22,7 @@ public class ProjectFileParserTests
 
         projectFile
             .TargetFrameworks.Should()
-            .ContainEquivalentOf("net5.0".ToNuGetFramework())
+            .ContainEquivalentOf(Frameworks.Default.ToNuGetFramework())
             .And.HaveCount(1);
 
         projectFile
@@ -67,7 +67,7 @@ public class ProjectFileParserTests
 
         projectFile
             .TargetFrameworks.Should()
-            .ContainEquivalentOf("net5.0".ToNuGetFramework())
+            .ContainEquivalentOf(Frameworks.Net5_0.ToNuGetFramework())
             .And.HaveCount(1);
 
         projectFile

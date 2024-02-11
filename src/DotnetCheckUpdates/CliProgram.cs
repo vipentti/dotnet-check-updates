@@ -175,7 +175,7 @@ static List<IRenderable?>? GetRenderableErrorMessage(Exception ex, bool convert 
 {
     if (ex is CommandAppException renderable && renderable.Pretty is not null)
     {
-        return new List<IRenderable?> { renderable.Pretty };
+        return [renderable.Pretty];
     }
 
     if (convert)

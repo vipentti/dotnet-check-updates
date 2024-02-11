@@ -4,5 +4,6 @@
 
 global using System.Collections.Immutable;
 global using FluentAssertions;
+global using FluentAssertions.Execution;
 global using NSubstitute;
 global using Xunit;

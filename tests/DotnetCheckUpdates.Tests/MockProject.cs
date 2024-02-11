@@ -4,9 +4,9 @@
 
 namespace DotnetCheckUpdates.Tests;
 
-internal record MockProject(string ProjectPath, string Framework = "net5.0")
+internal record MockProject(string ProjectPath, string Framework = Frameworks.Default)
 {
-    public List<(string id, string version)> Packages { get; init; } = new();
+    public List<(string id, string version)> Packages { get; init; } = [];
 
     public string ToXml()
     {

@@ -2,12 +2,10 @@
 // Distributed under the MIT License.
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
-using System.Text.Json;
 using DotnetCheckUpdates.Commands.CheckUpdate;
 using DotnetCheckUpdates.Core;
 using DotnetCheckUpdates.Core.Extensions;
 using DotnetCheckUpdates.Core.ProjectModel;
-using FluentAssertions.Execution;
 using Spectre.Console.Cli;
 using Spectre.Console.Testing;
 using static DotnetCheckUpdates.Tests.CheckUpdateCommandUtils;

@@ -6,12 +6,18 @@ namespace DotnetCheckUpdates.Tests;
 
 internal record MockUpgrade(string Name)
 {
-    public List<string> Versions { get; init; } = new();
+    public List<string> Versions { get; init; } = [];
 
-    public HashSet<string> SupportedFrameworks { get; init; } = new();
+    public HashSet<string> SupportedFrameworks { get; init; } = [];
 
     public static readonly HashSet<string> DefaultSupportedFrameworks =
-        new() { "net6.0", "net7.0", "netstandard2.0", "netstandard2.1" };
+    [
+        Frameworks.Net6_0,
+        Frameworks.Net7_0,
+        Frameworks.Net8_0,
+        Frameworks.NetStandard2_0,
+        Frameworks.NetStandard2_1
+    ];
 
     public void Deconstruct(
         out string name,
