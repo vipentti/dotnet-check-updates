@@ -45,6 +45,10 @@ namespace build;
         "7.x",
         "8.x",
     ]
+    , InvokedTargets =
+    [
+        nameof(IUseLocalDotNetTools.RestoreLocalTools),
+    ]
 )]
 partial class Build : StandardNukeBuild, IUseCsharpier, IUseLocalDotNetTools
 {
