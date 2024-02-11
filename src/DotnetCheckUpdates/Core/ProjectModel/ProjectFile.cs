@@ -136,7 +136,11 @@ internal record ProjectFile(
                 item.HasName((string?)element.Attribute("Include") ?? "")
             );
 
-            Debug.Assert(foundRef is not null, "PackageReferences should all be found.");
+            // Skip filtered packages
+            if (foundRef is null)
+            {
+                continue;
+            }
 
             var versionString = (string?)element.Attribute("Version");
 

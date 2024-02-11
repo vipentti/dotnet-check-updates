@@ -90,6 +90,30 @@ List existing packages and their versions while also searching for upgrades:
 dotnet-check-updates --list
 ```
 
+Include filters:
+
+```shell
+# Include only packages which contain the word system (case-insensitive) in their package name
+dotnet-check-updates --include 'System'
+# or
+dotnet-check-updates --include '*System*'
+
+# Include only packages which start with the word System
+dotnet-check-updates --include 'System*'
+```
+
+Exclude filters:
+
+```shell
+# Exclude packages which contain the word system (case-insensitive) in their package name
+dotnet-check-updates --exclude 'System'
+# or
+dotnet-check-updates --exclude '*System*'
+
+# Exclude packages which start with the word System
+dotnet-check-updates --exclude 'System*'
+```
+
 Upgrade packages in the found projects to the latest version:
 
 ```shell

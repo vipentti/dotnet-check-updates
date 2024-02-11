@@ -226,6 +226,207 @@ public class CheckUpdateCommandPackageUpgradeTests
     }
 
     [Fact]
+    public async Task UpgradesOnlyPackagesMatchingBothFilters()
+    {
+        // Arrange
+        static MockUpgrade MakeUpgrade(string name) =>
+            new(name)
+            {
+                Versions = { "2.0.0", },
+                SupportedFrameworks = { Frameworks.NetStandard2_0, },
+            };
+        // csharpier-ignore
+        var (cwd, _, fileSystem, command) = SetupCommand(
+            new[]
+            {
+                new MockProject("test.test1.csproj", Frameworks.Default)
+                {
+                    Packages =
+                    {
+                        ("Package1.Include", "1.0.0"),
+                        ("Package1.Exclude", "1.0.0"),
+                        ("Package2.Include", "1.0.0"),
+                        ("Package2.Exclude", "1.0.0"),
+                    }
+                },
+            },
+            new[]
+            {
+                MakeUpgrade("Package1.Include"),
+                MakeUpgrade("Package1.Exclude"),
+                MakeUpgrade("Package2.Include"),
+                MakeUpgrade("Package2.Exclude"),
+            }
+        );
+
+        // Act
+        var result = await command.ExecuteAsync(
+            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            new CheckUpdateCommand.Settings
+            {
+                Cwd = cwd,
+                Upgrade = true,
+                Target = UpgradeTarget.Latest,
+                Include = ["Package2.Include"],
+                Exclude = ["*Exclude* Package1.Include"],
+            }
+        );
+
+        // Assert
+        result.Should().Be(0);
+
+        using var _s = new AssertionScope();
+        // csharpier-ignore
+        await AssertPackages(cwd, fileSystem, "test.test1.csproj", new[]
+        {
+            ("Package1.Include", "1.0.0"),
+            ("Package1.Exclude", "1.0.0"),
+            ("Package2.Include", "2.0.0"),
+            ("Package2.Exclude", "1.0.0"),
+        }, framework: Frameworks.Default);
+    }
+
+    [Fact]
+    public async Task UpgradesOnlyPackagesMatchingIncludeFilters()
+    {
+        // Arrange
+        // csharpier-ignore
+        var (cwd, _, fileSystem, command) = SetupCommand(
+            new[]
+            {
+                new MockProject("test.test1.csproj", Frameworks.Default)
+                {
+                    Packages =
+                    {
+                        ("ProjectPackage.Include", "1.0.0"),
+                        ("ProjectPackage.Exclude", "1.0.0"),
+                    }
+                },
+                new MockProject("test.test2.csproj", Frameworks.Default)
+                {
+                    Packages =
+                    {
+                        ("ProjectPackage.Include", "1.0.0"),
+                        ("ProjectPackage.Exclude", "1.0.0"),
+                    }
+                },
+            },
+            new[]
+            {
+                new MockUpgrade("ProjectPackage.Include")
+                {
+                    Versions = { "1.1.0", },
+                    SupportedFrameworks = { Frameworks.NetStandard2_0, },
+                },
+                new MockUpgrade("ProjectPackage.Exclude")
+                {
+                    Versions = { "1.1.0", },
+                    SupportedFrameworks = { Frameworks.NetStandard2_0, },
+                },
+            }
+        );
+
+        // Act
+        var result = await command.ExecuteAsync(
+            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            new CheckUpdateCommand.Settings
+            {
+                Cwd = cwd,
+                Upgrade = true,
+                Target = UpgradeTarget.Latest,
+                Include = ["Include"],
+            }
+        );
+
+        // Assert
+        result.Should().Be(0);
+
+        using var _s = new AssertionScope();
+        // csharpier-ignore
+        await AssertPackages(cwd, fileSystem, "test.test1.csproj", new[]
+        {
+            ("ProjectPackage.Include", "1.1.0"),
+            ("ProjectPackage.Exclude", "1.0.0"),
+        }, framework: Frameworks.Default);
+        // csharpier-ignore
+        await AssertPackages(cwd, fileSystem, "test.test2.csproj", new[]
+        {
+            ("ProjectPackage.Include", "1.1.0"),
+            ("ProjectPackage.Exclude", "1.0.0"),
+        }, framework: Frameworks.Default);
+    }
+
+    [Fact]
+    public async Task UpgradesOnlyPackagesNotMatchingExcludeFilters()
+    {
+        // Arrange
+        // csharpier-ignore
+        var (cwd, _, fileSystem, command) = SetupCommand(
+            new[]
+            {
+                new MockProject("test.test1.csproj", Frameworks.Default)
+                {
+                    Packages =
+                    {
+                        ("ProjectPackage.Include", "1.0.0"),
+                        ("ProjectPackage.Exclude", "1.0.0"),
+                    }
+                },
+                new MockProject("test.test2.csproj", Frameworks.Default)
+                {
+                    Packages =
+                    {
+                        ("ProjectPackage.Include", "1.0.0"),
+                        ("ProjectPackage.Exclude", "1.0.0"),
+                    }
+                },
+            },
+            new[]
+            {
+                new MockUpgrade("ProjectPackage.Include")
+                {
+                    Versions = { "1.1.0", },
+                    SupportedFrameworks = { Frameworks.NetStandard2_0, },
+                },
+                new MockUpgrade("ProjectPackage.Exclude")
+                {
+                    Versions = { "1.1.0", },
+                    SupportedFrameworks = { Frameworks.NetStandard2_0, },
+                },
+            }
+        );
+
+        // Act
+        var result = await command.ExecuteAsync(
+            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            new CheckUpdateCommand.Settings
+            {
+                Cwd = cwd,
+                Upgrade = true,
+                Target = UpgradeTarget.Latest,
+                Exclude = ["Exclude"],
+            }
+        );
+
+        // Assert
+        result.Should().Be(0);
+
+        using var _s = new AssertionScope();
+        // csharpier-ignore
+        await AssertPackages(cwd, fileSystem, "test.test1.csproj", new[]
+        {
+            ("ProjectPackage.Include", "1.1.0"),
+            ("ProjectPackage.Exclude", "1.0.0"),
+        }, framework: Frameworks.Default);
+        // csharpier-ignore
+        await AssertPackages(cwd, fileSystem, "test.test2.csproj", new[]
+        {
+            ("ProjectPackage.Include", "1.1.0"),
+            ("ProjectPackage.Exclude", "1.0.0"),
+        }, framework: Frameworks.Default);
+    }
+
+    [Fact]
     public async Task PrefersLatestNonPreReleaseWhenOriginalIsNotPreRelease()
     {
         // Arrange

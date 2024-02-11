@@ -72,6 +72,18 @@ internal partial class CheckUpdateCommand
         )]
         public int Concurrency { get; init; } = 8;
 
+        [CommandOption("-i|--include")]
+        [Description(
+            "Include only package names matching the given string, glob or comma-or-space-delimited list.\nExample: System*"
+        )]
+        public string[] Include { get; init; } = [];
+
+        [CommandOption("-e|--exclude")]
+        [Description(
+            "Exclude package names matching the given string, glob or comma-or-space-delimited list.\nExample: System*"
+        )]
+        public string[] Exclude { get; init; } = [];
+
         [CommandOption("-t|--target <Target>")]
         [Description(
             "Determines the version to upgrade to:\nlatest, greatest, major, minor, patch, pre-major, pre-minor, pre-patch. (default: latest)"

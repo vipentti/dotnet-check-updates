@@ -73,6 +73,25 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
 
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
+        var includeFilters = CheckUpdateCommandHelpers.SplitFilters(settings.Include);
+        var excludeFilters = CheckUpdateCommandHelpers.SplitFilters(settings.Exclude);
+
+        if (_logger.IsEnabled(LogLevel.Debug))
+        {
+            _logger.LogDebug(
+                "Settings {@settings}",
+                new
+                {
+                    settings.Upgrade,
+                    settings.Recurse,
+                    settings.Depth,
+                    settings.Cwd,
+                    Include = string.Join("|", includeFilters),
+                    Exclude = string.Join("|", excludeFilters),
+                }
+            );
+        }
+
         if (settings.ShowVersion)
         {
             var version = AssemblyUtils.GetEntryAssemblyVersion();
@@ -101,20 +120,6 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
                     .TrimStart(Path.AltDirectorySeparatorChar)
                 : path;
 
-        if (_logger.IsEnabled(LogLevel.Debug))
-        {
-            _logger.LogDebug(
-                "Settings {@settings}",
-                new
-                {
-                    settings.Upgrade,
-                    settings.Recurse,
-                    settings.Depth,
-                    settings.Cwd,
-                }
-            );
-        }
-
         var (projectFiles, solutionProjectMap) =
             await _projectDiscovery.DiscoverProjectsAndSolutions(
                 new()
@@ -132,6 +137,41 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
             .SelectMany(it => it.TargetFrameworks)
             .Distinct()
             .ToImmutableArray();
+
+        projects = projects.ConvertAll(it =>
+        {
+            var packages = ImmutableArray.CreateBuilder<PackageReference>(it.PackageCount);
+            packages.AddRange(it.PackageReferences);
+
+            if (includeFilters.Length > 0)
+            {
+                for (var i = packages.Count - 1; i >= 0; --i)
+                {
+                    var pkgName = packages[i].Name;
+                    if (includeFilters.Any(it => it.IsMatch(pkgName)) is false)
+                    {
+                        packages.RemoveAt(i);
+                    }
+                }
+            }
+
+            if (excludeFilters.Length > 0)
+            {
+                for (var i = packages.Count - 1; i >= 0; --i)
+                {
+                    var pkgName = packages[i].Name;
+                    if (excludeFilters.Any(it => it.IsMatch(pkgName)) is true)
+                    {
+                        packages.RemoveAt(i);
+                    }
+                }
+            }
+
+            return it with
+            {
+                PackageReferences = packages.ToImmutable()
+            };
+        });
 
         projects = projects.ConvertAll(it =>
         {
