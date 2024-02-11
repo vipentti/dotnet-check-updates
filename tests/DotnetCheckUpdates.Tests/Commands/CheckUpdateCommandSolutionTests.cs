@@ -4,7 +4,6 @@
 
 using DotnetCheckUpdates.Commands.CheckUpdate;
 using DotnetCheckUpdates.Core;
-using FluentAssertions.Execution;
 using static DotnetCheckUpdates.Tests.CheckUpdateCommandUtils;
 
 namespace DotnetCheckUpdates.Tests.Commands;
@@ -225,7 +224,10 @@ public class CheckUpdateCommandSolutionTests
             {
                 Projects =
                 {
-                    new("nested/project.csproj", "net5.0") { Packages = { ("Test", "1.0") } }
+                    new("nested/project.csproj", Frameworks.Net5_0)
+                    {
+                        Packages = { ("Test", "1.0") }
+                    }
                 }
             },
             new[]
@@ -257,6 +259,83 @@ public class CheckUpdateCommandSolutionTests
         await AssertPackages(cwd, fileSystem, "nested/project.csproj", new[]
         {
             ("Test", "2.0.0"),
-        });
+        }, framework: Frameworks.Net5_0);
+    }
+
+    [Fact]
+    public async Task SupportsSolutionsWithDirectoryBuildProps()
+    {
+        var (cwd, fileSystem, command) = SetupCommand(
+            new MockSolution("test.sln")
+            {
+                Projects =
+                {
+                    new($"{CliConstants.DirectoryBuildPropsFileName}", Framework: Frameworks.Net8_0)
+                    {
+                        Packages = { ("Test", "1.0") }
+                    },
+                    new(
+                        $"nested/{CliConstants.DirectoryBuildPropsFileName}",
+                        Framework: Frameworks.Net8_0
+                    )
+                    {
+                        Packages = { ("Test2", "1.0") }
+                    },
+                    new("nested/project/project.csproj", Framework: "")
+                    {
+                        Packages = { ("Test3", "1.0") }
+                    },
+                }
+            },
+            new[]
+            {
+                new MockUpgrade("Test")
+                {
+                    Versions = { "2.0" },
+                    SupportedFrameworks = MockUpgrade.DefaultSupportedFrameworks,
+                },
+                new MockUpgrade("Test2")
+                {
+                    Versions = { "2.0" },
+                    SupportedFrameworks = MockUpgrade.DefaultSupportedFrameworks,
+                },
+                new MockUpgrade("Test3")
+                {
+                    Versions = { "2.0" },
+                    SupportedFrameworks = { Frameworks.Net8_0 },
+                },
+            }
+        );
+
+        // Act
+        var result = await command.ExecuteAsync(
+            TestCommandContext,
+            new CheckUpdateCommand.Settings
+            {
+                Cwd = cwd,
+                Upgrade = true,
+                Target = UpgradeTarget.Latest
+            }
+        );
+
+        // Assert
+        result.Should().Be(0);
+
+        using var _s = new AssertionScope();
+        // csharpier-ignore
+        await AssertPackages(cwd, fileSystem, CliConstants.DirectoryBuildPropsFileName, new[]
+        {
+            ("Test", "2.0.0"),
+        }, framework: Frameworks.Net8_0);
+        // csharpier-ignore
+        await AssertPackages(cwd, fileSystem, "nested/" + CliConstants.DirectoryBuildPropsFileName, new[]
+        {
+            ("Test2", "2.0.0"),
+        }, framework: Frameworks.Net8_0);
+        // csharpier-ignore
+        await AssertPackages(cwd, fileSystem, "nested/project/project.csproj", new[]
+        {
+            ("Test3", "2.0.0"),
+        }, framework: Frameworks.Unspecified);
     }
 }

@@ -24,7 +24,7 @@ public partial class CheckUpdateCommandTests
         // Arrange
         var cwd = RootedTestPath("some/path");
 
-        var fileSystem = SetupFileSystem(currentDirectory: cwd, fileContents: new() { });
+        var fileSystem = SetupFileSystem(currentDirectory: cwd, fileContents: []);
 
         var service = SetupMockNuGetService();
 
@@ -61,7 +61,7 @@ public partial class CheckUpdateCommandTests
         // Arrange
         var cwd = RootedTestPath("some/path");
 
-        var fileSystem = SetupFileSystem(currentDirectory: cwd, fileContents: new() { });
+        var fileSystem = SetupFileSystem(currentDirectory: cwd, fileContents: []);
 
         var service = SetupMockNuGetService();
 

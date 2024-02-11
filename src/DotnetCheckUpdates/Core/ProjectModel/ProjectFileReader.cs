@@ -19,6 +19,6 @@ internal class ProjectFileReader
     public async Task<ProjectFile> ReadProjectFile(string filePath)
     {
         var content = await _fileSystem.File.ReadAllTextAsync(filePath, Encoding.UTF8);
-        return ProjectFileParser.ParseProjectFile(content, filePath);
+        return ProjectFileParser.ParseLessStrictProjectFile(content, filePath);
     }
 }

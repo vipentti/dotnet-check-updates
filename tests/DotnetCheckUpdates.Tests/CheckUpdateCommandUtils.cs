@@ -9,7 +9,6 @@ using DotnetCheckUpdates.Core;
 using DotnetCheckUpdates.Core.NuGetUtils;
 using DotnetCheckUpdates.Core.ProjectModel;
 using DotnetCheckUpdates.Core.Utils;
-using FluentAssertions.Execution;
 using Microsoft.Extensions.Logging.Abstractions;
 using Spectre.Console.Cli;
 using Spectre.Console.Testing;
@@ -53,19 +52,7 @@ internal static class CheckUpdateCommandUtils
     {
         var cwd = RootedTestPath("some/path");
 
-        var solutionFilePath = cwd.PathCombine(solution.SolutionPath);
-
-        var solutionPath = Path.GetDirectoryName(solutionFilePath)!;
-
-        var projectsWithPaths = solution.Projects.ToDictionary(
-            kvp => solutionPath.PathCombine(kvp.ProjectPath),
-            kvp => kvp.ToXml()
-        );
-
-        var fileContents = new Dictionary<string, string>(projectsWithPaths)
-        {
-            { solutionFilePath, solution.GetSolution() },
-        };
+        var fileContents = solution.GetMockFiles(cwd);
 
         var fileSystem = SetupFileSystem(currentDirectory: cwd, fileContents: fileContents);
 
@@ -142,6 +129,7 @@ internal static class CheckUpdateCommandUtils
                 nugetService
             ),
             projectDiscovery: new ProjectDiscovery(
+                NullLogger<ProjectDiscovery>.Instance,
                 finder ?? new FileFinder(fileSystem),
                 new TestSolutionParser(fileSystem)
             )
@@ -151,7 +139,8 @@ internal static class CheckUpdateCommandUtils
         string cwd,
         IFileSystem fs,
         string projectName,
-        IEnumerable<(string id, string version)> packages
+        IEnumerable<(string id, string version)> packages,
+        string framework = Frameworks.Default
     )
     {
         var project = await cwd.ReadProjectFile(fs, projectName);
@@ -164,7 +153,7 @@ internal static class CheckUpdateCommandUtils
         {
             project.PackageReferences.Should().BeEquivalentTo(packageVersions);
 
-            project.ProjectFileToXml().Should().Be(ProjectFileXml(packages));
+            project.ProjectFileToXml().Should().Be(ProjectFileXml(packages, framework));
         }
     }
 }

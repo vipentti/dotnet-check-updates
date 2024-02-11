@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net8.0;net7.0;net6.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <Deterministic>true</Deterministic>
     <ImplicitUsings>enable</ImplicitUsings>

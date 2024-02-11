@@ -7,7 +7,6 @@ using DotnetCheckUpdates.Core;
 using DotnetCheckUpdates.Core.Extensions;
 using DotnetCheckUpdates.Core.ProjectModel;
 using DotnetCheckUpdates.Tests.Core;
-using FluentAssertions.Execution;
 using Spectre.Console.Cli;
 using static DotnetCheckUpdates.Tests.CheckUpdateCommandUtils;
 using static DotnetCheckUpdates.Tests.ProjectFileUtils;
@@ -25,7 +24,7 @@ public class CheckUpdateCommandPackageUpgradeTests
         var (cwd, _, fileSystem, command) = SetupCommand(
             new[]
             {
-                new MockProject("test1.csproj", "net5.0")
+                new MockProject("test1.csproj", Frameworks.Net5_0)
                 {
                     Packages =
                     {
@@ -38,7 +37,7 @@ public class CheckUpdateCommandPackageUpgradeTests
                 new MockUpgrade("MinShort")
                 {
                     Versions = { "1.1.0", },
-                    SupportedFrameworks = { "net6.0", "net7.0" },
+                    SupportedFrameworks = { Frameworks.Net6_0, Frameworks.Net7_0 },
                 },
             }
         );
@@ -55,14 +54,14 @@ public class CheckUpdateCommandPackageUpgradeTests
         );
 
         // Assert
-        result.Should().Be(0);
-
         using var _s = new AssertionScope();
+
+        result.Should().Be(0);
         // csharpier-ignore
         await AssertPackages(cwd, fileSystem, "test1.csproj", new[]
         {
             ("MinShort", "1.0.0"),
-        });
+        }, framework: Frameworks.Net5_0);
     }
 
     [Fact]
@@ -73,7 +72,7 @@ public class CheckUpdateCommandPackageUpgradeTests
         var (cwd, _, fileSystem, command) = SetupCommand(
             new[]
             {
-                new MockProject("test1.csproj", "net5.0")
+                new MockProject("test1.csproj", Frameworks.Net5_0)
                 {
                     Packages =
                     {
@@ -86,7 +85,7 @@ public class CheckUpdateCommandPackageUpgradeTests
                 new MockUpgrade("MinShort")
                 {
                     Versions = { "1.1.0", },
-                    SupportedFrameworks = { "netstandard2.0", },
+                    SupportedFrameworks = { Frameworks.NetStandard2_0 },
                 },
             }
         );
@@ -110,18 +109,25 @@ public class CheckUpdateCommandPackageUpgradeTests
         await AssertPackages(cwd, fileSystem, "test1.csproj", new[]
         {
             ("MinShort", "1.1.0"),
-        });
+        }, framework: Frameworks.Net5_0);
     }
 
     [Fact]
-    public async Task SupportsFsharProjects()
+    public async Task SupportsDirectoryBuildPropsFilesWithProject()
     {
         // Arrange
         // csharpier-ignore
         var (cwd, _, fileSystem, command) = SetupCommand(
             new[]
             {
-                new MockProject("test1.fsproj", "net5.0")
+                new MockProject("test1.csproj", Frameworks.Unspecified)
+                {
+                    Packages =
+                    {
+                        ("ProjectPackage", "1.0.0"),
+                    }
+                },
+                new MockProject(CliConstants.DirectoryBuildPropsFileName, Frameworks.Default)
                 {
                     Packages =
                     {
@@ -134,7 +140,65 @@ public class CheckUpdateCommandPackageUpgradeTests
                 new MockUpgrade("MinShort")
                 {
                     Versions = { "1.1.0", },
-                    SupportedFrameworks = { "netstandard2.0", },
+                    SupportedFrameworks = { Frameworks.NetStandard2_0, },
+                },
+                new MockUpgrade("ProjectPackage")
+                {
+                    Versions = { "1.1.0", },
+                    SupportedFrameworks = { Frameworks.NetStandard2_0, },
+                },
+            }
+        );
+
+        // Act
+        var result = await command.ExecuteAsync(
+            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            new CheckUpdateCommand.Settings
+            {
+                Cwd = cwd,
+                Upgrade = true,
+                Target = UpgradeTarget.Latest
+            }
+        );
+
+        // Assert
+        result.Should().Be(0);
+
+        using var _s = new AssertionScope();
+        // csharpier-ignore
+        await AssertPackages(cwd, fileSystem, CliConstants.DirectoryBuildPropsFileName, new[]
+        {
+            ("MinShort", "1.1.0"),
+        });
+        // csharpier-ignore
+        await AssertPackages(cwd, fileSystem, "test1.csproj", new[]
+        {
+            ("ProjectPackage", "1.1.0"),
+        }, framework: Frameworks.Unspecified);
+    }
+
+    [Fact]
+    public async Task SupportsFsharpProjects()
+    {
+        // Arrange
+        // csharpier-ignore
+        var (cwd, _, fileSystem, command) = SetupCommand(
+            new[]
+            {
+                new MockProject("test1.fsproj", Frameworks.Default)
+                {
+                    Packages =
+                    {
+                        ("MinShort", "1.0.0"),
+                    }
+                }
+            },
+            new[]
+            {
+                new MockUpgrade("MinShort")
+                {
+                    Versions = { "1.1.0", },
+                    SupportedFrameworks = { Frameworks.NetStandard2_0, },
                 },
             }
         );

@@ -8,6 +8,8 @@ internal static class CliConstants
 {
     public const string CliName = "dotnet-check-updates";
 
+    public const string DirectoryBuildPropsFileName = "Directory.Build.props";
+
     public const string SlnExtensionWithoutDot = "sln";
     public const string SlnExtensionWithDot = "." + SlnExtensionWithoutDot;
     public const string SlnPattern = "*" + SlnExtensionWithDot;

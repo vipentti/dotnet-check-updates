@@ -19,6 +19,16 @@ internal record ProjectFile(
 {
     public int PackageCount => PackageReferences.Length;
 
+    public string? Sdk { get; init; }
+
+    // TODO: This can be simplified once we drop support for older frameworks
+#pragma warning disable IDE0301 // Simplify collection initialization
+    public ImmutableArray<Import> Imports { get; init; } = ImmutableArray<Import>.Empty;
+#pragma warning restore IDE0301 // Simplify collection initialization
+
+    public bool IsDirectoryBuildProps =>
+        FilePath.EndsWith(CliConstants.DirectoryBuildPropsFileName);
+
     public XDocument Xml { get; internal set; } = new();
 
     private bool NeedsUpdate { get; set; }
@@ -105,14 +115,14 @@ internal record ProjectFile(
     {
         if (NeedsUpdate)
         {
-            Xml = GetUpdatedXm();
+            Xml = GetUpdatedXml();
             NeedsUpdate = false;
         }
 
         return Xml.ToString(SaveOptions.DisableFormatting);
     }
 
-    private XDocument GetUpdatedXm()
+    private XDocument GetUpdatedXml()
     {
         var newDocument = new XDocument(Xml);
 

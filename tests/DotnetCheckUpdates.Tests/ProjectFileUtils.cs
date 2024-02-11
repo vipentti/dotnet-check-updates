@@ -11,12 +11,12 @@ internal static class ProjectFileUtils
 {
     public static string ProjectFileXml(
         IEnumerable<(string id, string version)> packages,
-        string framework = "net5.0"
+        string framework = Frameworks.Default
     ) => ProjectFileXml(packages.Select(it => PackageReference.From(it.id, it.version)), framework);
 
     public static string ProjectFileXml(
         IEnumerable<PackageReference> packages,
-        string framework = "net5.0"
+        string framework = Frameworks.Default
     ) =>
         $@"
 <Project Sdk=""Microsoft.NET.Sdk"">
