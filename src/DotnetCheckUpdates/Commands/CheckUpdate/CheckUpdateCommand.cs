@@ -214,7 +214,10 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
             {
                 var text = FormatPath(proj);
 
-                if (settings.ShowPackageCount && projects.Find(it => string.Equals(it.FilePath, proj)) is ProjectFile project)
+                if (
+                    settings.ShowPackageCount
+                    && projects.Find(it => string.Equals(it.FilePath, proj)) is ProjectFile project
+                )
                 {
                     text += $" (packages: {project.PackageCount})";
                 }
@@ -245,7 +248,11 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
 
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                _logger.LogTrace("Found project {Project} with packages {PackageCount}", project.FilePath, project.PackageCount);
+                _logger.LogTrace(
+                    "Found project {Project} with packages {PackageCount}",
+                    project.FilePath,
+                    project.PackageCount
+                );
             }
             foreach (var pkg in project.PackageReferences)
             {
@@ -330,13 +337,18 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
                 foreach (var slnProj in solutionProjectArray)
                 {
                     var foundOldProject = projects.Find(it => string.Equals(it.FilePath, slnProj));
-                    var foundNewProject = newProjects.Find(it => string.Equals(it.FilePath, slnProj));
+                    var foundNewProject = newProjects.Find(it =>
+                        string.Equals(it.FilePath, slnProj)
+                    );
 
                     if (foundOldProject is null)
                     {
                         if (_logger.IsEnabled(LogLevel.Warning))
                         {
-                            _logger.LogWarning("Solution project {SlnProject} not found in original projects", slnProj);
+                            _logger.LogWarning(
+                                "Solution project {SlnProject} not found in original projects",
+                                slnProj
+                            );
                         }
                     }
 
@@ -344,7 +356,10 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
                     {
                         if (_logger.IsEnabled(LogLevel.Warning))
                         {
-                            _logger.LogWarning("Solution project {SlnProject} not found in new projects", slnProj);
+                            _logger.LogWarning(
+                                "Solution project {SlnProject} not found in new projects",
+                                slnProj
+                            );
                         }
                     }
 

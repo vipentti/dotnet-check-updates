@@ -23,7 +23,9 @@ internal partial class CheckUpdateCommand
         public bool ShowAbsolute { get; init; }
 
         [CommandOption("--show-package-count")]
-        [Description("Shows number of packages found in each project after filtering has been applied")]
+        [Description(
+            "Shows number of packages found in each project after filtering has been applied"
+        )]
         public bool ShowPackageCount { get; init; }
 
         [CommandOption("--cwd <CurrentDirectory>")]
