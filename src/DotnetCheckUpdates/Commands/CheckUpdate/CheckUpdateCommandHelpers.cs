@@ -96,7 +96,11 @@ internal static class CheckUpdateCommandHelpers
 
         if (logger?.IsEnabled(LogLevel.Trace) is true)
         {
-            logger.LogTrace("Upgrading packages for {Project}({PackageCount})", project.FilePath, project.PackageCount);
+            logger.LogTrace(
+                "Upgrading packages for {Project}({PackageCount})",
+                project.FilePath,
+                project.PackageCount
+            );
         }
 
         if (concurrency > 1)

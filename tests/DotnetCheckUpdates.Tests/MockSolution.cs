@@ -12,9 +12,13 @@ internal record MockSolution(string SolutionPath)
     {
         return ProjectFileUtils.SolutionFile(
             Projects
-                .Where(it => !it.ProjectPath.Contains(CliConstants.DirectoryBuildPropsFileName, StringComparison.OrdinalIgnoreCase))
-                .Select(it => (Path.GetFileNameWithoutExtension(it.ProjectPath), it.ProjectPath)
-            )
+                .Where(it =>
+                    !it.ProjectPath.Contains(
+                        CliConstants.DirectoryBuildPropsFileName,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
+                .Select(it => (Path.GetFileNameWithoutExtension(it.ProjectPath), it.ProjectPath))
         );
     }
 

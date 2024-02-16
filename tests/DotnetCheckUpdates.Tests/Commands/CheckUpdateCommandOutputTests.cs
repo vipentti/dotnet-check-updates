@@ -392,7 +392,12 @@ Run dotnet-check-updates --cwd {cwd} -u to upgrade
             var actualLinesText = string.Join("\n", actualLines);
             var expectedLinesText = string.Join("\n", expectedLines);
 
-            actualLines.Should().BeEquivalentTo(expectedLines, because: $"\nActual:\n{actualLinesText}\nExpected:\n{expectedLinesText}");
+            actualLines
+                .Should()
+                .BeEquivalentTo(
+                    expectedLines,
+                    because: $"\nActual:\n{actualLinesText}\nExpected:\n{expectedLinesText}"
+                );
         }
     }
 }
