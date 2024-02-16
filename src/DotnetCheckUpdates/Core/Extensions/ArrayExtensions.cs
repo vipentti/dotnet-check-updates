@@ -21,4 +21,7 @@ internal static class ArrayExtensions
 
     public static T? MaybeAt<T>(this T[] arr, int index) =>
         index >= 0 && index < arr.Length ? arr[index] : default;
+
+    public static T? Find<T>(this T[] arr, Predicate<T> predicate) =>
+        Array.Find(arr, predicate);
 }

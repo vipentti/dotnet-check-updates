@@ -134,6 +134,166 @@ Run dotnet restore to install new versions
     }
 
     [Fact]
+    public async Task Output_contains_Directory_Build_props_when_found_in_solution()
+    {
+        var console = new TestConsole();
+
+        var (cwd, fileSystem, command) = SetupCommand(
+            new MockSolution("test.sln")
+            {
+                Projects =
+                {
+                    new($"{CliConstants.DirectoryBuildPropsFileName}", Framework: Frameworks.Net8_0)
+                    {
+                        Packages = { ("Test", "1.0") }
+                    },
+                    new(
+                        $"nested/{CliConstants.DirectoryBuildPropsFileName}",
+                        Framework: Frameworks.Net8_0
+                    )
+                    {
+                        Packages = { ("Test2", "1.0") }
+                    },
+                    new("nested/project/project.csproj", Framework: "")
+                    {
+                        Packages = { ("Test3", "1.0") }
+                    },
+                }
+            },
+            new[]
+            {
+                new MockUpgrade("Test")
+                {
+                    Versions = { "1.5" },
+                    SupportedFrameworks = MockUpgrade.DefaultSupportedFrameworks,
+                },
+                new MockUpgrade("Test2")
+                {
+                    Versions = { "2.0" },
+                    SupportedFrameworks = MockUpgrade.DefaultSupportedFrameworks,
+                },
+                new MockUpgrade("Test3")
+                {
+                    Versions = { "3.0" },
+                    SupportedFrameworks = { Frameworks.Net8_0 },
+                },
+            },
+            console: console
+        );
+
+        // Act
+        var result = await command.ExecuteAsync(
+            TestCommandContext,
+            new CheckUpdateCommand.Settings
+            {
+                Cwd = cwd,
+                Upgrade = true,
+                AsciiTree = true,
+                ShowAbsolute = true,
+            }
+        );
+
+        using var scope = new AssertionScope();
+        result.Should().Be(0);
+
+        var slnRoot = cwd;
+
+        var expected =
+            $@"
+{slnRoot.PathCombine("test.sln")}
+|-- {slnRoot.PathCombine("Directory.Build.props")}
+|-- {slnRoot.PathCombine("nested/Directory.Build.props")}
+`-- {slnRoot.PathCombine("nested/project/project.csproj")}
+{slnRoot.PathCombine("test.sln")}
+|-- {slnRoot.PathCombine("Directory.Build.props")}
+|   `-- Test   1.0.0  →  1.5.0
+|
+|-- {slnRoot.PathCombine("nested/Directory.Build.props")}
+|   `-- Test2  1.0.0  →  2.0.0
+|
+`-- {slnRoot.PathCombine("nested/project/project.csproj")}
+    `-- Test3  1.0.0  →  3.0.0
+
+
+Upgrading packages in {slnRoot.PathCombine("Directory.Build.props")}
+Upgrading packages in {slnRoot.PathCombine("nested/Directory.Build.props")}
+Upgrading packages in {slnRoot.PathCombine("nested/project/project.csproj")}
+
+Run dotnet restore to install new versions
+";
+
+        AssertOutput(console, expected);
+    }
+
+    [Fact]
+    public async Task Output_contains_Directory_Build_props_when_found_in_solution_with_no_upgrades()
+    {
+        var console = new TestConsole();
+
+        var (cwd, _fileSystem, command) = SetupCommand(
+            new MockSolution("test.sln")
+            {
+                Projects =
+                {
+                    new($"{CliConstants.DirectoryBuildPropsFileName}", Framework: Frameworks.Net8_0)
+                    {
+                        Packages = { ("Test", "1.0") }
+                    },
+                    new(
+                        $"nested/{CliConstants.DirectoryBuildPropsFileName}",
+                        Framework: Frameworks.Net8_0
+                    )
+                    {
+                        Packages = { ("Test2", "1.0") }
+                    },
+                    new("nested/project/project.csproj", Framework: "")
+                    {
+                        Packages = { ("Test3", "1.0") }
+                    },
+                }
+            },
+            Array.Empty<MockUpgrade>(),
+            console: console
+        );
+
+        // Act
+        var result = await command.ExecuteAsync(
+            TestCommandContext,
+            new CheckUpdateCommand.Settings
+            {
+                Cwd = cwd,
+                Upgrade = true,
+                AsciiTree = true,
+                ShowAbsolute = true,
+            }
+        );
+
+        using var scope = new AssertionScope();
+        result.Should().Be(0);
+
+        var slnRoot = cwd;
+
+        var expected =
+            $@"
+{slnRoot.PathCombine("test.sln")}
+|-- {slnRoot.PathCombine("Directory.Build.props")}
+|-- {slnRoot.PathCombine("nested/Directory.Build.props")}
+`-- {slnRoot.PathCombine("nested/project/project.csproj")}
+{slnRoot.PathCombine("test.sln")}
+|-- {slnRoot.PathCombine("Directory.Build.props")}
+|   `-- All packages match their latest versions.
+|
+|-- {slnRoot.PathCombine("nested/Directory.Build.props")}
+|   `-- All packages match their latest versions.
+|
+`-- {slnRoot.PathCombine("nested/project/project.csproj")}
+    `-- All packages match their latest versions.
+";
+
+        AssertOutput(console, expected);
+    }
+
+    [Fact]
     public async Task OutputIsAlignedWhenListing()
     {
         var console = new TestConsole();
@@ -229,7 +389,10 @@ Run dotnet-check-updates --cwd {cwd} -u to upgrade
 
         using (new AssertionScope())
         {
-            actualLines.Should().BeEquivalentTo(expectedLines);
+            var actualLinesText = string.Join("\n", actualLines);
+            var expectedLinesText = string.Join("\n", expectedLines);
+
+            actualLines.Should().BeEquivalentTo(expectedLines, because: $"\nActual:\n{actualLinesText}\nExpected:\n{expectedLinesText}");
         }
     }
 }

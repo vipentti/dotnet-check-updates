@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- Add support for showing package count with --show-package-count
 
 ## [0.2.3] / 2024-02-11
 - Implement support for Directory.Build.props files

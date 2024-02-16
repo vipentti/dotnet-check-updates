@@ -11,8 +11,9 @@ internal record MockSolution(string SolutionPath)
     public string GetSolution()
     {
         return ProjectFileUtils.SolutionFile(
-            Projects.Select(it =>
-                (Path.GetFileNameWithoutExtension(it.ProjectPath), it.ProjectPath)
+            Projects
+                .Where(it => !it.ProjectPath.Contains(CliConstants.DirectoryBuildPropsFileName, StringComparison.OrdinalIgnoreCase))
+                .Select(it => (Path.GetFileNameWithoutExtension(it.ProjectPath), it.ProjectPath)
             )
         );
     }

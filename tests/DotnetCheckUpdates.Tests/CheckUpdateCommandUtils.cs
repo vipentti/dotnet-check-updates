@@ -47,7 +47,8 @@ internal static class CheckUpdateCommandUtils
 
     public static (string Cwd, MockFileSystem FileSystem, CheckUpdateCommand Command) SetupCommand(
         MockSolution solution,
-        IEnumerable<MockUpgrade> upgrades
+        IEnumerable<MockUpgrade> upgrades,
+        TestConsole? console = default
     )
     {
         var cwd = RootedTestPath("some/path");
@@ -58,7 +59,7 @@ internal static class CheckUpdateCommandUtils
 
         var service = SetupMockPackages(upgrades);
 
-        var command = CreateCommand(console: default, fileSystem, service, finder: default);
+        var command = CreateCommand(console: console, fileSystem, service, finder: default);
 
         return (cwd, fileSystem, command);
     }
