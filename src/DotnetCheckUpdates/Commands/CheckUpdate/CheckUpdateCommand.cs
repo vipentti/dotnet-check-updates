@@ -186,8 +186,9 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
                 if (_logger.IsEnabled(LogLevel.Trace))
                 {
                     _logger.LogTrace(
-                        "{Project} updated to using TargetFrameworks {@Frameworks}",
+                        "{Project} ({PackageCount}) updated to using TargetFrameworks {@Frameworks}",
                         it.FilePath,
+                        it.PackageCount,
                         allSpecifiedTargetFrameworks
                     );
                 }
@@ -211,7 +212,14 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
             var solutionTree = new Tree(FormatPath(solutionFile));
             foreach (var proj in solutionProjects)
             {
-                solutionTree.AddNode(FormatPath(proj));
+                var text = FormatPath(proj);
+
+                if (settings.ShowPackageCount && projects.Find(it => string.Equals(it.FilePath, proj)) is ProjectFile project)
+                {
+                    text += $" (packages: {project.PackageCount})";
+                }
+
+                solutionTree.AddNode(text);
             }
             if (settings.AsciiTree)
             {
@@ -237,7 +245,7 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
 
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                _logger.LogTrace("Found project {Project}", project.FilePath);
+                _logger.LogTrace("Found project {Project} with packages {PackageCount}", project.FilePath, project.PackageCount);
             }
             foreach (var pkg in project.PackageReferences)
             {
@@ -287,6 +295,7 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
                             progressTask,
                             settings.Concurrency,
                             settings.Target,
+                            _logger,
                             cancellationToken
                         )
                     );
@@ -315,18 +324,42 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
                     solutionRoot.AddNode("No projects found.");
                 }
 
-                var oldSolutionProjects = projects
-                    .Where(it => Array.IndexOf(solutionProjectArray, it.FilePath) >= 0)
-                    .ToList();
+                var oldSlnProjects = new List<ProjectFile>(projects.Length);
+                var newSlnProjects = new List<ProjectFile>(projects.Length);
 
-                var newdSolutionProjects = newProjects
-                    .Where(it => Array.IndexOf(solutionProjectArray, it.FilePath) >= 0)
-                    .ToList();
+                foreach (var slnProj in solutionProjectArray)
+                {
+                    var foundOldProject = projects.Find(it => string.Equals(it.FilePath, slnProj));
+                    var foundNewProject = newProjects.Find(it => string.Equals(it.FilePath, slnProj));
+
+                    if (foundOldProject is null)
+                    {
+                        if (_logger.IsEnabled(LogLevel.Warning))
+                        {
+                            _logger.LogWarning("Solution project {SlnProject} not found in original projects", slnProj);
+                        }
+                    }
+
+                    if (foundNewProject is null)
+                    {
+                        if (_logger.IsEnabled(LogLevel.Warning))
+                        {
+                            _logger.LogWarning("Solution project {SlnProject} not found in new projects", slnProj);
+                        }
+                    }
+
+                    if (foundOldProject is not null && foundNewProject is not null)
+                    {
+                        oldSlnProjects.Add(foundOldProject);
+                        newSlnProjects.Add(foundNewProject);
+                    }
+                }
+
                 CheckUpdateCommandHelpers.SetupGridInTree(
                     FormatPath,
                     solutionRoot,
-                    oldSolutionProjects,
-                    newdSolutionProjects,
+                    oldSlnProjects,
+                    newSlnProjects,
                     upgradedProjects,
                     settings,
                     longestPackageNameLength,

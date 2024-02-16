@@ -6,6 +6,7 @@ using System.Diagnostics;
 using DotnetCheckUpdates.Core;
 using DotnetCheckUpdates.Core.ProjectModel;
 using Flurl.Util;
+using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -87,10 +88,16 @@ internal static class CheckUpdateCommandHelpers
         ProgressTask progress,
         int concurrency,
         UpgradeTarget target,
+        ILogger logger,
         CancellationToken cancellationToken
     )
     {
         var pkgs = new PackageUpgradeVersionDictionary(project.PackageCount);
+
+        if (logger?.IsEnabled(LogLevel.Trace) is true)
+        {
+            logger.LogTrace("Upgrading packages for {Project}({PackageCount})", project.FilePath, project.PackageCount);
+        }
 
         if (concurrency > 1)
         {

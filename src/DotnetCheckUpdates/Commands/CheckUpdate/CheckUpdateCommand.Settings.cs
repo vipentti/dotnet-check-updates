@@ -22,6 +22,10 @@ internal partial class CheckUpdateCommand
         [Description("Shows absolute paths when printing projects and solutions. (default: false)")]
         public bool ShowAbsolute { get; init; }
 
+        [CommandOption("--show-package-count")]
+        [Description("Shows number of packages found in each project after filtering has been applied")]
+        public bool ShowPackageCount { get; init; }
+
         [CommandOption("--cwd <CurrentDirectory>")]
         [Description("Sets the current working directory. (default: current directory)")]
         public string? Cwd { get; init; }
