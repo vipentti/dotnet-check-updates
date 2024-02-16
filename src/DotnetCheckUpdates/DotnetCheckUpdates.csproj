@@ -53,10 +53,10 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
-    <PackageReference Include="NuGet.Frameworks" Version="6.7.0" />
-    <PackageReference Include="NuGet.Packaging" Version="6.7.0" />
-    <PackageReference Include="NuGet.Protocol" Version="6.7.0" />
-    <PackageReference Include="NuGet.Versioning" Version="6.7.0" />
+    <PackageReference Include="NuGet.Frameworks" Version="6.8.1" />
+    <PackageReference Include="NuGet.Packaging" Version="6.8.1" />
+    <PackageReference Include="NuGet.Protocol" Version="6.8.1" />
+    <PackageReference Include="NuGet.Versioning" Version="6.8.1" />
     <PackageReference Include="Nuke.SolutionModel" Version="7.0.6" />
     <PackageReference Include="semver" Version="[2.3.0]" />
     <PackageReference Include="SpanUtils" Version="0.4.0" />
