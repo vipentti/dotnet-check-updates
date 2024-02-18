@@ -13,13 +13,26 @@ namespace DotnetCheckUpdates.Core.ProjectModel;
 internal static class Errors
 {
     public const string FailedToReadXml = "Unable to read XML {0}";
+
+    // public static readonly CompositeFormat CompositeFailedToReadXml = CompositeFormat.Parse(FailedToReadXml);
+
     public const string ProjectNotFound = "Unsupported file: Project element not found in '{0}'";
+
+    // public static readonly CompositeFormat CompositeProjectNotFound = CompositeFormat.Parse(ProjectNotFound);
+
     public const string SdkAttributeMissing =
         "Unsupported Project format: Sdk attribute is missing in '{0}'";
+
+    // public static readonly CompositeFormat CompositeSdkAttributeMissing = CompositeFormat.Parse(SdkAttributeMissing);
+
     public const string UnsupportedSdk =
         "Unsupported Project format: Unsupported Sdk '{0}' supported sdks are: '{1}'";
+
+    // public static readonly CompositeFormat CompositeUnsupportedSdk = CompositeFormat.Parse(UnsupportedSdk);
     public const string TargetFrameworkMissing =
         "Unsupported Project format: TargetFramework(s) are not specified";
+
+    // public static readonly CompositeFormat CompositeTargetFrameworkMissing = CompositeFormat.Parse(TargetFrameworkMissing);
 }
 
 internal static class ProjectFileParser
@@ -47,13 +60,18 @@ internal static class ProjectFileParser
 
         if (xml?.Root is null)
         {
-            ThrowHelper.ThrowFormatException(string.Format(Errors.FailedToReadXml, filePath));
+            ThrowHelper.ThrowFormatException(
+                string.Format(CultureInfo.InvariantCulture, Errors.FailedToReadXml, filePath)
+            );
         }
 
         var projectNode =
-            xml.Elements().FirstOrDefault(it => string.Equals(it?.Name?.LocalName, "Project"))
+            xml.Elements()
+                .FirstOrDefault(it =>
+                    string.Equals(it?.Name?.LocalName, "Project", StringComparison.Ordinal)
+                )
             ?? ThrowHelper.ThrowFormatException<XElement>(
-                string.Format(Errors.ProjectNotFound, filePath)
+                string.Format(CultureInfo.InvariantCulture, Errors.ProjectNotFound, filePath)
             );
 
         var sdk = projectNode.Attribute("Sdk")?.Value;
@@ -102,13 +120,20 @@ internal static class ProjectFileParser
 
         if (file.Sdk is null)
         {
-            throw new FormatException(string.Format(Errors.SdkAttributeMissing, filePath));
+            throw new FormatException(
+                string.Format(CultureInfo.InvariantCulture, Errors.SdkAttributeMissing, filePath)
+            );
         }
 
         if (!s_supportedSdks.Contains(file.Sdk))
         {
             ThrowHelper.ThrowFormatException(
-                string.Format(Errors.UnsupportedSdk, file.Sdk, string.Join(", ", s_supportedSdks))
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    Errors.UnsupportedSdk,
+                    file.Sdk,
+                    string.Join(", ", s_supportedSdks)
+                )
             );
         }
 

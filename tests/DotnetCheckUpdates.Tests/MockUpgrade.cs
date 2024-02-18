@@ -4,7 +4,7 @@
 
 namespace DotnetCheckUpdates.Tests;
 
-internal record MockUpgrade(string Name)
+internal sealed record MockUpgrade(string Name)
 {
     public List<string> Versions { get; init; } = [];
 

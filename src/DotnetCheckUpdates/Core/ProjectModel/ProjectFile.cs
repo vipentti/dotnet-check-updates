@@ -27,7 +27,7 @@ internal record ProjectFile(
 #pragma warning restore IDE0301 // Simplify collection initialization
 
     public bool IsDirectoryBuildProps =>
-        FilePath.EndsWith(CliConstants.DirectoryBuildPropsFileName);
+        FilePath.EndsWith(CliConstants.DirectoryBuildPropsFileName, StringComparison.Ordinal);
 
     public XDocument Xml { get; internal set; } = new();
 
@@ -92,7 +92,7 @@ internal record ProjectFile(
     }
 
     public (int index, PackageReference? reference) FindByNameWithIndex(string name) =>
-        FindIndexByName(name) is int index && index > -1
+        FindIndexByName(name) is var index && index > -1
             ? (index, PackageReferences[index])
             : (-1, null);
 
@@ -103,11 +103,6 @@ internal record ProjectFile(
 
     public void Save(IFileSystem fileSystem)
     {
-        if (FilePath is null)
-        {
-            return;
-        }
-
         fileSystem.File.WriteAllText(FilePath, ProjectFileToXml());
     }
 
@@ -128,11 +123,9 @@ internal record ProjectFile(
 
         var references = newDocument.GetPackageReferenceElements().ToImmutableArray();
 
-        var refs = PackageReferences;
-
         foreach (var element in references)
         {
-            var foundRef = refs.Find(item =>
+            var foundRef = PackageReferences.Find(item =>
                 item.HasName((string?)element.Attribute("Include") ?? "")
             );
 

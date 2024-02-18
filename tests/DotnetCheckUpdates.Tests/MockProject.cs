@@ -4,7 +4,7 @@
 
 namespace DotnetCheckUpdates.Tests;
 
-internal record MockProject(string ProjectPath, string Framework = Frameworks.Default)
+internal sealed record MockProject(string ProjectPath, string Framework = Frameworks.Default)
 {
     public List<(string id, string version)> Packages { get; init; } = [];
 

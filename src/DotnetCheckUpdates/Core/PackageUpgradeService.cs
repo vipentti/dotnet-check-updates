@@ -8,10 +8,11 @@ using DotnetCheckUpdates.Core.NuGetUtils;
 using DotnetCheckUpdates.Core.ProjectModel;
 using Microsoft.Extensions.Logging;
 using NuGet.Frameworks;
+using NuGet.Versioning;
 
 namespace DotnetCheckUpdates.Core;
 
-internal class PackageUpgradeService
+internal partial class PackageUpgradeService
 {
     private readonly ILogger<PackageUpgradeService> _logger;
     private readonly INuGetService _nugetService;
@@ -22,6 +23,38 @@ internal class PackageUpgradeService
         _nugetService = nugetService;
     }
 
+    [LoggerMessage(
+        Level = LogLevel.Trace,
+        Message = "Searching upgrades for {Name} {CurrentVersion}"
+    )]
+    public static partial void LogSearchingForUpgrades(
+        ILogger logger,
+        string name,
+        VersionRange currentVersion
+    );
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "No supported frameworks found for {Package} {CurrentVersion} while searching for version {SearchedVersion}"
+    )]
+    public static partial void LogNoSupportedFrameworks(
+        ILogger logger,
+        string package,
+        VersionRange currentVersion,
+        NuGetVersion searchedVersion
+    );
+
+    [LoggerMessage(
+        Level = LogLevel.Trace,
+        Message = "Upgrade found for {Name} {CurrentVersion} -> {NewVersion}"
+    )]
+    public static partial void LogUpgradeFound(
+        ILogger logger,
+        string name,
+        VersionRange currentVersion,
+        VersionRange newVersion
+    );
+
     public async Task<PackageVersionUpgrade?> GetPackageUpgrade(
         IEnumerable<NuGetFramework> targetFrameworks,
         IPackageReference package,
@@ -29,14 +62,8 @@ internal class PackageUpgradeService
         CancellationToken cancellationToken = default
     )
     {
-        if (_logger.IsEnabled(LogLevel.Trace))
-        {
-            _logger.LogTrace(
-                "Searching upgrades for {Name} {CurrentVersion}",
-                package.Name,
-                package.Version
-            );
-        }
+        LogSearchingForUpgrades(_logger, package.Name, package.Version);
+
         var ourTargetFrameworks = targetFrameworks.ToImmutableArray();
 
         // Versions goes from oldest to latest
@@ -63,15 +90,8 @@ internal class PackageUpgradeService
 
             if (frameworks.Count == 0)
             {
-                if (_logger.IsEnabled(LogLevel.Warning))
-                {
-                    _logger.LogWarning(
-                        "No supported frameworks found for {Package} {CurrentVersion} while searching for version {SearchedVersion}",
-                        package.Name,
-                        package.Version,
-                        version
-                    );
-                }
+                LogNoSupportedFrameworks(_logger, package.Name, package.Version, version);
+
                 return null;
             }
 
@@ -93,15 +113,7 @@ internal class PackageUpgradeService
             if (foundSupported)
             {
                 var newVersion = version.ToVersionRange(package.Version);
-                if (_logger.IsEnabled(LogLevel.Trace))
-                {
-                    _logger.LogTrace(
-                        "Upgrade found for {Name} {CurrentVersion} -> {NewVersion}",
-                        package.Name,
-                        package.Version,
-                        newVersion
-                    );
-                }
+                LogUpgradeFound(_logger, package.Name, package.Version, newVersion);
                 return new PackageVersionUpgrade(package.Name, newVersion);
             }
         }

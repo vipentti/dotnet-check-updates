@@ -73,7 +73,7 @@ internal static class NuGetFrameworkCatalogEntryReader
 
                     foreach (
                         var path in fullName.EnumerateSplitSubstrings(
-                            new[] { '/', '\\' },
+                            separator,
                             StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
                         )
                     )
@@ -113,6 +113,7 @@ internal static class NuGetFrameworkCatalogEntryReader
 
     private static readonly ConcurrentDictionary<string, bool> s_invalidPathParts = new();
     private static readonly ConcurrentDictionary<string, NuGetFramework> s_knownFrameworks = new();
+    private static readonly char[] separator = ['/', '\\'];
 
     public static bool TryGetNonNullStringProperty(
         this JsonElement element,

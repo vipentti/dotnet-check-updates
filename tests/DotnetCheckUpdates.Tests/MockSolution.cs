@@ -4,7 +4,7 @@
 
 namespace DotnetCheckUpdates.Tests;
 
-internal record MockSolution(string SolutionPath)
+internal sealed record MockSolution(string SolutionPath)
 {
     public List<MockProject> Projects { get; init; } = [];
 

@@ -10,6 +10,7 @@ using DotnetCheckUpdates.Core.Extensions;
 using DotnetCheckUpdates.Core.ProjectModel;
 using DotnetCheckUpdates.Core.Utils;
 using Microsoft.Extensions.Logging;
+using NuGet.Frameworks;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using ValidationResult = Spectre.Console.ValidationResult;
@@ -71,6 +72,36 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
         return base.Validate(context, settings);
     }
 
+    [LoggerMessage(Message = "Settings {@Settings}")]
+    private static partial void LogSettings(ILogger logger, LogLevel level, object settings);
+
+    [LoggerMessage(
+        Level = LogLevel.Trace,
+        Message = "{Project} ({PackageCount}) updated to using TargetFrameworks {@Frameworks}"
+    )]
+    private static partial void LogFrameworkUpdated(
+        ILogger logger,
+        string project,
+        int packageCount,
+        ImmutableArray<NuGetFramework> frameworks
+    );
+
+    [LoggerMessage(
+        Level = LogLevel.Trace,
+        Message = "Found project {Project} with packages {PackageCount}"
+    )]
+    private static partial void LogProjectFound(ILogger logger, string project, int packageCount);
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Solution project {SlnProject} not found in {ProjectType} projects"
+    )]
+    private static partial void LogSolutionProjectNotFound(
+        ILogger logger,
+        string slnProject,
+        string projectType
+    );
+
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
         var includeFilters = CheckUpdateCommandHelpers.SplitFilters(settings.Include);
@@ -78,8 +109,9 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
 
         if (_logger.IsEnabled(LogLevel.Debug))
         {
-            _logger.LogDebug(
-                "Settings {@settings}",
+            LogSettings(
+                _logger,
+                LogLevel.Debug,
                 new
                 {
                     settings.Upgrade,
@@ -100,11 +132,6 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
         }
 
         var cancellationToken = _exitHandler?.GracefulToken ?? CancellationToken.None;
-
-        if (_logger.IsEnabled(LogLevel.Debug))
-        {
-            _logger.LogDebug("Executing {command}", nameof(CheckUpdateCommand));
-        }
 
         var cwd = Path.GetFullPath(
             Path.Combine(
@@ -183,15 +210,12 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
             // but it should be good enough for most purposes
             if (it.TargetFrameworks.Length == 0)
             {
-                if (_logger.IsEnabled(LogLevel.Trace))
-                {
-                    _logger.LogTrace(
-                        "{Project} ({PackageCount}) updated to using TargetFrameworks {@Frameworks}",
-                        it.FilePath,
-                        it.PackageCount,
-                        allSpecifiedTargetFrameworks
-                    );
-                }
+                LogFrameworkUpdated(
+                    _logger,
+                    it.FilePath,
+                    it.PackageCount,
+                    allSpecifiedTargetFrameworks
+                );
                 return it with { TargetFrameworks = allSpecifiedTargetFrameworks };
             }
             return it;
@@ -216,7 +240,10 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
 
                 if (
                     settings.ShowPackageCount
-                    && projects.Find(it => string.Equals(it.FilePath, proj)) is ProjectFile project
+                    && projects.Find(it =>
+                        string.Equals(it.FilePath, proj, StringComparison.Ordinal)
+                    )
+                        is ProjectFile project
                 )
                 {
                     text += $" (packages: {project.PackageCount})";
@@ -246,14 +273,8 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
         {
             projectsTree?.AddNode(FormatPath(project.FilePath));
 
-            if (_logger.IsEnabled(LogLevel.Trace))
-            {
-                _logger.LogTrace(
-                    "Found project {Project} with packages {PackageCount}",
-                    project.FilePath,
-                    project.PackageCount
-                );
-            }
+            LogProjectFound(_logger, project.FilePath, project.PackageCount);
+
             foreach (var pkg in project.PackageReferences)
             {
                 longestPackageNameLength = Math.Max(longestPackageNameLength, pkg.Name.Length);
@@ -336,31 +357,21 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
 
                 foreach (var slnProj in solutionProjectArray)
                 {
-                    var foundOldProject = projects.Find(it => string.Equals(it.FilePath, slnProj));
+                    var foundOldProject = projects.Find(it =>
+                        string.Equals(it.FilePath, slnProj, StringComparison.Ordinal)
+                    );
                     var foundNewProject = newProjects.Find(it =>
-                        string.Equals(it.FilePath, slnProj)
+                        string.Equals(it.FilePath, slnProj, StringComparison.Ordinal)
                     );
 
                     if (foundOldProject is null)
                     {
-                        if (_logger.IsEnabled(LogLevel.Warning))
-                        {
-                            _logger.LogWarning(
-                                "Solution project {SlnProject} not found in original projects",
-                                slnProj
-                            );
-                        }
+                        LogSolutionProjectNotFound(_logger, slnProj, "original");
                     }
 
                     if (foundNewProject is null)
                     {
-                        if (_logger.IsEnabled(LogLevel.Warning))
-                        {
-                            _logger.LogWarning(
-                                "Solution project {SlnProject} not found in new projects",
-                                slnProj
-                            );
-                        }
+                        LogSolutionProjectNotFound(_logger, slnProj, "new");
                     }
 
                     if (foundOldProject is not null && foundNewProject is not null)
