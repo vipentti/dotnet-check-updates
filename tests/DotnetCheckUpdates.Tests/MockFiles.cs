@@ -4,7 +4,7 @@
 
 namespace DotnetCheckUpdates.Tests;
 
-internal class MockFiles : Dictionary<string, string>
+internal sealed class MockFiles : Dictionary<string, string>
 {
     public MockFiles() { }
 

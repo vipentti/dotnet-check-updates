@@ -49,7 +49,7 @@ public class UpgradeTargetTests
         );
 
         // We are not expecting to upgrade when version and expected are equal
-        if (string.Equals(version, expected))
+        if (string.Equals(version, expected, StringComparison.Ordinal))
         {
             upgrade.Should().BeNull();
         }

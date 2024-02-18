@@ -2,6 +2,7 @@
 // Distributed under the MIT License.
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
+using System.Globalization;
 using System.Text;
 using DotnetCheckUpdates.Core;
 using DotnetCheckUpdates.Core.Extensions;
@@ -393,6 +394,7 @@ public class ProjectFileParserTests
             sb.Append(spaces);
 #pragma warning disable RCS1197 // Optimize StringBuilder.Append/AppendLine call.
             sb.AppendLine(
+                CultureInfo.InvariantCulture,
                 $"<PackageReference Include=\"{package.Name}\" Version=\"{package.GetVersionString()}\" />"
             );
 #pragma warning restore RCS1197 // Optimize StringBuilder.Append/AppendLine call.

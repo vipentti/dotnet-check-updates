@@ -3,3 +3,5 @@
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
 global using System.Collections.Immutable;
+global using System.Globalization;
+global using System.Text;

@@ -49,7 +49,9 @@ public partial class CheckUpdateCommandTests
             .GetMatchingPaths(
                 Arg.Is(cwd),
                 Arg.Is<IEnumerable<string>>(it =>
+#pragma warning disable CA1861 // Avoid constant arrays as arguments (only in tests)
                     it.SequenceEqual(new[] { "*.csproj", "*.fsproj" })
+#pragma warning restore CA1861
                 )
             );
     }

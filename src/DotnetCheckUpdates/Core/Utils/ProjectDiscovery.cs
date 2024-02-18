@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DotnetCheckUpdates.Core.Utils;
 
-internal class ProjectDiscovery(
+internal sealed partial class ProjectDiscovery(
     ILogger<ProjectDiscovery> logger,
     IFileFinder fileFinder,
     ISolutionParser solutionParser
@@ -29,6 +29,19 @@ internal class ProjectDiscovery(
         public string? Project { get; init; }
         public string? Solution { get; init; }
     }
+
+    [LoggerMessage(
+        Level = LogLevel.Trace,
+        Message = "Found {ProjectFiles} and solution keys {@Solutions}"
+    )]
+    private static partial void LogFoundProjectFiles(
+        ILogger logger,
+        int projectFiles,
+        IEnumerable<string> solutions
+    );
+
+    [LoggerMessage(Level = LogLevel.Trace, Message = "Found props file {PropsFile}")]
+    private static partial void LogFoundPropsFile(ILogger logger, string propsFile);
 
     public async Task<ProjectDiscoveryResult> DiscoverProjectsAndSolutions(
         ProjectDiscoveryRequest request
@@ -68,23 +81,13 @@ internal class ProjectDiscovery(
 
         var directoryBuildPropFiles = ImmutableHashSet.CreateBuilder<string>();
 
-        if (logger.IsEnabled(LogLevel.Trace))
-        {
-            logger.LogTrace(
-                "Found {ProjectFiles} and solution keys {Solutions}",
-                projectFiles.Count,
-                string.Join(", ", solutionProjectMap.Keys)
-            );
-        }
+        LogFoundProjectFiles(logger, projectFiles.Count, solutionProjectMap.Keys);
 
         void LogAndAddPropsFile(string path)
         {
             if (directoryBuildPropFiles.Add(path))
             {
-                if (logger.IsEnabled(LogLevel.Trace))
-                {
-                    logger.LogTrace("Found props file {File}", path);
-                }
+                LogFoundPropsFile(logger, path);
             }
         }
 

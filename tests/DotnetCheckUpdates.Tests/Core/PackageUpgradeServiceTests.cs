@@ -16,12 +16,12 @@ public static class PackageUpgradeServiceTests
 {
     public class GetPackageUpgrade
     {
-        public static readonly NuGetFramework[] s_frameworks = new[]
-        {
+        private static readonly NuGetFramework[] s_frameworks =
+        [
             FrameworkConstants.CommonFrameworks.Net50,
             FrameworkConstants.CommonFrameworks.Net60,
             FrameworkConstants.CommonFrameworks.Net70,
-        };
+        ];
 
         [Fact]
         public async Task ReturnsNullWhenNoPackagesFound()

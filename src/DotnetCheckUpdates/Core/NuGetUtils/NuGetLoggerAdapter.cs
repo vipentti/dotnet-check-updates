@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DotnetCheckUpdates.Core.NuGetUtils;
 
-internal class NuGetLoggerAdapter : NuGet.Common.ILogger
+internal partial class NuGetLoggerAdapter : NuGet.Common.ILogger
 {
     private readonly ILogger _logger;
 
@@ -14,6 +14,12 @@ internal class NuGetLoggerAdapter : NuGet.Common.ILogger
     {
         _logger = logger;
     }
+
+    [LoggerMessage(Message = "{Data}")]
+    private static partial void LogData(ILogger logger, LogLevel level, string data);
+
+    [LoggerMessage(Message = "{@Details}")]
+    private static partial void LogDetails(ILogger logger, LogLevel level, object details);
 
     public static LogLevel MapLogLevel(NuGet.Common.LogLevel level) =>
         level switch
@@ -29,58 +35,58 @@ internal class NuGetLoggerAdapter : NuGet.Common.ILogger
 
     public void Log(NuGet.Common.LogLevel level, string data)
     {
-        _logger.Log(MapLogLevel(level), "{data}", data);
+        LogData(_logger, MapLogLevel(level), data);
     }
 
     public void Log(NuGet.Common.ILogMessage message)
     {
-        _logger.Log(MapLogLevel(message.Level), "{@Details}", message);
+        LogDetails(_logger, MapLogLevel(message.Level), message);
     }
 
     public Task LogAsync(NuGet.Common.LogLevel level, string data)
     {
-        _logger.Log(MapLogLevel(level), "{data}", data);
+        LogData(_logger, MapLogLevel(level), data);
         return Task.CompletedTask;
     }
 
     public Task LogAsync(NuGet.Common.ILogMessage message)
     {
-        _logger.Log(MapLogLevel(message.Level), "{@Details}", message);
+        LogDetails(_logger, MapLogLevel(message.Level), message);
         return Task.CompletedTask;
     }
 
     public void LogDebug(string data)
     {
-        _logger.LogDebug("{data}", data);
+        LogData(_logger, LogLevel.Debug, data);
     }
 
     public void LogError(string data)
     {
-        _logger.LogError("{data}", data);
+        LogData(_logger, LogLevel.Error, data);
     }
 
     public void LogInformation(string data)
     {
-        _logger.LogInformation("{data}", data);
+        LogData(_logger, LogLevel.Information, data);
     }
 
     public void LogInformationSummary(string data)
     {
-        _logger.LogInformation("{data}", data);
+        LogData(_logger, LogLevel.Information, data);
     }
 
     public void LogMinimal(string data)
     {
-        _logger.LogTrace("{data}", data);
+        LogData(_logger, LogLevel.Trace, data);
     }
 
     public void LogVerbose(string data)
     {
-        _logger.LogTrace("{data}", data);
+        LogData(_logger, LogLevel.Trace, data);
     }
 
     public void LogWarning(string data)
     {
-        _logger.LogWarning("{data}", data);
+        LogData(_logger, LogLevel.Warning, data);
     }
 }

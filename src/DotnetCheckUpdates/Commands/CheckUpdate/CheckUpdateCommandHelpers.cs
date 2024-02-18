@@ -12,7 +12,7 @@ using Spectre.Console.Rendering;
 
 namespace DotnetCheckUpdates.Commands.CheckUpdate;
 
-internal static class CheckUpdateCommandHelpers
+internal static partial class CheckUpdateCommandHelpers
 {
     public static ImmutableArray<Filter> SplitFilters(string[] strings)
     {
@@ -79,6 +79,16 @@ internal static class CheckUpdateCommandHelpers
         return versionString;
     }
 
+    [LoggerMessage(
+        Level = LogLevel.Trace,
+        Message = "Upgrading packages for {Project}({PackageCount})"
+    )]
+    private static partial void LogUpgradingPackages(
+        ILogger logger,
+        string project,
+        int packageCount
+    );
+
     public static async Task<(
         ProjectFile project,
         PackageUpgradeVersionDictionary packages
@@ -94,14 +104,7 @@ internal static class CheckUpdateCommandHelpers
     {
         var pkgs = new PackageUpgradeVersionDictionary(project.PackageCount);
 
-        if (logger?.IsEnabled(LogLevel.Trace) is true)
-        {
-            logger.LogTrace(
-                "Upgrading packages for {Project}({PackageCount})",
-                project.FilePath,
-                project.PackageCount
-            );
-        }
+        LogUpgradingPackages(logger, project.FilePath, project.PackageCount);
 
         if (concurrency > 1)
         {

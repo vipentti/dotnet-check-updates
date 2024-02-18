@@ -12,6 +12,10 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
         <WarnOnPackingNonPackableProject>true</WarnOnPackingNonPackableProject>
+
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <AnalysisLevel>latest</AnalysisLevel>
+        <AnalysisMode>Recommended</AnalysisMode>
     </PropertyGroup>
 
     <!-- Packaging -->

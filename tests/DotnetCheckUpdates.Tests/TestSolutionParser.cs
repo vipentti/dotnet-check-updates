@@ -8,7 +8,7 @@ using Nuke.Common.ProjectModel;
 
 namespace DotnetCheckUpdates.Tests;
 
-internal class TestSolutionParser : ISolutionParser
+internal sealed class TestSolutionParser : ISolutionParser
 {
     private readonly IFileSystem _fileSystem;
 
