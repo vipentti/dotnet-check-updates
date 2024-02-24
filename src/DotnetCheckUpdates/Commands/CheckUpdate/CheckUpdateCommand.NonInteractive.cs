@@ -2,8 +2,6 @@
 // Distributed under the MIT License.
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
-using System.Diagnostics;
-using DotnetCheckUpdates.Core;
 using DotnetCheckUpdates.Core.Extensions;
 using DotnetCheckUpdates.Core.ProjectModel;
 using Spectre.Console;
@@ -103,48 +101,9 @@ internal partial class CheckUpdateCommand
             _ansiConsole.Write(projectsTree);
         }
 
-        var projectsWithPackages = await _ansiConsole
-            .Progress()
-            .AutoClear(false)
-            .HideCompleted(false)
-            .StartAsync(async ctx =>
-            {
-                // Define tasks
-                var progressTask = ctx.AddTask(
-                    $"[green]Fetching latest information for {totalPackageCount} packages[/]",
-                    new() { AutoStart = true, MaxValue = totalPackageCount, }
-                );
-
-                var temp = ImmutableArray.CreateBuilder<(
-                    ProjectFile project,
-                    PackageUpgradeVersionDictionary packages
-                )>(projects.Length);
-
-                foreach (var proj in projects)
-                {
-                    temp.Add(
-                        await CheckUpdateCommandHelpers.GetProjectPackageVersions(
-                            proj,
-                            _packageService,
-                            progressTask,
-                            settings.Concurrency,
-                            settings.Target,
-                            _logger,
-                            cancellationToken
-                        )
-                    );
-                }
-
-                Debug.Assert(ctx.IsFinished);
-
-                return temp.MoveToImmutable();
-            });
+        var newProjects = await GetUpgradedProjects(settings, projects, cancellationToken);
 
         var upgradedProjects = new List<ProjectFile>();
-
-        var newProjects = projectsWithPackages.ConvertAll(it =>
-            it.project.UpdatePackageReferences(it.packages)
-        );
 
         // Output the project package tree
         if (solutionProjectMap.Count > 0)
