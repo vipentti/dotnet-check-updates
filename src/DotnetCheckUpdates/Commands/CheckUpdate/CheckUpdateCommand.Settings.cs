@@ -21,6 +21,10 @@ internal partial class CheckUpdateCommand
         [Description("Shows the version of the application. Exits after outputting the version. ")]
         public bool ShowVersion { get; init; }
 
+        [CommandOption("--no-progress")]
+        [Description("Do not show progress bar when fetching package information.")]
+        public bool NoProgress { get; init; }
+
         [CommandOption("--show-absolute")]
         [Description("Shows absolute paths when printing projects and solutions. (default: false)")]
         public bool ShowAbsolute { get; init; }
