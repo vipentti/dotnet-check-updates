@@ -3,7 +3,6 @@
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
 using System.IO.Abstractions;
-using System.Text;
 
 namespace DotnetCheckUpdates.Core.ProjectModel;
 
