@@ -134,6 +134,122 @@ Run dotnet restore to install new versions
     }
 
     [Fact]
+    public async Task Outputs_When_No_Packages_Were_Matched_With_Include()
+    {
+        // Arrange
+        var console = new TestConsole();
+
+        var (cwd, _, command) = SetupCommand(
+            new MockSolution("test.sln")
+            {
+                Projects =
+                {
+                    new("nested/project/project.csproj", Framework: Frameworks.Default)
+                    {
+                        Packages = { ("Test3", "1.0") }
+                    },
+                }
+            },
+            new[]
+            {
+                new MockUpgrade("Test3")
+                {
+                    Versions = { "3.0" },
+                    SupportedFrameworks = { Frameworks.Net8_0 },
+                },
+            },
+            console: console
+        );
+
+        // Act
+        var result = await command.ExecuteAsync(
+            TestCommandContext,
+            new CheckUpdateCommand.Settings
+            {
+                Cwd = cwd,
+                Upgrade = true,
+                AsciiTree = true,
+                ShowAbsolute = true,
+                Include = ["ShouldNotMatchAnything"],
+            }
+        );
+
+        // Assert
+        using var scope = new AssertionScope();
+        result.Should().Be(0);
+
+        var slnRoot = cwd;
+
+        var expected =
+            $@"
+{slnRoot.PathCombine("test.sln")}
+`-- {slnRoot.PathCombine("nested/project/project.csproj")}
+
+No packages matched provided filters.
+";
+
+        AssertOutput(console, expected);
+    }
+
+    [Fact]
+    public async Task Outputs_When_No_Packages_Were_Matched_With_Exclude()
+    {
+        // Arrange
+        var console = new TestConsole();
+
+        var (cwd, _, command) = SetupCommand(
+            new MockSolution("test.sln")
+            {
+                Projects =
+                {
+                    new("nested/project/project.csproj", Framework: Frameworks.Default)
+                    {
+                        Packages = { ("Test3", "1.0") }
+                    },
+                }
+            },
+            new[]
+            {
+                new MockUpgrade("Test3")
+                {
+                    Versions = { "3.0" },
+                    SupportedFrameworks = { Frameworks.Net8_0 },
+                },
+            },
+            console: console
+        );
+
+        // Act
+        var result = await command.ExecuteAsync(
+            TestCommandContext,
+            new CheckUpdateCommand.Settings
+            {
+                Cwd = cwd,
+                Upgrade = true,
+                AsciiTree = true,
+                ShowAbsolute = true,
+                Exclude = ["*"],
+            }
+        );
+
+        // Assert
+        using var scope = new AssertionScope();
+        result.Should().Be(0);
+
+        var slnRoot = cwd;
+
+        var expected =
+            $@"
+{slnRoot.PathCombine("test.sln")}
+`-- {slnRoot.PathCombine("nested/project/project.csproj")}
+
+No packages matched provided filters.
+";
+
+        AssertOutput(console, expected);
+    }
+
+    [Fact]
     public async Task Output_contains_Directory_Build_props_when_found_in_solution()
     {
         var console = new TestConsole();
@@ -373,7 +489,7 @@ Run dotnet-check-updates --cwd {cwd} -u to upgrade
         AssertOutput(console, expected);
     }
 
-    private static void AssertOutput(TestConsole console, string expected)
+    internal static void AssertOutput(TestConsole console, string expected)
     {
         var actualOutput = console.Output.Trim().Replace("\r\n", "\n");
         var expectedOutput = expected.Trim().Replace("\r\n", "\n");
@@ -396,7 +512,7 @@ Run dotnet-check-updates --cwd {cwd} -u to upgrade
                 .Should()
                 .BeEquivalentTo(
                     expectedLines,
-                    because: $"\nActual:\n{actualLinesText}\nExpected:\n{expectedLinesText}"
+                    because: $"\nActual:\n{actualLinesText}\nExpected:\n{expectedLinesText}\n"
                 );
         }
     }
