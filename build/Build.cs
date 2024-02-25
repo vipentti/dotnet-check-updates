@@ -50,7 +50,7 @@ namespace build;
         nameof(IUseLocalDotNetTools.RestoreLocalTools),
     ]
 )]
-partial class Build : StandardNukeBuild, IUseCsharpier, IUseLocalDotNetTools
+partial class Build : StandardNukeBuild, IUseCsharpier
 {
     public override string OriginalRepositoryName { get; } = "dotnet-check-updates";
     public override string MainReleaseBranch { get; } = MainBranch;
@@ -63,6 +63,12 @@ partial class Build : StandardNukeBuild, IUseCsharpier, IUseLocalDotNetTools
     [
         From<IUseDotNetFormat>().Linter,
         From<IUseCsharpier>().Linter,
+    ];
+
+    public override IEnumerable<IProvideFormatter> Formatters =>
+    [
+        From<IUseDotNetFormat>().Formatter,
+        From<IUseCsharpier>().Formatter,
     ];
 
     bool IUseCsharpier.UseGlobalTool { get; } = false;

@@ -43,28 +43,28 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CliWrap" Version="3.6.4" />
+    <PackageReference Include="CliWrap" Version="3.6.6" />
     <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.2" />
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
-    <PackageReference Include="Flurl" Version="[3.0.7,)" />
-    <PackageReference Include="Flurl.Http" Version="3.2.4" />
+    <PackageReference Include="Flurl" Version="[4.0.0,)" />
+    <PackageReference Include="Flurl.Http" Version="4.0.2" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
-    <PackageReference Include="NuGet.Frameworks" Version="6.8.1" />
-    <PackageReference Include="NuGet.Packaging" Version="6.8.1" />
-    <PackageReference Include="NuGet.Protocol" Version="6.8.1" />
-    <PackageReference Include="NuGet.Versioning" Version="6.8.1" />
-    <PackageReference Include="Nuke.SolutionModel" Version="7.0.6" />
+    <PackageReference Include="NuGet.Frameworks" Version="6.9.1" />
+    <PackageReference Include="NuGet.Packaging" Version="6.9.1" />
+    <PackageReference Include="NuGet.Protocol" Version="6.9.1" />
+    <PackageReference Include="NuGet.Versioning" Version="6.9.1" />
+    <PackageReference Include="Nuke.SolutionModel" Version="8.0.0" />
     <PackageReference Include="semver" Version="[2.3.0]" />
-    <PackageReference Include="SpanUtils" Version="0.4.0" />
-    <PackageReference Include="Spectre.Console" Version="0.47.0" />
-    <PackageReference Include="Spectre.Console.Cli" Version="0.47.0" />
-    <PackageReference Include="System.IO.Abstractions" Version="19.2.69" />
+    <PackageReference Include="SpanUtils" Version="0.4.1" />
+    <PackageReference Include="Spectre.Console" Version="0.48.0" />
+    <PackageReference Include="Spectre.Console.Cli" Version="0.48.0" />
+    <PackageReference Include="System.IO.Abstractions" Version="20.0.15" />
     <PackageReference Include="System.Net.Http.Json" Version="[8.0.0,)" />
-    <PackageReference Include="Vipentti.IO.Abstractions.FileSystemGlobbing" Version="1.0.3" />
+    <PackageReference Include="Vipentti.IO.Abstractions.FileSystemGlobbing" Version="1.0.4" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseReproducibleBuild)' == 'true'">
