@@ -25,14 +25,23 @@ internal static class TestUtils
 
     public static string TestPathRoot() => IsWindows() ? @"C:\" : "/";
 
-    public static string RootedTestPath(string? relativePath = default) =>
-        AbsolutePath.Create(PathCombine(TestPathRoot(), relativePath ?? ""));
+    public static FullPath RootedTestPath(string? relativePath = default) =>
+        FullPath.Create(PathCombine(TestPathRoot(), relativePath ?? ""));
 
     public static string PathCombine(this string left, string right) =>
         PathConstruction.NormalizePath(PathConstruction.Combine(left, right));
 
     public static async Task<ProjectFile> ReadProjectFile(
         this string cwd,
+        IFileSystem fs,
+        string path
+    )
+    {
+        return await new ProjectFileReader(fs).ReadProjectFile(cwd.PathCombine(path));
+    }
+
+    public static async Task<ProjectFile> ReadProjectFile(
+        this FullPath cwd,
         IFileSystem fs,
         string path
     )
