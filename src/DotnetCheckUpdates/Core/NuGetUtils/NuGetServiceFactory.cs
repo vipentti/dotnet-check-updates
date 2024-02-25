@@ -16,6 +16,7 @@ internal class NuGetServiceFactory(IServiceProvider serviceProvider)
     {
         var cache = serviceProvider.GetRequiredService<SourceCacheContext>();
         var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+        var settingsProvider = serviceProvider.GetRequiredService<NuGetSettingsProvider>();
         var repository = Repository.Factory.GetCoreV3(source);
 
         if (source.ProtocolVersion == 3)
@@ -29,7 +30,7 @@ internal class NuGetServiceFactory(IServiceProvider serviceProvider)
         }
         else
         {
-            return new StandardNuGetService(loggerFactory, cache, repository);
+            return new StandardNuGetService(loggerFactory, cache, repository, settingsProvider);
         }
     }
 }
