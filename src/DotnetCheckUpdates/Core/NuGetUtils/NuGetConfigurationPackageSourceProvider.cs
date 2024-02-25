@@ -8,11 +8,10 @@ using NuGet.Configuration;
 namespace DotnetCheckUpdates.Core.NuGetUtils;
 
 internal partial class NuGetConfigurationPackageSourceProvider(
-    ILogger<NuGetConfigurationPackageSourceProvider> logger
+    ILogger<NuGetConfigurationPackageSourceProvider> logger,
+    NuGetSettingsProvider nuGetSettings
 ) : INuGetPackageSourceProvider
 {
-    public string Root { get; set; } = "";
-
     [LoggerMessage(Level = LogLevel.Debug, Message = "Loading default settings from {Root}")]
     private static partial void LogLoadingDefaultSettings(ILogger logger, string root);
 
@@ -38,18 +37,7 @@ internal partial class NuGetConfigurationPackageSourceProvider(
 
     public IEnumerable<PackageSource> GetPackageSources()
     {
-        if (string.IsNullOrWhiteSpace(Root))
-        {
-            throw new InvalidOperationException("Root must be set.");
-        }
-
-        LogLoadingDefaultSettings(logger, Root);
-
-        var config = Settings.LoadDefaultSettings(Root);
-
-        LogFoundConfigurations(logger, config.GetConfigFilePaths());
-
-        var packageProvider = new PackageSourceProvider(config);
+        var packageProvider = new PackageSourceProvider(nuGetSettings.NuGetSettings);
 
         foreach (var item in packageProvider.LoadPackageSources())
         {

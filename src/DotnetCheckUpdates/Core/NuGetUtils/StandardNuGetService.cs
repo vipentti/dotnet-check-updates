@@ -3,6 +3,7 @@
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
 using Microsoft.Extensions.Logging;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -13,7 +14,8 @@ namespace DotnetCheckUpdates.Core.NuGetUtils;
 internal class StandardNuGetService(
     ILoggerFactory logger,
     SourceCacheContext sourceCacheContext,
-    SourceRepository repository
+    SourceRepository repository,
+    NuGetSettingsProvider nuGetSettings
 ) : INuGetService
 {
     private readonly SourceRepository _repository = repository;
@@ -33,7 +35,7 @@ internal class StandardNuGetService(
 
         if (metadataResource is null)
         {
-            return ImmutableHashSet<NuGetFramework>.Empty;
+            return s_noFrameworks;
         }
 
         var id = new PackageIdentity(packageId, new(version));
@@ -47,10 +49,41 @@ internal class StandardNuGetService(
 
         if (its is null)
         {
-            return ImmutableHashSet<NuGetFramework>.Empty;
+            return s_noFrameworks;
         }
 
-        return its.DependencySets.Select(it => it.TargetFramework).ToImmutableHashSet();
+        var items = its.DependencySets.Select(it => it.TargetFramework).ToImmutableHashSet();
+
+        if (items.IsEmpty)
+        {
+            var downloadResource = await _repository.GetResourceAsync<DownloadResource>(
+                cancellationToken
+            );
+
+            if (downloadResource is null)
+            {
+                return s_noFrameworks;
+            }
+
+            var result = await downloadResource.GetDownloadResourceResultAsync(
+                id,
+                new PackageDownloadContext(_sourceCacheContext),
+                SettingsUtility.GetGlobalPackagesFolder(nuGetSettings.NuGetSettings),
+                _loggerAdapter,
+                cancellationToken
+            );
+
+            if (result?.PackageReader is null)
+            {
+                return s_noFrameworks;
+            }
+
+            return (
+                await result.PackageReader.GetSupportedFrameworksAsync(cancellationToken)
+            ).ToImmutableHashSet();
+        }
+
+        return items;
     }
 
     public async Task<IEnumerable<NuGetVersion>> GetPackageVersionsAsync(
@@ -74,4 +107,7 @@ internal class StandardNuGetService(
             cancellationToken
         );
     }
+
+    private static readonly ImmutableHashSet<NuGetFramework> s_noFrameworks =
+        ImmutableHashSet<NuGetFramework>.Empty;
 }

@@ -82,6 +82,7 @@ services.AddSingleton<ProjectDiscovery>();
 services.AddSingleton<IFileFinder, FileFinder>();
 services.AddSingleton<IFileSystem>(_ => new FileSystem());
 
+services.AddSingleton<NuGetSettingsProvider>();
 services.AddSingletonVia<INuGetPackageSourceProvider, NuGetConfigurationPackageSourceProvider>();
 services.AddSingletonVia<IPackageUpgradeServiceFactory, PackageUpgradeServiceFactory>();
 services.AddSingletonVia<ICurrentDirectory, CurrentDirectoryProvider>();
