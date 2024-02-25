@@ -78,6 +78,10 @@ internal partial class CheckUpdateCommand
         )]
         public int Concurrency { get; init; } = 8;
 
+        [CommandOption("-n|--interactive")]
+        [Description("Enable interactive prompts for each package. Implies --upgrade.")]
+        public bool Interactive { get; init; }
+
         [CommandOption("-i|--include")]
         [Description(
             "Include only package names matching the given string, glob or comma-or-space-delimited list.\nExample: System*"

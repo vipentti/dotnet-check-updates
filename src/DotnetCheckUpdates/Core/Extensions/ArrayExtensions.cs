@@ -23,4 +23,6 @@ internal static class ArrayExtensions
         index >= 0 && index < arr.Length ? arr[index] : default;
 
     public static T? Find<T>(this T[] arr, Predicate<T> predicate) => Array.Find(arr, predicate);
+
+    public static bool Includes<T>(this T[] arr, T item) => Array.IndexOf(arr, item) > -1;
 }

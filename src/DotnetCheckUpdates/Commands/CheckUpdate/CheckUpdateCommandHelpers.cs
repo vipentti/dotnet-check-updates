@@ -4,13 +4,17 @@
 
 using System.Diagnostics;
 using DotnetCheckUpdates.Core;
+using DotnetCheckUpdates.Core.Extensions;
 using DotnetCheckUpdates.Core.ProjectModel;
 using Flurl.Util;
 using Microsoft.Extensions.Logging;
+using NuGet.Versioning;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
 namespace DotnetCheckUpdates.Commands.CheckUpdate;
+
+internal record PackageUpgrade(string Name, VersionRange From, VersionRange To);
 
 internal static partial class CheckUpdateCommandHelpers
 {
@@ -37,13 +41,20 @@ internal static partial class CheckUpdateCommandHelpers
             .ToImmutableArray();
     }
 
-    public static string GetUpgradedVersionString(PackageReference lhs, PackageReference rhs)
+    public static string GetUpgradedVersionString(PackageReference lhs, PackageReference rhs) =>
+        GetUpgradedVersionString(lhs.Version, rhs.Version, rhs.OriginalRange);
+
+    public static string GetUpgradedVersionString(
+        VersionRange from,
+        VersionRange to,
+        VersionRange? original = default
+    )
     {
-        var type = lhs.Version.GetUpgradeTypeTo(rhs.Version);
+        var type = from.GetUpgradeTypeTo(to);
 
         // version string should be in format x.y.z
         // optionally starting with [ or (
-        var versionString = rhs.GetVersionString().EscapeMarkup();
+        var versionString = to.VersionString(original?.OriginalString).EscapeMarkup();
 
         if (type == UpgradeType.Major)
         {
@@ -151,6 +162,60 @@ internal static partial class CheckUpdateCommandHelpers
         }
     }
 
+    public static ImmutableArray<PackageUpgrade> GetProjectPackageUpgrades(
+        ProjectFile project,
+        PackageUpgradeVersionDictionary upgrades
+    )
+    {
+        ImmutableArray<PackageUpgrade>.Builder? builder = null;
+
+        foreach (var pkgRef in project.PackageReferences)
+        {
+            if (
+                upgrades.TryGetValue(pkgRef.Name, out var version)
+                && !pkgRef.Version.Equals(version)
+            )
+            {
+                builder ??= ImmutableArray.CreateBuilder<PackageUpgrade>();
+                builder.Add(new(pkgRef.Name, pkgRef.Version, version));
+            }
+        }
+
+        return builder?.ToImmutable() ?? ImmutableArray<PackageUpgrade>.Empty;
+    }
+
+    public static (bool DidUpdate, ImmutableArray<PackageUpgrade> Upgrades) CheckForUpgrades(
+        ProjectFile original,
+        ProjectFile updated
+    )
+    {
+        var didUpdate = false;
+        var upgrades = ImmutableArray.CreateBuilder<PackageUpgrade>();
+
+        foreach (
+            var originalPackage in original.PackageReferences.OrderBy(
+                it => it.Name,
+                StringComparer.Ordinal
+            )
+        )
+        {
+            if (
+                updated.FindByNameWithIndex(originalPackage.Name)
+                    is
+                    (int index, PackageReference updatedPackage)
+                && !originalPackage.Version.Equals(updatedPackage.Version)
+            )
+            {
+                didUpdate = true;
+                upgrades.Add(
+                    new(originalPackage.Name, originalPackage.Version, updatedPackage.Version)
+                );
+            }
+        }
+
+        return (didUpdate, upgrades.ToImmutable());
+    }
+
     public static (bool DidUpdate, Renderable Grid) SetupGrid(
         ProjectFile original,
         ProjectFile updated,
@@ -223,7 +288,8 @@ internal static partial class CheckUpdateCommandHelpers
         List<ProjectFile> upgradedProjects,
         CheckUpdateCommand.Settings settings,
         int longestPackageNameLength,
-        int longestVersionLength
+        int longestVersionLength,
+        bool hideIfNoUpgrade = false
     )
     {
         foreach (var (oldproj, newproj) in oldProjects.Zip(newProjects))
@@ -237,7 +303,6 @@ internal static partial class CheckUpdateCommandHelpers
 
             var projPath = formatPath(oldproj.FilePath);
 
-            var node = root.AddNode(projPath);
             var (didUpdatePackages, renderable) = SetupGrid(
                 oldproj,
                 newproj,
@@ -248,12 +313,16 @@ internal static partial class CheckUpdateCommandHelpers
 
             if (!didUpdatePackages && !settings.List)
             {
-                node.AddNode(
-                    new Padder(
-                        new Text("All packages match their latest versions."),
-                        new(0, 0, 0, 1)
-                    )
-                );
+                if (!hideIfNoUpgrade)
+                {
+                    var node = root.AddNode(projPath);
+                    node.AddNode(
+                        new Padder(
+                            new Text("All packages match their latest versions."),
+                            new(0, 0, 0, 1)
+                        )
+                    );
+                }
             }
             else if (didUpdatePackages || settings.List)
             {
@@ -262,6 +331,7 @@ internal static partial class CheckUpdateCommandHelpers
                     upgradedProjects.Add(newproj);
                 }
 
+                var node = root.AddNode(projPath);
                 node.AddNode(new Padder(renderable, new(0, 0, 0, 1)));
             }
         }

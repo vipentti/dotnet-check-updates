@@ -1,4 +1,4 @@
-// Copyright 2023-2024 Ville Penttinen
+﻿// Copyright 2023-2024 Ville Penttinen
 // Distributed under the MIT License.
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
@@ -12,10 +12,13 @@ namespace DotnetCheckUpdates.Commands.CheckUpdate;
 
 internal partial class CheckUpdateCommand
 {
-    private async Task<ImmutableArray<ProjectFile>> GetUpgradedProjects(
+    private async Task<
+        ImmutableArray<(ProjectFile project, PackageUpgradeVersionDictionary packages)>
+    > GetProjectPackageUpgrades(
         Settings settings,
         ImmutableArray<ProjectFile> projects,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var totalPackageCount = projects.Select(it => it.PackageReferences.Length).Sum();
 
@@ -55,6 +58,21 @@ internal partial class CheckUpdateCommand
 
                 return temp.MoveToImmutable();
             });
+
+        return projectsWithPackages;
+    }
+
+    private async Task<ImmutableArray<ProjectFile>> GetUpgradedProjects(
+        Settings settings,
+        ImmutableArray<ProjectFile> projects,
+        CancellationToken cancellationToken
+    )
+    {
+        var projectsWithPackages = await GetProjectPackageUpgrades(
+            settings,
+            projects,
+            cancellationToken
+        );
 
         return projectsWithPackages.ConvertAll(it =>
             it.project.UpdatePackageReferences(it.packages)
