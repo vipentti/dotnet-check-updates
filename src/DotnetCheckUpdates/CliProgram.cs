@@ -128,6 +128,10 @@ catch (CommandRuntimeException ex)
     WriteException(ex);
     return -1;
 }
+catch (PromptCanceledException)
+{
+    return -1;
+}
 catch (TaskCanceledException ex)
 {
     if (!TryRenderPrettyException(ex))
