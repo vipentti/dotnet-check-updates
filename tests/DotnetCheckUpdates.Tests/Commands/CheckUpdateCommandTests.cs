@@ -47,7 +47,7 @@ public partial class CheckUpdateCommandTests
         await finder
             .Received()
             .GetMatchingPaths(
-                Arg.Is(cwd),
+                Arg.Is<string>(cwd),
                 Arg.Is<IEnumerable<string>>(it =>
 #pragma warning disable CA1861 // Avoid constant arrays as arguments (only in tests)
                     it.SequenceEqual(new[] { "*.csproj", "*.fsproj" })
@@ -90,7 +90,7 @@ public partial class CheckUpdateCommandTests
         await finder
             .Received()
             .GetMatchingPaths(
-                Arg.Is(cwd),
+                Arg.Is<string>(cwd),
                 Arg.Is<IEnumerable<string>>(it => it.SequenceEqual(expected))
             );
     }

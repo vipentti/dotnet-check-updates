@@ -23,7 +23,7 @@ internal static class CheckUpdateCommandUtils
         new(Substitute.For<IRemainingArguments>(), "test", null);
 
     public static (
-        string Cwd,
+        FullPath Cwd,
         string[] ProjectFilePaths,
         MockFileSystem FileSystem,
         CheckUpdateCommand Command
@@ -32,7 +32,7 @@ internal static class CheckUpdateCommandUtils
         var cwd = RootedTestPath("some/path");
 
         var projectsWithPaths = projects.ToDictionary(
-            kvp => cwd.PathCombine(kvp.ProjectPath),
+            kvp => cwd.PathCombine(kvp.ProjectPath).ToString(),
             kvp => kvp.ToXml()
         );
 
@@ -45,7 +45,11 @@ internal static class CheckUpdateCommandUtils
         return (cwd, projectsWithPaths.Keys.ToArray(), fileSystem, command);
     }
 
-    public static (string Cwd, MockFileSystem FileSystem, CheckUpdateCommand Command) SetupCommand(
+    public static (
+        FullPath Cwd,
+        MockFileSystem FileSystem,
+        CheckUpdateCommand Command
+    ) SetupCommand(
         MockSolution solution,
         IEnumerable<MockUpgrade> upgrades,
         TestConsole? console = default
@@ -65,7 +69,7 @@ internal static class CheckUpdateCommandUtils
     }
 
     public static (
-        string Cwd,
+        FullPath Cwd,
         string[] ProjectFilePaths,
         MockFileSystem FileSystem,
         CheckUpdateCommand Command
@@ -74,7 +78,7 @@ internal static class CheckUpdateCommandUtils
         var cwd = RootedTestPath("some/path");
 
         var projectsWithPaths = projects.ToDictionary(
-            kvp => cwd.PathCombine(kvp.Key),
+            kvp => cwd.PathCombine(kvp.Key).ToString(),
             kvp => kvp.Value
         );
 
@@ -101,7 +105,7 @@ internal static class CheckUpdateCommandUtils
         var cwd = RootedTestPath("some/path");
 
         var projectsWithPaths = projects.ToDictionary(
-            kvp => cwd.PathCombine(kvp.Key),
+            kvp => cwd.PathCombine(kvp.Key).ToString(),
             kvp => kvp.Value
         );
 
