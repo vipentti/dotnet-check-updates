@@ -43,7 +43,16 @@ services.AddLogging(logger =>
 
     if (useLoggingEnvVar is not null && (useLoggingEnvVar == "true" || useLoggingEnvVar == "1"))
     {
-        logger.AddConsole().AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
+        logger
+            .AddSimpleConsole(options =>
+            {
+                options.SingleLine = true;
+                options.TimestampFormat = "HH:mm:ss ";
+            })
+            .AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
+
+        logger.AddFilter("NuGetLogger", LogLevel.Warning);
+
         if (Enum.TryParse(logLevelEnvVar, ignoreCase: true, out LogLevel level))
         {
             logger.SetMinimumLevel(level);
