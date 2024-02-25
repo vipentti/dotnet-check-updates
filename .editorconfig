@@ -21,6 +21,9 @@ indent_size = 2
 # C# files
 [*.cs]
 
+# use var
+dotnet_diagnostic.IDE0007.severity = none
+
 #### Core EditorConfig Options ####
 
 # Indentation and spacing

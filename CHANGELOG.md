@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- Implement support for `-i|--interactive` to choose packages to upgrade interactively
+- BREAKING CHANGES:
+  - `-i|--include` changes\
+    Default alias for `-i|--include` is changed to `-f|--filter`\
+    Additionally `-I (capital i)`, `--include` and `--inc` can be used.
+  - `-e|--exclude` changes\
+    Default alias for `-e|--exclude` is changed to `-x|--exclude`\
+    Additionally `-E (capital e)`, `--reject` and `--exc` can be used.
 
 ## [0.2.4] / 2024-02-16
 - Add support for showing package count with --show-package-count
