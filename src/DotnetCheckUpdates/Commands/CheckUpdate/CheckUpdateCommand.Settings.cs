@@ -14,8 +14,15 @@ internal partial class CheckUpdateCommand
 {
     internal class Settings : CommandSettings
     {
-        [CommandOption("--nuget-source", IsHidden = true)]
-        public string? NugetSource { get; init; }
+        [CommandOption("--nuget-source <URI>")]
+        [Description(
+            """
+                Specifies the URI of the NuGet package source to use during the check.
+                This setting overrides all of the sources specified in the nuget.config files.
+                Multiple sources can be provided by specifying this option multiple times.
+                """
+        )]
+        public string[]? NugetSources { get; init; }
 
         [CommandOption("--version")]
         [Description("Shows the version of the application. Exits after outputting the version. ")]

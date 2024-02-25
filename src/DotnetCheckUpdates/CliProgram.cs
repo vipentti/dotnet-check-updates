@@ -21,13 +21,9 @@ var definedArgs = new HashSet<string>() { "--show-stack-trace" };
 
 var showStackTrace = args.Any(it => it == "--show-stack-trace");
 
-var nugetSourceIndex = Array.FindIndex(args, it => it == "--nuget-source");
-var nugetSource =
-    nugetSourceIndex > -1 && nugetSourceIndex + 1 < args.Length
-        ? args[nugetSourceIndex + 1]
-        : "https://api.nuget.org/v3/index.json";
-
-var nugetApiBaseUrl = new Uri(nugetSource, UriKind.Absolute).GetLeftPart(UriPartial.Authority);
+var nugetApiBaseUrl = new Uri(NuGetConstants.V3FeedUrl, UriKind.Absolute).GetLeftPart(
+    UriPartial.Authority
+);
 
 var cmdArgs = args.Where(it => !definedArgs.Contains(it)).ToArray();
 
@@ -73,7 +69,6 @@ services.AddLogging(logger =>
 
 services.AddSingleton(_ => new SourceCacheContext());
 services.AddSingleton<NuGetServiceFactory>();
-services.AddSingleton(new NuGetPackageSourceProvider([new PackageSource(nugetSource)]));
 services.AddSingleton<INuGetService, MultiSourceNuGetService>();
 services.AddSingleton<ISolutionParser, DefaultSolutionParser>();
 services.AddSingleton<PackageUpgradeService>();
@@ -81,8 +76,8 @@ services.AddSingleton<ProjectFileReader>();
 services.AddSingleton<ProjectDiscovery>();
 services.AddSingleton<IFileFinder, FileFinder>();
 services.AddSingleton<IFileSystem>(_ => new FileSystem());
-
 services.AddSingleton<NuGetSettingsProvider>();
+services.AddSingletonVia<IFeatureCollection, FeatureCollection>();
 services.AddSingletonVia<INuGetPackageSourceProvider, NuGetConfigurationPackageSourceProvider>();
 services.AddSingletonVia<IPackageUpgradeServiceFactory, PackageUpgradeServiceFactory>();
 services.AddSingletonVia<ICurrentDirectory, CurrentDirectoryProvider>();

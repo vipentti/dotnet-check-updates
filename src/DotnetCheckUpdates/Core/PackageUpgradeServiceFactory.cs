@@ -10,6 +10,7 @@ namespace DotnetCheckUpdates.Core;
 internal class PackageUpgradeServiceFactory(
     ILoggerFactory loggerFactory,
     NuGetConfigurationPackageSourceProvider configurationPackageSourceProvider,
+    IFeatureCollection featureCollection,
     NuGetServiceFactory nuGetServiceFactory
 ) : IPackageUpgradeServiceFactory
 {
@@ -19,7 +20,8 @@ internal class PackageUpgradeServiceFactory(
 
         var source = new MultiSourceNuGetService(
             loggerFactory.CreateLogger<MultiSourceNuGetService>(),
-            configurationPackageSourceProvider,
+            featureCollection.Get<NuGetPackageSourceFeature>()?.PackageSourceProvider
+                ?? configurationPackageSourceProvider,
             nuGetServiceFactory
         );
 

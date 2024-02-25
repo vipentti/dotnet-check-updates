@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
 using CliWrap;
 using DotnetCheckUpdates.Core;
+using DotnetCheckUpdates.Core.NuGetUtils;
 using DotnetCheckUpdates.Core.ProjectModel;
 using DotnetCheckUpdates.Core.Utils;
 using Microsoft.Extensions.Logging;
@@ -26,6 +27,7 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
     private readonly ApplicationExitHandler? _exitHandler;
     private readonly CurrentDirectoryProvider? _currentDirectoryProvider;
     private readonly IPackageUpgradeServiceFactory _packageUpgradeServiceFactory;
+    private readonly IFeatureCollection? _featureCollection;
 
     private PackageUpgradeService? _packageService;
 
@@ -37,6 +39,7 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
         IPackageUpgradeServiceFactory packageUpgradeServiceFactory,
         ProjectDiscovery projectDiscovery,
         CurrentDirectoryProvider? directoryProvider = default,
+        IFeatureCollection? featureCollection = default,
         ApplicationExitHandler? exitHandler = default
     )
     {
@@ -48,6 +51,7 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
         _exitHandler = exitHandler;
         _currentDirectoryProvider = directoryProvider;
         _projectDiscovery = projectDiscovery;
+        _featureCollection = featureCollection;
     }
 
     public override ValidationResult Validate(CommandContext context, Settings settings)
@@ -147,6 +151,24 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
         if (_currentDirectoryProvider is not null)
         {
             _currentDirectoryProvider.CurrentDirectory = cwd;
+        }
+
+        if (_featureCollection is not null)
+        {
+            if (settings.NugetSources is not null && settings.NugetSources.Length > 0)
+            {
+                _featureCollection.Set<NuGetPackageSourceFeature>(
+                    new()
+                    {
+                        PackageSourceProvider = new NuGetPackageSourceProvider(
+                            _logger,
+                            settings.NugetSources.Select(
+                                it => new NuGet.Configuration.PackageSource(it)
+                            )
+                        )
+                    }
+                );
+            }
         }
 
         if (settings.Interactive)
