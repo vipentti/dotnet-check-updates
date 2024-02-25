@@ -101,13 +101,16 @@
             "type": "string",
             "enum": [
               "CheckCsharpier",
+              "CheckDotNetFormat",
               "Compile",
               "CreateGitHubRelease",
               "FinalizeRelease",
               "FinishChangelog",
               "Format",
               "FormatCsharpier",
+              "FormatDotNet",
               "InstallCsharpier",
+              "InstallFormatters",
               "InstallLinters",
               "Lint",
               "Pack",
@@ -116,7 +119,6 @@
               "RestoreLocalTools",
               "Test",
               "UpdateLocalTool",
-              "ValidateFormat",
               "ValidatePackages"
             ]
           }
@@ -132,13 +134,16 @@
             "type": "string",
             "enum": [
               "CheckCsharpier",
+              "CheckDotNetFormat",
               "Compile",
               "CreateGitHubRelease",
               "FinalizeRelease",
               "FinishChangelog",
               "Format",
               "FormatCsharpier",
+              "FormatDotNet",
               "InstallCsharpier",
+              "InstallFormatters",
               "InstallLinters",
               "Lint",
               "Pack",
@@ -147,7 +152,6 @@
               "RestoreLocalTools",
               "Test",
               "UpdateLocalTool",
-              "ValidateFormat",
               "ValidatePackages"
             ]
           }
