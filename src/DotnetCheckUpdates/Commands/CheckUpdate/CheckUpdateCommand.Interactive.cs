@@ -104,7 +104,8 @@ internal partial class CheckUpdateCommand
             Title = CommonStrings.ChoosePackagesToUpdate,
             Converter = it => it.Text,
             PageSize = settings.InteractivePageSize ?? 10,
-            InstructionsText = "[grey](Press <space> to select, <enter> to accept, <ctrl + c> to cancel)[/]"
+            InstructionsText =
+                "[grey](Press <space> to select, <enter> to accept, <ctrl + c> to cancel)[/]"
         };
         var sb = new StringBuilder();
         var didHaveUpgrades = false;
