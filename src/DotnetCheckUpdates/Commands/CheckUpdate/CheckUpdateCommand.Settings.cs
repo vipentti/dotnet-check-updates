@@ -86,6 +86,17 @@ internal partial class CheckUpdateCommand
         [Description("Enable interactive prompts for each package. Implies --upgrade.")]
         public bool Interactive { get; init; }
 
+        [CommandOption("--page-size <Number>")]
+        [Range(5, 50)]
+        [Description(
+            """
+            Sets the number of items per page when running in interactive mode.
+            Has no effect unless --interactive is specified.
+            (default: 10)
+            """
+        )]
+        public int? InteractivePageSize { get; init; }
+
         [CommandOption("-f|-I|--filter|--include|--inc")]
         [Description(
             """
