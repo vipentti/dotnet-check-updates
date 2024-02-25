@@ -133,14 +133,21 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
 
         var cancellationToken = _exitHandler?.GracefulToken ?? CancellationToken.None;
 
-        var cwd = Path.GetFullPath(
-            Path.Combine(
+        var cwd = _fileSystem.Path.GetFullPath(
+            _fileSystem.Path.Combine(
                 _fileSystem.Directory.GetCurrentDirectory(),
                 settings.Cwd ?? _fileSystem.Directory.GetCurrentDirectory()
             )
         );
 
-        await ExecuteNonInteractiveUpgradeAsync(cwd, settings, cancellationToken);
+        if (settings.Interactive)
+        {
+            await ExecuteInteractiveUpgrade(cwd, settings, cancellationToken);
+        }
+        else
+        {
+            await ExecuteNonInteractiveUpgradeAsync(cwd, settings, cancellationToken);
+        }
 
         return 0;
     }

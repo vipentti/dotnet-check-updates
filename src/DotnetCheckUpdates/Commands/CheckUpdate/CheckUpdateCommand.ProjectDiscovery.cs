@@ -1,5 +1,4 @@
-
-// Copyright 2023-2024 Ville Penttinen
+﻿// Copyright 2023-2024 Ville Penttinen
 // Distributed under the MIT License.
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
@@ -11,7 +10,10 @@ namespace DotnetCheckUpdates.Commands.CheckUpdate;
 
 internal partial class CheckUpdateCommand
 {
-    private async Task<(ImmutableArray<ProjectFile> Projects, ImmutableDictionary<string, string[]> Solutions)> DiscoverProjectsAndSolutions(string cwd, Settings settings)
+    private async Task<(
+        ImmutableArray<ProjectFile> Projects,
+        ImmutableDictionary<string, string[]> Solutions
+    )> DiscoverProjectsAndSolutions(string cwd, Settings settings)
     {
         var (projectFiles, solutionProjectMap) =
             await _projectDiscovery.DiscoverProjectsAndSolutions(
@@ -28,7 +30,9 @@ internal partial class CheckUpdateCommand
         var includeFilters = CheckUpdateCommandHelpers.SplitFilters(settings.Include);
         var excludeFilters = CheckUpdateCommandHelpers.SplitFilters(settings.Exclude);
 
-        var projects = (await Task.WhenAll(projectFiles.Select(_projectReader.ReadProjectFile))).ToImmutableArray();
+        var projects = (
+            await Task.WhenAll(projectFiles.Select(_projectReader.ReadProjectFile))
+        ).ToImmutableArray();
         var allSpecifiedTargetFrameworks = projects
             .SelectMany(it => it.TargetFrameworks)
             .Distinct()
