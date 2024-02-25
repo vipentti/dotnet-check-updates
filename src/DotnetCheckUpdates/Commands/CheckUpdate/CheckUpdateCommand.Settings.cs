@@ -90,10 +90,10 @@ internal partial class CheckUpdateCommand
         [Range(5, 50)]
         [Description(
             """
-            Sets the number of items per page when running in interactive mode.
-            Has no effect unless --interactive is specified.
-            (default: 10)
-            """
+                Sets the number of items per page when running in interactive mode.
+                Has no effect unless --interactive is specified.
+                (default: 10)
+                """
         )]
         public int? InteractivePageSize { get; init; }
 
