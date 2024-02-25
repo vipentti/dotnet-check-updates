@@ -2,11 +2,8 @@
 // Distributed under the MIT License.
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
-using System.Diagnostics;
-using DotnetCheckUpdates.Core;
 using DotnetCheckUpdates.Core.Extensions;
 using DotnetCheckUpdates.Core.ProjectModel;
-using NuGet.Versioning;
 using Spectre.Console;
 
 namespace DotnetCheckUpdates.Commands.CheckUpdate;
