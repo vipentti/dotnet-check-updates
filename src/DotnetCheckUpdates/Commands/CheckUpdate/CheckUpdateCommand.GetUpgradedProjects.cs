@@ -24,6 +24,11 @@ internal partial class CheckUpdateCommand
 
         var totalPackageCount = projects.Select(it => it.PackageReferences.Length).Sum();
 
+        if (settings.NoProgress)
+        {
+            return await Fetch(settings, projects, progressTask: null, cancellationToken);
+        }
+
         return await _ansiConsole
             .Progress()
             .AutoClear(false)
