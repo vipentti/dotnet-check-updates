@@ -24,12 +24,24 @@ internal partial class MultiSourceNuGetService(
 
     [LoggerMessage(
         Level = LogLevel.Debug,
-        Message = "{MethodName}: {PackageId} Data resolved by {TypeName}"
+        Message = "{MethodName}: {PackageId} package versions resolved by {TypeName}"
     )]
     private static partial void LogPackagesResolvedByService(
         ILogger logger,
         string methodName,
         string packageId,
+        string typeName
+    );
+
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "{MethodName}: {PackageId} {Version} frameworks resolved by {TypeName}"
+    )]
+    private static partial void LogFrameworksResolvedByService(
+        ILogger logger,
+        string methodName,
+        string packageId,
+        string version,
         string typeName
     );
 
@@ -104,7 +116,13 @@ internal partial class MultiSourceNuGetService(
 
                 if (!found.IsEmpty)
                 {
-                    LogPackagesResolvedByService(logger, method, packageId, service.GetType().Name);
+                    LogFrameworksResolvedByService(
+                        logger,
+                        method,
+                        packageId,
+                        version,
+                        service.GetType().Name
+                    );
                     return found;
                 }
             }
