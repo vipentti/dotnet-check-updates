@@ -108,60 +108,18 @@ internal partial class CheckUpdateCommand
         // Output the project package tree
         if (solutionProjectMap.Count > 0)
         {
-            foreach (var (solutionFile, solutionProjectArray) in solutionProjectMap)
-            {
-                var solutionRoot = new Tree(FormatPath(solutionFile));
-
-                if (solutionProjectArray.Length == 0)
+            RenderSolutionUpgrades(
+                new SolutionProjectRenderOptions()
                 {
-                    solutionRoot.AddNode("No projects found.");
-                }
-
-                var oldSlnProjects = new List<ProjectFile>(projects.Length);
-                var newSlnProjects = new List<ProjectFile>(projects.Length);
-
-                foreach (var slnProj in solutionProjectArray)
-                {
-                    var foundOldProject = projects.Find(it =>
-                        string.Equals(it.FilePath, slnProj, StringComparison.Ordinal)
-                    );
-                    var foundNewProject = newProjects.Find(it =>
-                        string.Equals(it.FilePath, slnProj, StringComparison.Ordinal)
-                    );
-
-                    if (foundOldProject is null)
-                    {
-                        LogSolutionProjectNotFound(_logger, slnProj, "original");
-                    }
-
-                    if (foundNewProject is null)
-                    {
-                        LogSolutionProjectNotFound(_logger, slnProj, "new");
-                    }
-
-                    if (foundOldProject is not null && foundNewProject is not null)
-                    {
-                        oldSlnProjects.Add(foundOldProject);
-                        newSlnProjects.Add(foundNewProject);
-                    }
-                }
-
-                CheckUpdateCommandHelpers.SetupGridInTree(
-                    FormatPath,
-                    solutionRoot,
-                    oldSlnProjects,
-                    newSlnProjects,
-                    upgradedProjects,
-                    settings,
-                    longestPackageNameLength,
-                    longestVersionLength
-                );
-                if (settings.AsciiTree)
-                {
-                    solutionRoot.Guide = TreeGuide.Ascii;
-                }
-                _ansiConsole.Write(solutionRoot);
-            }
+                    SolutionProjectMap = solutionProjectMap,
+                    FormatPath = FormatPath,
+                    OriginalProjects = projects,
+                    NewProjects = newProjects,
+                    Settings = settings,
+                    HideIfNoUpgrade = false,
+                },
+                out upgradedProjects
+            );
         }
         else
         {
