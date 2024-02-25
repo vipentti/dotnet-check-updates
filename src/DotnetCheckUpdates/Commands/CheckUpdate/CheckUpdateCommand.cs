@@ -2,6 +2,7 @@
 // Distributed under the MIT License.
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
 using CliWrap;
 using DotnetCheckUpdates.Core;
@@ -21,26 +22,31 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
     private readonly ILogger<CheckUpdateCommand> _logger;
     private readonly IFileSystem _fileSystem;
     private readonly ProjectFileReader _projectReader;
-    private readonly PackageUpgradeService _packageService;
     private readonly ProjectDiscovery _projectDiscovery;
     private readonly ApplicationExitHandler? _exitHandler;
+    private readonly CurrentDirectoryProvider? _currentDirectoryProvider;
+    private readonly IPackageUpgradeServiceFactory _packageUpgradeServiceFactory;
+
+    private PackageUpgradeService? _packageService;
 
     public CheckUpdateCommand(
         IAnsiConsole ansiConsole,
         ILogger<CheckUpdateCommand> logger,
         IFileSystem fileSystem,
         ProjectFileReader projectReader,
-        PackageUpgradeService packageService,
+        IPackageUpgradeServiceFactory packageUpgradeServiceFactory,
         ProjectDiscovery projectDiscovery,
+        CurrentDirectoryProvider? directoryProvider = default,
         ApplicationExitHandler? exitHandler = default
     )
     {
+        _packageUpgradeServiceFactory = packageUpgradeServiceFactory;
         _ansiConsole = ansiConsole;
         _logger = logger;
         _fileSystem = fileSystem;
         _projectReader = projectReader;
-        _packageService = packageService;
         _exitHandler = exitHandler;
+        _currentDirectoryProvider = directoryProvider;
         _projectDiscovery = projectDiscovery;
     }
 
@@ -138,6 +144,11 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
             )
         );
 
+        if (_currentDirectoryProvider is not null)
+        {
+            _currentDirectoryProvider.CurrentDirectory = cwd;
+        }
+
         if (settings.Interactive)
         {
             await ExecuteInteractiveUpgrade(cwd, settings, cancellationToken);
@@ -148,6 +159,12 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
         }
 
         return 0;
+    }
+
+    [MemberNotNull(nameof(_packageService))]
+    private void InitializePackageService()
+    {
+        _packageService ??= _packageUpgradeServiceFactory.GetPackageUpgradeService();
     }
 
     private async Task RestorePackages(

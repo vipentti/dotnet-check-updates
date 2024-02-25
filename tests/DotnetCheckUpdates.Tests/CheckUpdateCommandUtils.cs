@@ -129,9 +129,8 @@ internal static class CheckUpdateCommandUtils
             NullLogger<CheckUpdateCommand>.Instance,
             fileSystem,
             new ProjectFileReader(fileSystem),
-            packageService: new PackageUpgradeService(
-                NullLogger<PackageUpgradeService>.Instance,
-                nugetService
+            packageUpgradeServiceFactory: new MockPackageUpgradeFactory(
+                new PackageUpgradeService(NullLogger<PackageUpgradeService>.Instance, nugetService)
             ),
             projectDiscovery: new ProjectDiscovery(
                 NullLogger<ProjectDiscovery>.Instance,

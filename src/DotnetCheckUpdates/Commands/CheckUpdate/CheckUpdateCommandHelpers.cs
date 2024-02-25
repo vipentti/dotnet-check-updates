@@ -106,7 +106,7 @@ internal static partial class CheckUpdateCommandHelpers
     )> GetProjectPackageVersions(
         ProjectFile project,
         PackageUpgradeService packageService,
-        ProgressTask progress,
+        ProgressTask? progress,
         int concurrency,
         UpgradeTarget target,
         ILogger logger,
@@ -156,7 +156,7 @@ internal static partial class CheckUpdateCommandHelpers
                 cancellationToken
             );
 
-            progress.Increment(1);
+            progress?.Increment(1);
 
             return upgrade;
         }

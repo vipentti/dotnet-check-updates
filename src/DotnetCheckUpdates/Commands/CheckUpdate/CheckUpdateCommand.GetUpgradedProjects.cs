@@ -20,9 +20,11 @@ internal partial class CheckUpdateCommand
         CancellationToken cancellationToken
     )
     {
+        InitializePackageService();
+
         var totalPackageCount = projects.Select(it => it.PackageReferences.Length).Sum();
 
-        var projectsWithPackages = await _ansiConsole
+        return await _ansiConsole
             .Progress()
             .AutoClear(false)
             .HideCompleted(settings.HideProgressAfterComplete)
@@ -34,32 +36,44 @@ internal partial class CheckUpdateCommand
                     new() { AutoStart = true, MaxValue = totalPackageCount, }
                 );
 
-                var temp = ImmutableArray.CreateBuilder<(
-                    ProjectFile project,
-                    PackageUpgradeVersionDictionary packages
-                )>(projects.Length);
-
-                foreach (var proj in projects)
-                {
-                    temp.Add(
-                        await CheckUpdateCommandHelpers.GetProjectPackageVersions(
-                            proj,
-                            _packageService,
-                            progressTask,
-                            settings.Concurrency,
-                            settings.Target,
-                            _logger,
-                            cancellationToken
-                        )
-                    );
-                }
+                var results = await Fetch(settings, projects, progressTask, cancellationToken);
 
                 Debug.Assert(ctx.IsFinished);
 
-                return temp.MoveToImmutable();
+                return results;
             });
 
-        return projectsWithPackages;
+        async Task<
+            ImmutableArray<(ProjectFile project, PackageUpgradeVersionDictionary packages)>
+        > Fetch(
+            Settings settings,
+            ImmutableArray<ProjectFile> projects,
+            ProgressTask? progressTask,
+            CancellationToken cancellationToken
+        )
+        {
+            var temp = ImmutableArray.CreateBuilder<(
+                ProjectFile project,
+                PackageUpgradeVersionDictionary packages
+            )>(projects.Length);
+
+            foreach (var proj in projects)
+            {
+                temp.Add(
+                    await CheckUpdateCommandHelpers.GetProjectPackageVersions(
+                        proj,
+                        _packageService,
+                        progress: progressTask,
+                        settings.Concurrency,
+                        settings.Target,
+                        _logger,
+                        cancellationToken
+                    )
+                );
+            }
+
+            return temp.MoveToImmutable();
+        }
     }
 
     private async Task<ImmutableArray<ProjectFile>> GetUpgradedProjects(
