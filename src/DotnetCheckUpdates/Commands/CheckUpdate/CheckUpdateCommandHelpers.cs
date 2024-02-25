@@ -318,7 +318,7 @@ internal static partial class CheckUpdateCommandHelpers
                     var node = root.AddNode(projPath);
                     node.AddNode(
                         new Padder(
-                            new Text("All packages match their latest versions."),
+                            new Text(CommonStrings.AllPackagesMatchLatestVersion),
                             new(0, 0, 0, 1)
                         )
                     );

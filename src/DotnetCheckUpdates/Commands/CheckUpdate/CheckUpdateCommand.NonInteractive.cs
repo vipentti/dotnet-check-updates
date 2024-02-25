@@ -104,7 +104,7 @@ internal partial class CheckUpdateCommand
         if (totalPackageCount == 0)
         {
             _ansiConsole.MarkupLine("");
-            _ansiConsole.WriteLine("No packages matched provided filters.");
+            _ansiConsole.WriteLine(CommonStrings.NoPackagesMatchFilters);
             return;
         }
 
