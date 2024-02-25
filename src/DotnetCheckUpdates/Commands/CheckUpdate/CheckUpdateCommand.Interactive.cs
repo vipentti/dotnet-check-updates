@@ -1,4 +1,4 @@
-﻿// Copyright 2023-2024 Ville Penttinen
+// Copyright 2023-2024 Ville Penttinen
 // Distributed under the MIT License.
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
@@ -103,6 +103,7 @@ internal partial class CheckUpdateCommand
         {
             Title = CommonStrings.ChoosePackagesToUpdate,
             Converter = it => it.Text,
+            PageSize = settings.InteractivePageSize ?? 10,
         };
         var sb = new StringBuilder();
         var didHaveUpgrades = false;

@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 - Implement support for `-i|--interactive` to choose packages to upgrade interactively
+  - Support `--page-size` to determine number of items shown in interactive mode
 - BREAKING CHANGES:
   - `-i|--include` changes\
     Default alias for `-i|--include` is changed to `-f|--filter`\
