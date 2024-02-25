@@ -129,13 +129,13 @@ Choose which packages to update
     [ ] {slnRoot / "nested/project/project.csproj"}
       [ ] Test3 1.0.0  → 3.0.0
 
-(Press <space> to select, <enter> to accept)     Choose which packages to update
+(Press <space> to select, <enter> to accept, <ctrl + c> to cancel)Choose which packages to update
 
 > [X] {slnRoot / "test.sln"}
     [X] {slnRoot / "nested/project/project.csproj"}
       [X] Test3 1.0.0  → 3.0.0
 
-(Press <space> to select, <enter> to accept)     Upgrading selected packages
+(Press <space> to select, <enter> to accept, <ctrl + c> to cancel)Upgrading selected packages
 {slnRoot / "test.sln"}
 `-- {slnRoot / "nested/project/project.csproj"}
     `-- Test3  1.0.0  →  3.0.0
