@@ -10,7 +10,7 @@ namespace DotnetCheckUpdates.Core.NuGetUtils;
 
 internal partial class MultiSourceNuGetService(
     ILogger<MultiSourceNuGetService> logger,
-    NuGetPackageSourceProvider packageSourceProvider,
+    INuGetPackageSourceProvider packageSourceProvider,
     NuGetServiceFactory serviceFactory
 ) : INuGetService
 {
@@ -22,18 +22,36 @@ internal partial class MultiSourceNuGetService(
     [LoggerMessage(Level = LogLevel.Trace, Message = "Starting {MethodName}")]
     private static partial void LogStarting(ILogger logger, string methodName);
 
-    [LoggerMessage(Level = LogLevel.Debug, Message = "Data resolved by {TypeName}")]
-    private static partial void LogPackagesResolvedByService(ILogger logger, string typeName);
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "{MethodName}: {PackageId} Data resolved by {TypeName}"
+    )]
+    private static partial void LogPackagesResolvedByService(
+        ILogger logger,
+        string methodName,
+        string packageId,
+        string typeName
+    );
 
-    [LoggerMessage(Level = LogLevel.Error, Message = "{TypeName} Failed to get data")]
-    private static partial void LogFailed(ILogger logger, Exception exception, string typeName);
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "{MethodName}: {TypeName} Failed to get {PackageId} data"
+    )]
+    private static partial void LogFailed(
+        ILogger logger,
+        Exception exception,
+        string methodName,
+        string typeName,
+        string packageId
+    );
 
     public async Task<IEnumerable<NuGetVersion>> GetPackageVersionsAsync(
         string packageId,
         CancellationToken cancellationToken = default
     )
     {
-        LogStarting(logger, nameof(GetPackageVersionsAsync));
+        const string method = nameof(GetPackageVersionsAsync);
+        LogStarting(logger, method);
 
         foreach (var service in _nuGetServices)
         {
@@ -43,7 +61,7 @@ internal partial class MultiSourceNuGetService(
 
                 if (found is not null && found.Any())
                 {
-                    LogPackagesResolvedByService(logger, service.GetType().Name);
+                    LogPackagesResolvedByService(logger, method, packageId, service.GetType().Name);
                     return found;
                 }
             }
@@ -58,7 +76,7 @@ internal partial class MultiSourceNuGetService(
             }
             catch (Exception ex)
             {
-                LogFailed(logger, ex, service.GetType().Name);
+                LogFailed(logger, ex, method, service.GetType().Name, packageId);
             }
         }
 
@@ -71,7 +89,8 @@ internal partial class MultiSourceNuGetService(
         CancellationToken cancellationToken = default
     )
     {
-        LogStarting(logger, nameof(GetSupportedFrameworksAsync));
+        const string method = nameof(GetSupportedFrameworksAsync);
+        LogStarting(logger, method);
 
         foreach (var service in _nuGetServices)
         {
@@ -83,9 +102,9 @@ internal partial class MultiSourceNuGetService(
                     cancellationToken
                 );
 
-                if (found is not null && !found.IsEmpty)
+                if (!found.IsEmpty)
                 {
-                    LogPackagesResolvedByService(logger, service.GetType().Name);
+                    LogPackagesResolvedByService(logger, method, packageId, service.GetType().Name);
                     return found;
                 }
             }
@@ -100,7 +119,7 @@ internal partial class MultiSourceNuGetService(
             }
             catch (Exception ex)
             {
-                LogFailed(logger, ex, service.GetType().Name);
+                LogFailed(logger, ex, method, service.GetType().Name, packageId);
             }
         }
 

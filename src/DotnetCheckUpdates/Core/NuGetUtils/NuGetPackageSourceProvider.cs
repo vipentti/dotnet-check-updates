@@ -7,10 +7,11 @@ using NuGet.Configuration;
 namespace DotnetCheckUpdates.Core.NuGetUtils;
 
 internal class NuGetPackageSourceProvider(IEnumerable<PackageSource>? sources = default)
+    : INuGetPackageSourceProvider
 {
     private static readonly IEnumerable<PackageSource> s_defaultSources =
     [
-        new PackageSource("https://api.nuget.org/v3/index.json") { ProtocolVersion = 3, }
+        new PackageSource(NuGetConstants.V3FeedUrl) { ProtocolVersion = 3, }
     ];
 
     private readonly ImmutableArray<PackageSource> _providedSources =

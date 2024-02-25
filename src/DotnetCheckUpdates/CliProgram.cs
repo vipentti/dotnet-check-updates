@@ -72,6 +72,11 @@ services.AddSingleton<ProjectFileReader>();
 services.AddSingleton<ProjectDiscovery>();
 services.AddSingleton<IFileFinder, FileFinder>();
 services.AddSingleton<IFileSystem>(_ => new FileSystem());
+
+services.AddSingletonVia<INuGetPackageSourceProvider, NuGetConfigurationPackageSourceProvider>();
+services.AddSingletonVia<IPackageUpgradeServiceFactory, PackageUpgradeServiceFactory>();
+services.AddSingletonVia<ICurrentDirectory, CurrentDirectoryProvider>();
+
 services
     .AddHttpClient<NuGetApiClient>(client => client.BaseAddress = new Uri(nugetApiBaseUrl))
     .ConfigurePrimaryHttpMessageHandler(

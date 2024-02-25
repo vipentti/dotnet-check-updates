@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Support for `-i|--interactive` to choose packages to upgrade interactively
 - Support `--page-size` to determine number of items shown in interactive mode
 - Support for V2 NuGet feeds
+- Support for `nuget.config` package sources
 
 ### Changed
 - Handling when no packages match provided filters (`--include` or `--exclude`)
