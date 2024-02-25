@@ -118,6 +118,12 @@ internal partial class CheckUpdateCommand
 
         public bool AsciiTree { get; init; }
 
+        /// <summary>
+        /// Hide the progress bar (used by interactive tests)
+        /// from the console
+        /// </summary>
+        internal bool HideProgressAfterComplete { get; init; }
+
         public override ValidationResult Validate()
         {
             var context = new ValidationContext(this);

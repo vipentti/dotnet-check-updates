@@ -25,7 +25,7 @@ internal partial class CheckUpdateCommand
         var projectsWithPackages = await _ansiConsole
             .Progress()
             .AutoClear(false)
-            .HideCompleted(false)
+            .HideCompleted(settings.HideProgressAfterComplete)
             .StartAsync(async ctx =>
             {
                 // Define tasks
