@@ -1,4 +1,4 @@
-// Copyright 2023-2024 Ville Penttinen
+﻿// Copyright 2023-2024 Ville Penttinen
 // Distributed under the MIT License.
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
@@ -104,6 +104,7 @@ internal partial class CheckUpdateCommand
             Title = CommonStrings.ChoosePackagesToUpdate,
             Converter = it => it.Text,
             PageSize = settings.InteractivePageSize ?? 10,
+            InstructionsText = "[grey](Press <space> to select, <enter> to accept, <ctrl + c> to cancel)[/]"
         };
         var sb = new StringBuilder();
         var didHaveUpgrades = false;
@@ -194,9 +195,18 @@ internal partial class CheckUpdateCommand
             return;
         }
 
-        var choices = (await prompt.ShowAsync(_ansiConsole, cancellationToken))
-            .OfType<InteractiveTreePackage>()
-            .ToImmutableArray();
+        ImmutableArray<InteractiveTreePackage> choices;
+
+        try
+        {
+            choices = (await prompt.ShowAsync(_ansiConsole, cancellationToken))
+                .OfType<InteractiveTreePackage>()
+                .ToImmutableArray();
+        }
+        catch (TaskCanceledException ex)
+        {
+            throw new PromptCanceledException("Prompt was canceled", ex);
+        }
 
         var originalProjects = ImmutableArray.CreateBuilder<ProjectFile>();
         var newProjects = ImmutableArray.CreateBuilder<ProjectFile>();
