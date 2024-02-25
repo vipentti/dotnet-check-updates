@@ -1,4 +1,4 @@
-﻿// Copyright 2023-2024 Ville Penttinen
+// Copyright 2023-2024 Ville Penttinen
 // Distributed under the MIT License.
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
@@ -11,20 +11,23 @@ using DotnetCheckUpdates.Core.ProjectModel;
 using DotnetCheckUpdates.Core.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NuGet.Protocol;
+using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using Spectre.Console.Rendering;
 
-var definedArgs = new HashSet<string>() { "--show-stack-trace", "--nuget-source", };
+var definedArgs = new HashSet<string>() { "--show-stack-trace" };
 
 var showStackTrace = args.Any(it => it == "--show-stack-trace");
 
+var nugetSourceIndex = Array.FindIndex(args, it => it == "--nuget-source");
 var nugetSource =
-    args.FirstOrDefault(it => it == "--nuget-source") ?? "https://api.nuget.org/v3/index.json";
+    nugetSourceIndex > -1 && nugetSourceIndex + 1 < args.Length
+        ? args[nugetSourceIndex + 1]
+        : "https://api.nuget.org/v3/index.json";
 
-var nugetApiBaseUrl = new Uri(nugetSource).GetLeftPart(UriPartial.Authority);
+var nugetApiBaseUrl = new Uri(nugetSource, UriKind.Absolute).GetLeftPart(UriPartial.Authority);
 
 var cmdArgs = args.Where(it => !definedArgs.Contains(it)).ToArray();
 
@@ -60,8 +63,9 @@ services.AddLogging(logger =>
 });
 
 services.AddSingleton(_ => new SourceCacheContext());
-services.AddSingleton(_ => Repository.Factory.GetCoreV3(nugetSource));
-services.AddSingleton<INuGetService, DefaultNuGetService>();
+services.AddSingleton<NuGetServiceFactory>();
+services.AddSingleton(new NuGetPackageSourceProvider([new PackageSource(nugetSource)]));
+services.AddSingleton<INuGetService, MultiSourceNuGetService>();
 services.AddSingleton<ISolutionParser, DefaultSolutionParser>();
 services.AddSingleton<PackageUpgradeService>();
 services.AddSingleton<ProjectFileReader>();

@@ -14,6 +14,9 @@ internal partial class CheckUpdateCommand
 {
     internal class Settings : CommandSettings
     {
+        [CommandOption("--nuget-source", IsHidden = true)]
+        public string? NugetSource { get; init; }
+
         [CommandOption("--version")]
         [Description("Shows the version of the application. Exits after outputting the version. ")]
         public bool ShowVersion { get; init; }
