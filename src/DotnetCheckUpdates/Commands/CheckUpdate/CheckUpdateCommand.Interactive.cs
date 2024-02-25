@@ -86,6 +86,13 @@ internal partial class CheckUpdateCommand
             totalPackageCount += project.PackageCount;
         }
 
+        if (totalPackageCount == 0)
+        {
+            _ansiConsole.MarkupLine("");
+            _ansiConsole.WriteLine("No packages matched provided filters.");
+            return;
+        }
+
         var projectsWithUpgrades = await GetProjectPackageUpgrades(
             settings,
             projects,

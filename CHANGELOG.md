@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - `-e|--exclude` changes\
     Default alias for `-e|--exclude` is changed to `-x|--exclude`\
     Additionally `-E (capital e)`, `--reject` and `--exc` can be used.
+- Improve handling when no packages match provided filters (`--include` or `--exclude`)
 
 ## [0.2.4] / 2024-02-16
 - Add support for showing package count with --show-package-count

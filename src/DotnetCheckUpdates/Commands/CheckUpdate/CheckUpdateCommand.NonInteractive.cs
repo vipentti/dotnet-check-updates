@@ -101,6 +101,13 @@ internal partial class CheckUpdateCommand
             _ansiConsole.Write(projectsTree);
         }
 
+        if (totalPackageCount == 0)
+        {
+            _ansiConsole.MarkupLine("");
+            _ansiConsole.WriteLine("No packages matched provided filters.");
+            return;
+        }
+
         var newProjects = await GetUpgradedProjects(settings, projects, cancellationToken);
 
         var upgradedProjects = new List<ProjectFile>();
