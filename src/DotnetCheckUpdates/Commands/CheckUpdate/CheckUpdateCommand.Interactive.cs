@@ -89,7 +89,7 @@ internal partial class CheckUpdateCommand
         if (totalPackageCount == 0)
         {
             _ansiConsole.MarkupLine("");
-            _ansiConsole.WriteLine("No packages matched provided filters.");
+            _ansiConsole.WriteLine(CommonStrings.NoPackagesMatchFilters);
             return;
         }
 
@@ -101,10 +101,11 @@ internal partial class CheckUpdateCommand
 
         var prompt = new MultiSelectionPrompt<InteractiveTreeItem>
         {
-            Title = "Choose which packages to update",
+            Title = CommonStrings.ChoosePackagesToUpdate,
             Converter = it => it.Text,
         };
         var sb = new StringBuilder();
+        var didHaveUpgrades = false;
 
         void WriteProjectsToSolutionOrPrompt(
             IEnumerable<(ProjectFile, PackageUpgradeVersionDictionary)> values,
@@ -128,6 +129,8 @@ internal partial class CheckUpdateCommand
                 {
                     continue;
                 }
+
+                didHaveUpgrades = true;
 
                 var selections = upgrades.Select(FormatUpgrade).ToArray();
 
@@ -183,6 +186,13 @@ internal partial class CheckUpdateCommand
             WriteProjectsToSolutionOrPrompt(projectsWithUpgrades, prompt, null);
         }
 
+        if (!didHaveUpgrades)
+        {
+            _ansiConsole.WriteLine();
+            _ansiConsole.WriteLine(CommonStrings.AllPackagesMatchLatestVersion);
+            return;
+        }
+
         var choices = (await prompt.ShowAsync(_ansiConsole, cancellationToken))
             .OfType<InteractiveTreePackage>()
             .ToImmutableArray();
@@ -209,10 +219,11 @@ internal partial class CheckUpdateCommand
             }
 
             originalProjects.Add(project);
-            newProjects.Add(project.UpdatePackageReferences(selectedUpgrades));
+            var newProject = project.UpdatePackageReferences(selectedUpgrades);
+            newProjects.Add(newProject);
         }
 
-        _ansiConsole.MarkupLineInterpolated($"Upgrading selected packages");
+        _ansiConsole.WriteLine(CommonStrings.UpgradingSelectedPackages);
 
         var upgradedProjects = new List<ProjectFile>();
 

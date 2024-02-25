@@ -148,4 +148,63 @@ Run dotnet restore to install new versions
 
         AssertOutput(console, expected);
     }
+
+    [Fact]
+    public async Task OutputsMessageWhenAllPackagesMatchTheirLatestVersion()
+    {
+        // Arrange
+        var console = new TestConsole().Interactive();
+
+        var (cwd, _, command) = SetupCommand(
+            new MockSolution("test.sln")
+            {
+                Projects =
+                {
+                    new("nested/project/project.csproj", Framework: Frameworks.Default)
+                    {
+                        Packages = { ("Test3", "3.0") }
+                    },
+                }
+            },
+            new[]
+            {
+                new MockUpgrade("Test3")
+                {
+                    Versions = { "3.0" },
+                    SupportedFrameworks = { Frameworks.Net8_0 },
+                },
+            },
+            console: console
+        );
+
+        // Act
+
+        var cmdTask = command.ExecuteAsync(
+            TestCommandContext,
+            new CheckUpdateCommand.Settings
+            {
+                Cwd = cwd,
+                Upgrade = true,
+                AsciiTree = true,
+                ShowAbsolute = true,
+                Interactive = true,
+                HideProgressAfterComplete = true,
+            }
+        );
+
+        var result = await cmdTask;
+
+        // Assert
+        using var scope = new AssertionScope();
+        result.Should().Be(0);
+
+        var slnRoot = cwd;
+
+        var expected =
+            $@"
+All packages match their latest versions.
+";
+
+        AssertOutput(console, expected);
+    }
 }
