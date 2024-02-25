@@ -51,7 +51,11 @@ internal partial class CheckUpdateCommand
         [CommandOption("-d|--depth <Depth>")]
         [Range(0, 16)]
         [Description(
-            "Recursion depth. Only applied when --recurse is also specified.\nMinimum is 1 and maximum is 16.\nSet to 0 to search arbitrary directory depth. (default: 4)"
+            """
+                Recursion depth. Only applied when --recurse is also specified.
+                Minimum is 1 and maximum is 16.
+                Set to 0 to search arbitrary directory depth. (default: 4)
+                """
         )]
         public int Depth { get; init; } = 4;
 
@@ -78,25 +82,36 @@ internal partial class CheckUpdateCommand
         )]
         public int Concurrency { get; init; } = 8;
 
-        [CommandOption("-n|--interactive")]
+        [CommandOption("-i|--interactive")]
         [Description("Enable interactive prompts for each package. Implies --upgrade.")]
         public bool Interactive { get; init; }
 
-        [CommandOption("-i|--include")]
+        [CommandOption("-f|-I|--filter|--include|--inc")]
         [Description(
-            "Include only package names matching the given string, glob or comma-or-space-delimited list.\nExample: System*"
+            """
+                Include only package names matching the given string, glob or comma-or-space-delimited list.
+                Example: System*
+                Aliases: -I, --include, --inc
+                """
         )]
         public string[] Include { get; init; } = [];
 
-        [CommandOption("-e|--exclude")]
+        [CommandOption("-x|-E|--exclude|--reject|--exc")]
         [Description(
-            "Exclude package names matching the given string, glob or comma-or-space-delimited list.\nExample: System*"
+            """
+                Exclude package names matching the given string, glob or comma-or-space-delimited list.
+                Example: System*
+                Aliases: -E, --reject, --exc
+                """
         )]
         public string[] Exclude { get; init; } = [];
 
         [CommandOption("-t|--target <Target>")]
         [Description(
-            "Determines the version to upgrade to:\nlatest, greatest, major, minor, patch, pre-major, pre-minor, pre-patch. (default: latest)"
+            """
+                Determines the version to upgrade to:
+                latest, greatest, major, minor, patch, pre-major, pre-minor, pre-patch. (default: latest)
+                """
         )]
         [TypeConverter(typeof(UpgradeTargetConverter))]
         public UpgradeTarget Target { get; init; } = UpgradeTarget.Latest;

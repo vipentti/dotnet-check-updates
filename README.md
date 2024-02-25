@@ -94,12 +94,12 @@ Include filters:
 
 ```shell
 # Include only packages which contain the word system (case-insensitive) in their package name
-dotnet-check-updates --include 'System'
+dotnet-check-updates --filter 'System'
 # or
-dotnet-check-updates --include '*System*'
+dotnet-check-updates --filter '*System*'
 
 # Include only packages which start with the word System
-dotnet-check-updates --include 'System*'
+dotnet-check-updates --filter 'System*'
 ```
 
 Exclude filters:
