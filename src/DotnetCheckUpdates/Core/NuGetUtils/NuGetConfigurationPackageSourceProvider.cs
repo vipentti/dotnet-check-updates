@@ -12,18 +12,6 @@ internal partial class NuGetConfigurationPackageSourceProvider(
     NuGetSettingsProvider nuGetSettings
 ) : INuGetPackageSourceProvider
 {
-    [LoggerMessage(Level = LogLevel.Debug, Message = "Loading default settings from {Root}")]
-    private static partial void LogLoadingDefaultSettings(ILogger logger, string root);
-
-    [LoggerMessage(
-        Level = LogLevel.Debug,
-        Message = "Found NuGet configurations: {@ConfigFilePaths}"
-    )]
-    private static partial void LogFoundConfigurations(
-        ILogger logger,
-        IEnumerable<string> configFilePaths
-    );
-
     [LoggerMessage(
         Level = LogLevel.Debug,
         Message = "Enabled package source {Name} {SourceUri} {ProtocolVersion}"

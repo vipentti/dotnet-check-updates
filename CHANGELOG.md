@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Support for V2 NuGet feeds
 - Support for `nuget.config` package sources
 - Support for `--no-progress` to hide progress bar while fetching package information
+- Support for `--nuget-source` to specify NuGet package sources
 
 ### Changed
 - Handling when no packages match provided filters (`--include` or `--exclude`)
