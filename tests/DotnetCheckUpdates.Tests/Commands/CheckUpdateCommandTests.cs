@@ -16,7 +16,7 @@ namespace DotnetCheckUpdates.Tests.Commands;
 public partial class CheckUpdateCommandTests
 {
     public static readonly CommandContext DefaultCommandContext =
-        new(Substitute.For<IRemainingArguments>(), "test", null);
+        new([], Substitute.For<IRemainingArguments>(), "test", null);
 
     [Fact]
     public async Task DefaultFinderPattern()
@@ -76,7 +76,7 @@ public partial class CheckUpdateCommandTests
         var command = CreateCommand(console: default, fileSystem, service, finder);
 
         var result = await command.ExecuteAsync(
-            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            TestCommandContext,
             new CheckUpdateCommand.Settings
             {
                 Cwd = cwd,
@@ -173,7 +173,7 @@ public partial class CheckUpdateCommandTests
         var command = CreateCommand(console: default, fileSystem, service, finder: default);
 
         var result = await command.ExecuteAsync(
-            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            TestCommandContext,
             new CheckUpdateCommand.Settings { Cwd = cwd, Upgrade = true, }
         );
 

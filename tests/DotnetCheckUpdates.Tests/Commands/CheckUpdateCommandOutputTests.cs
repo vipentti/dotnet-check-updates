@@ -47,7 +47,7 @@ public class CheckUpdateCommandOutputTests
         var command = CreateCommand(console: console, fileSystem, service, finder: default);
 
         var result = await command.ExecuteAsync(
-            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
             new CheckUpdateCommand.Settings
             {
                 Cwd = cwd,
@@ -103,7 +103,7 @@ Projects
         var command = CreateCommand(console: console, fileSystem, service, finder: default);
 
         var result = await command.ExecuteAsync(
-            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
             new CheckUpdateCommand.Settings
             {
                 Cwd = cwd,
@@ -455,7 +455,7 @@ Run dotnet restore to install new versions
         );
 
         var result = await command.ExecuteAsync(
-            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
             new CheckUpdateCommand.Settings
             {
                 Cwd = cwd,
