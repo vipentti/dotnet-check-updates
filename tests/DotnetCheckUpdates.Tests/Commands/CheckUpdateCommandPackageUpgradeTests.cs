@@ -52,7 +52,7 @@ public class CheckUpdateCommandPackageUpgradeTests
             {
                 Cwd = cwd,
                 Upgrade = true,
-                Target = UpgradeTarget.Latest
+                Target = UpgradeTarget.Latest,
             }
         );
 
@@ -100,7 +100,7 @@ public class CheckUpdateCommandPackageUpgradeTests
             {
                 Cwd = cwd,
                 Upgrade = true,
-                Target = UpgradeTarget.Latest
+                Target = UpgradeTarget.Latest,
             }
         );
 
@@ -160,7 +160,7 @@ public class CheckUpdateCommandPackageUpgradeTests
             {
                 Cwd = cwd,
                 Upgrade = true,
-                Target = UpgradeTarget.Latest
+                Target = UpgradeTarget.Latest,
             }
         );
 
@@ -213,7 +213,7 @@ public class CheckUpdateCommandPackageUpgradeTests
             {
                 Cwd = cwd,
                 Upgrade = true,
-                Target = UpgradeTarget.Latest
+                Target = UpgradeTarget.Latest,
             }
         );
 
@@ -235,8 +235,8 @@ public class CheckUpdateCommandPackageUpgradeTests
         static MockUpgrade MakeUpgrade(string name) =>
             new(name)
             {
-                Versions = { "2.0.0", },
-                SupportedFrameworks = { Frameworks.NetStandard2_0, },
+                Versions = { "2.0.0" },
+                SupportedFrameworks = { Frameworks.NetStandard2_0 },
             };
         // csharpier-ignore
         var (cwd, _, fileSystem, command) = SetupCommand(
@@ -434,7 +434,7 @@ public class CheckUpdateCommandPackageUpgradeTests
     {
         // Arrange
         var (cwd, _, fileSystem, command) = SetupCommand(
-            new() { ["test1.csproj"] = ProjectFileXml(new[] { ("MinShort", "1.0.0"), }), },
+            new() { ["test1.csproj"] = ProjectFileXml(new[] { ("MinShort", "1.0.0") }) },
             new PackageDictionary()
             {
                 ["MinShort"] = new[]
@@ -456,7 +456,7 @@ public class CheckUpdateCommandPackageUpgradeTests
             {
                 Cwd = cwd,
                 Upgrade = true,
-                Target = UpgradeTarget.Latest
+                Target = UpgradeTarget.Latest,
             }
         );
 
@@ -476,7 +476,7 @@ public class CheckUpdateCommandPackageUpgradeTests
     {
         // Arrange
         var (cwd, _, fileSystem, command) = SetupCommand(
-            new() { ["test1.csproj"] = ProjectFileXml(new[] { ("MinShort", "1.0.1-alpha2"), }), },
+            new() { ["test1.csproj"] = ProjectFileXml(new[] { ("MinShort", "1.0.1-alpha2") }) },
             new PackageDictionary()
             {
                 ["MinShort"] = new[]
@@ -500,7 +500,7 @@ public class CheckUpdateCommandPackageUpgradeTests
             {
                 Cwd = cwd,
                 Upgrade = true,
-                Target = UpgradeTarget.Latest
+                Target = UpgradeTarget.Latest,
             }
         );
 
@@ -520,7 +520,7 @@ public class CheckUpdateCommandPackageUpgradeTests
     {
         // Arrange
         var (cwd, _, fileSystem, command) = SetupCommand(
-            new() { ["test1.csproj"] = ProjectFileXml(new[] { ("MinShort", "1.0.0-alpha.1"), }), },
+            new() { ["test1.csproj"] = ProjectFileXml(new[] { ("MinShort", "1.0.0-alpha.1") }) },
             new PackageDictionary()
             {
                 ["MinShort"] = new[]
@@ -542,7 +542,7 @@ public class CheckUpdateCommandPackageUpgradeTests
             {
                 Cwd = cwd,
                 Upgrade = true,
-                Target = UpgradeTarget.Latest
+                Target = UpgradeTarget.Latest,
             }
         );
 
@@ -609,7 +609,7 @@ public class CheckUpdateCommandPackageUpgradeTests
             {
                 Cwd = cwd,
                 Upgrade = true,
-                Target = UpgradeTarget.Latest
+                Target = UpgradeTarget.Latest,
             }
         );
 
@@ -639,14 +639,14 @@ public class CheckUpdateCommandPackageUpgradeTests
             cwd,
             fileSystem,
             "test2.csproj",
-            new[] { ("NoUpgrade1", "1.0.0"), ("NoUpgrade5", "1.0.0"), ("Upgrade3", "3.0.0"), }
+            new[] { ("NoUpgrade1", "1.0.0"), ("NoUpgrade5", "1.0.0"), ("Upgrade3", "3.0.0") }
         );
 
         await AssertPackages(
             cwd,
             fileSystem,
             "test3.csproj",
-            new[] { ("NoUpgrade1", "1.0.0"), ("NoUpgrade5", "1.0.0"), ("NoUpgrade1", "1.0.0"), }
+            new[] { ("NoUpgrade1", "1.0.0"), ("NoUpgrade5", "1.0.0"), ("NoUpgrade1", "1.0.0") }
         );
     }
 
@@ -693,7 +693,7 @@ public class CheckUpdateCommandPackageUpgradeTests
             {
                 Cwd = cwd,
                 Upgrade = true,
-                Target = UpgradeTarget.Latest
+                Target = UpgradeTarget.Latest,
             }
         );
 
@@ -759,7 +759,7 @@ public class CheckUpdateCommandPackageUpgradeTests
 
         // Arrange
         var (cwd, _, fileSystem, command) = SetupCommand(
-            new() { ["test1.csproj"] = content, },
+            new() { ["test1.csproj"] = content },
             new PackageDictionary()
             {
                 ["Exact"] = nugetVersions,
@@ -782,7 +782,7 @@ public class CheckUpdateCommandPackageUpgradeTests
             {
                 Cwd = cwd,
                 Upgrade = true,
-                Target = UpgradeTarget.Latest
+                Target = UpgradeTarget.Latest,
             }
         );
 
@@ -838,7 +838,7 @@ public class CheckUpdateCommandPackageUpgradeTests
 
         // Arrange
         var (cwd, _, fileSystem, command) = SetupCommand(
-            new() { ["test1.csproj"] = content, },
+            new() { ["test1.csproj"] = content },
             new PackageDictionary()
             {
                 ["MinShort"] = new[]
@@ -857,7 +857,7 @@ public class CheckUpdateCommandPackageUpgradeTests
             {
                 Cwd = cwd,
                 Upgrade = true,
-                Target = UpgradeTarget.Latest
+                Target = UpgradeTarget.Latest,
             }
         );
 
@@ -903,7 +903,7 @@ public class CheckUpdateCommandPackageUpgradeTests
 
         // Arrange
         var (cwd, _, fileSystem, command) = SetupCommand(
-            new() { ["test1.csproj"] = ProjectFileXml(new[] { ("UpgradeTest", version), }), },
+            new() { ["test1.csproj"] = ProjectFileXml(new[] { ("UpgradeTest", version) }) },
             new PackageDictionary()
             {
                 ["UpgradeTest"] = versions.ConvertAll(VersionExtensions.ToNuGetVersion),
@@ -917,7 +917,7 @@ public class CheckUpdateCommandPackageUpgradeTests
             {
                 Cwd = cwd,
                 Upgrade = true,
-                Target = target
+                Target = target,
             }
         );
 

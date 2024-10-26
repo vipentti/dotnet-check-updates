@@ -165,7 +165,7 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
                             settings.NugetSources.Select(
                                 it => new NuGet.Configuration.PackageSource(it)
                             )
-                        )
+                        ),
                     }
                 );
             }

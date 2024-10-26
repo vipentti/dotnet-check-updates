@@ -86,10 +86,7 @@ services
     .AddHttpClient<NuGetApiClient>(client => client.BaseAddress = new Uri(nugetApiBaseUrl))
     .ConfigurePrimaryHttpMessageHandler(
         () =>
-            new HttpClientHandler()
-            {
-                AutomaticDecompression = System.Net.DecompressionMethods.All,
-            }
+            new HttpClientHandler() { AutomaticDecompression = System.Net.DecompressionMethods.All }
     );
 
 using var applicationExitHandler = new ApplicationExitHandler();
@@ -200,7 +197,7 @@ static List<IRenderable?>? GetRenderableErrorMessage(Exception ex, bool convert 
     {
         var converted = new List<IRenderable?>
         {
-            new Markup($"[red]Error:[/] {ex.Message.EscapeMarkup()}{Environment.NewLine}")
+            new Markup($"[red]Error:[/] {ex.Message.EscapeMarkup()}{Environment.NewLine}"),
         };
 
         // Got a renderable inner exception

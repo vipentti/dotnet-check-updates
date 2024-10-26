@@ -19,7 +19,7 @@ public class CheckUpdateCommandSettingsTests
     [Fact]
     public void SpecifyingBothProjectAndSolutionIsAnError()
     {
-        var settings = new Settings() { Project = "not null", Solution = "not null", };
+        var settings = new Settings() { Project = "not null", Solution = "not null" };
 
         var result = settings.Validate();
         result.Successful.Should().BeFalse();
@@ -29,7 +29,7 @@ public class CheckUpdateCommandSettingsTests
     [Fact]
     public void DepthGreaterThanMaximumIsInvalid()
     {
-        var settings = new Settings() { Depth = int.MaxValue, };
+        var settings = new Settings() { Depth = int.MaxValue };
 
         var result = settings.Validate();
         result.Successful.Should().BeFalse();
@@ -39,7 +39,7 @@ public class CheckUpdateCommandSettingsTests
     [Fact]
     public void DepthBelowZeroIsInvalid()
     {
-        var settings = new Settings() { Depth = -1, };
+        var settings = new Settings() { Depth = -1 };
 
         var result = settings.Validate();
         result.Successful.Should().BeFalse();
@@ -49,7 +49,7 @@ public class CheckUpdateCommandSettingsTests
     [Fact]
     public void ConcurrencyBelowOneIsInvalid()
     {
-        var settings = new Settings() { Concurrency = 0, };
+        var settings = new Settings() { Concurrency = 0 };
 
         var result = settings.Validate();
         result.Successful.Should().BeFalse();
@@ -59,7 +59,7 @@ public class CheckUpdateCommandSettingsTests
     [Fact]
     public void ConcurrencyAboveMaximumIsInvalid()
     {
-        var settings = new Settings() { Concurrency = int.MaxValue, };
+        var settings = new Settings() { Concurrency = int.MaxValue };
 
         var result = settings.Validate();
         result.Successful.Should().BeFalse();

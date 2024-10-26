@@ -69,7 +69,7 @@ internal partial class CheckUpdateCommand
 
             return it with
             {
-                PackageReferences = packages.ToImmutable()
+                PackageReferences = packages.ToImmutable(),
             };
         });
 

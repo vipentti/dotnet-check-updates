@@ -104,7 +104,7 @@ internal partial class CheckUpdateCommand
             Converter = it => it.Text,
             PageSize = settings.InteractivePageSize ?? 10,
             InstructionsText =
-                "[grey](Press <space> to select, <enter> to accept, <ctrl + c> to cancel)[/]"
+                "[grey](Press <space> to select, <enter> to accept, <ctrl + c> to cancel)[/]",
         };
         var sb = new StringBuilder();
         var didHaveUpgrades = false;

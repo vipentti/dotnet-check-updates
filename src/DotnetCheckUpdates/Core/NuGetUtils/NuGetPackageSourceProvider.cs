@@ -14,7 +14,7 @@ internal partial class NuGetPackageSourceProvider(
 {
     private static readonly IEnumerable<PackageSource> s_defaultSources =
     [
-        new PackageSource(NuGetConstants.V3FeedUrl) { ProtocolVersion = 3, }
+        new PackageSource(NuGetConstants.V3FeedUrl) { ProtocolVersion = 3 },
     ];
 
     private readonly ImmutableArray<PackageSource> _providedSources =

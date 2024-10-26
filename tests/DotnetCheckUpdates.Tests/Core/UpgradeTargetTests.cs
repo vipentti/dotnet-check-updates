@@ -31,7 +31,7 @@ public class UpgradeTargetTests
                 {
                     Versions = versions.ToList(),
                     SupportedFrameworks = MockUpgrade.DefaultSupportedFrameworks,
-                }
+                },
             }
         );
 
@@ -43,7 +43,7 @@ public class UpgradeTargetTests
         var current = PackageReference.From("UpgradeTest", version);
 
         var upgrade = await packageService.GetPackageUpgrade(
-            new[] { "net6.0".ToNuGetFramework(), },
+            new[] { "net6.0".ToNuGetFramework() },
             current,
             target
         );
@@ -73,7 +73,7 @@ public class UpgradeTargetTests
                 "prefers non-pre-release",
                 UpgradeTarget.Latest,
                 "1.0.0",
-                new[] { "1.0.1-alpha", "1.0.1", },
+                new[] { "1.0.1-alpha", "1.0.1" },
                 "1.0.1"
             },
             {
@@ -95,7 +95,7 @@ public class UpgradeTargetTests
                 "no matching major version",
                 UpgradeTarget.Major,
                 "1.0.0",
-                new[] { "1.0.1-alpha", "1.0.1", "1.0.2", "1.0.3-beta", },
+                new[] { "1.0.1-alpha", "1.0.1", "1.0.2", "1.0.3-beta" },
                 "1.0.0"
             },
             {
@@ -170,70 +170,70 @@ public class UpgradeTargetTests
                 "no better minor version",
                 UpgradeTarget.Minor,
                 "1.0.0",
-                new[] { "1.0.1-alpha", "1.0.1", "1.0.2", "1.0.3-beta", },
+                new[] { "1.0.1-alpha", "1.0.1", "1.0.2", "1.0.3-beta" },
                 "1.0.0"
             },
             {
                 "no better minor version",
                 UpgradeTarget.Minor,
                 "1.0.0",
-                new[] { "1.0.1-alpha", "2.1.1", "3.2.2", "4.0.3-beta", },
+                new[] { "1.0.1-alpha", "2.1.1", "3.2.2", "4.0.3-beta" },
                 "1.0.0"
             },
             {
                 "no better minor version",
                 UpgradeTarget.PrereleaseMinor,
                 "1.0.0",
-                new[] { "1.0.1-alpha", "2.1.1", "3.2.2", "4.0.3-beta", },
+                new[] { "1.0.1-alpha", "2.1.1", "3.2.2", "4.0.3-beta" },
                 "1.0.0"
             },
             {
                 "greatest non-pre-release minor version",
                 UpgradeTarget.Minor,
                 "1.0.0-beta",
-                new[] { "1.0.1-alpha", "1.1.1", "1.2.2", "1.3.3-beta", },
+                new[] { "1.0.1-alpha", "1.1.1", "1.2.2", "1.3.3-beta" },
                 "1.2.2"
             },
             {
                 "greatest minor version",
                 UpgradeTarget.PrereleaseMinor,
                 "1.0.0-beta",
-                new[] { "1.0.1-alpha", "1.1.1", "1.2.2", "1.3.3-beta", },
+                new[] { "1.0.1-alpha", "1.1.1", "1.2.2", "1.3.3-beta" },
                 "1.3.3-beta"
             },
             {
                 "no better patch version",
                 UpgradeTarget.Patch,
                 "1.0.0",
-                new[] { "1.0.1-alpha", "1.0.3-beta", },
+                new[] { "1.0.1-alpha", "1.0.3-beta" },
                 "1.0.0"
             },
             {
                 "no better patch version",
                 UpgradeTarget.Patch,
                 "1.0.0",
-                new[] { "1.0.1-alpha", "2.0.0", "2.0.1", },
+                new[] { "1.0.1-alpha", "2.0.0", "2.0.1" },
                 "1.0.0"
             },
             {
                 "no better patch version",
                 UpgradeTarget.PrereleasePatch,
                 "1.0.0",
-                new[] { "2.0.0", "2.0.1", },
+                new[] { "2.0.0", "2.0.1" },
                 "1.0.0"
             },
             {
                 "better patch version",
                 UpgradeTarget.Patch,
                 "1.0.0",
-                new[] { "1.0.1-alpha", "1.0.1", "1.0.3-beta", },
+                new[] { "1.0.1-alpha", "1.0.1", "1.0.3-beta" },
                 "1.0.1"
             },
             {
                 "better patch version",
                 UpgradeTarget.PrereleasePatch,
                 "1.0.0",
-                new[] { "1.0.1-alpha", "1.0.1", "1.0.3-beta", },
+                new[] { "1.0.1-alpha", "1.0.1", "1.0.3-beta" },
                 "1.0.3-beta"
             },
         };
