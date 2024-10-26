@@ -22,7 +22,6 @@ namespace build;
     , SetupDotnetVersions =
     [
         "6.x",
-        "7.x",
         "8.x",
     ]
     , InvokedTargets =
@@ -42,7 +41,6 @@ namespace build;
     , SetupDotnetVersions =
     [
         "6.x",
-        "7.x",
         "8.x",
     ]
     , InvokedTargets =
