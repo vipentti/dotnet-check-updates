@@ -39,7 +39,7 @@ public partial class CheckUpdateCommandTests
         // Act
         var result = await command.ExecuteAsync(
             DefaultCommandContext,
-            new CheckUpdateCommand.Settings { Cwd = cwd, Recurse = false, }
+            new CheckUpdateCommand.Settings { Cwd = cwd, Recurse = false }
         );
 
         // Assert
@@ -174,7 +174,7 @@ public partial class CheckUpdateCommandTests
 
         var result = await command.ExecuteAsync(
             TestCommandContext,
-            new CheckUpdateCommand.Settings { Cwd = cwd, Upgrade = true, }
+            new CheckUpdateCommand.Settings { Cwd = cwd, Upgrade = true }
         );
 
         result.Should().Be(0);

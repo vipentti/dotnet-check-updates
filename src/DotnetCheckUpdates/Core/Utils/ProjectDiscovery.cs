@@ -139,7 +139,7 @@ internal sealed partial class ProjectDiscovery(
                 {
                     solutionSpecificDirectoryBuildProps[solution] =
                     [
-                        .. directoryBuildPropFiles.OrderBy(it => it, StringComparer.Ordinal)
+                        .. directoryBuildPropFiles.OrderBy(it => it, StringComparer.Ordinal),
                     ];
                 }
             }
@@ -149,7 +149,9 @@ internal sealed partial class ProjectDiscovery(
                 var originalProjects = solutionProjectMap[solution];
                 solutionProjectMap[solution] =
                 [
-                    .. originalProjects.Concat(propsFiles).OrderBy(it => it, StringComparer.Ordinal)
+                    .. originalProjects
+                        .Concat(propsFiles)
+                        .OrderBy(it => it, StringComparer.Ordinal),
                 ];
                 projectFiles.AddRange(propsFiles);
             }

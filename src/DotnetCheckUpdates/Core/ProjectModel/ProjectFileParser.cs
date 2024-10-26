@@ -110,7 +110,7 @@ internal static class ProjectFileParser
         {
             Xml = xml,
             Sdk = sdk,
-            Imports = imports
+            Imports = imports,
         };
     }
 

@@ -142,7 +142,7 @@ public class CheckUpdateCommandSolutionTests
         var (cwd, fileSystem, command) = SetupCommand(
             new MockSolution("test.sln")
             {
-                Projects = { new("nested/project.fsproj") { Packages = { ("Test", "1.0") } } }
+                Projects = { new("nested/project.fsproj") { Packages = { ("Test", "1.0") } } },
             },
             new[]
             {
@@ -161,7 +161,7 @@ public class CheckUpdateCommandSolutionTests
             {
                 Cwd = cwd,
                 Upgrade = true,
-                Target = UpgradeTarget.Latest
+                Target = UpgradeTarget.Latest,
             }
         );
 
@@ -182,7 +182,7 @@ public class CheckUpdateCommandSolutionTests
         var (cwd, fileSystem, command) = SetupCommand(
             new MockSolution("test.sln")
             {
-                Projects = { new("nested/project.notcsproj") { Packages = { ("Test", "1.0") } } }
+                Projects = { new("nested/project.notcsproj") { Packages = { ("Test", "1.0") } } },
             },
             new[]
             {
@@ -201,7 +201,7 @@ public class CheckUpdateCommandSolutionTests
             {
                 Cwd = cwd,
                 Upgrade = true,
-                Target = UpgradeTarget.Latest
+                Target = UpgradeTarget.Latest,
             }
         );
 
@@ -226,9 +226,9 @@ public class CheckUpdateCommandSolutionTests
                 {
                     new("nested/project.csproj", Frameworks.Net5_0)
                     {
-                        Packages = { ("Test", "1.0") }
-                    }
-                }
+                        Packages = { ("Test", "1.0") },
+                    },
+                },
             },
             new[]
             {
@@ -247,7 +247,7 @@ public class CheckUpdateCommandSolutionTests
             {
                 Cwd = cwd,
                 Upgrade = true,
-                Target = UpgradeTarget.Latest
+                Target = UpgradeTarget.Latest,
             }
         );
 
@@ -272,20 +272,20 @@ public class CheckUpdateCommandSolutionTests
                 {
                     new($"{CliConstants.DirectoryBuildPropsFileName}", Framework: Frameworks.Net8_0)
                     {
-                        Packages = { ("Test", "1.0") }
+                        Packages = { ("Test", "1.0") },
                     },
                     new(
                         $"nested/{CliConstants.DirectoryBuildPropsFileName}",
                         Framework: Frameworks.Net8_0
                     )
                     {
-                        Packages = { ("Test2", "1.0") }
+                        Packages = { ("Test2", "1.0") },
                     },
                     new("nested/project/project.csproj", Framework: "")
                     {
-                        Packages = { ("Test3", "1.0") }
+                        Packages = { ("Test3", "1.0") },
                     },
-                }
+                },
             },
             new[]
             {
@@ -314,7 +314,7 @@ public class CheckUpdateCommandSolutionTests
             {
                 Cwd = cwd,
                 Upgrade = true,
-                Target = UpgradeTarget.Latest
+                Target = UpgradeTarget.Latest,
             }
         );
 

@@ -38,7 +38,7 @@ public class ProjectDiscoveryTests
         // Act
 
         var result = await sut.DiscoverProjectsAndSolutions(
-            new() { Cwd = fileSystem.Directory.GetCurrentDirectory(), }
+            new() { Cwd = fileSystem.Directory.GetCurrentDirectory() }
         );
 
         // Asssert
@@ -95,7 +95,7 @@ public class ProjectDiscoveryTests
         // Act
 
         var result = await sut.DiscoverProjectsAndSolutions(
-            new() { Cwd = fileSystem.Directory.GetCurrentDirectory(), }
+            new() { Cwd = fileSystem.Directory.GetCurrentDirectory() }
         );
 
         // Asssert

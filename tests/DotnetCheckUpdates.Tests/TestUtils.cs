@@ -169,7 +169,7 @@ internal static class TestUtils
     {
         return new MockFileSystem(
             fileContents.ToDictionary(kvp => kvp.Key, kvp => new MockFileData(kvp.Value)),
-            new MockFileSystemOptions() { CurrentDirectory = currentDirectory, }
+            new MockFileSystemOptions() { CurrentDirectory = currentDirectory }
         );
     }
 }

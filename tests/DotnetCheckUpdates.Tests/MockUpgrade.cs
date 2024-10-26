@@ -16,7 +16,7 @@ internal sealed record MockUpgrade(string Name)
         Frameworks.Net7_0,
         Frameworks.Net8_0,
         Frameworks.NetStandard2_0,
-        Frameworks.NetStandard2_1
+        Frameworks.NetStandard2_1,
     ];
 
     public void Deconstruct(

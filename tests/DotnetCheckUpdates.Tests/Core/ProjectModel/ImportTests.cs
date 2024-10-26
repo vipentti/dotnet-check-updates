@@ -24,8 +24,8 @@ public class ImportTests
                 new()
                 {
                     [testRoot.PathCombine($"root/{CliConstants.DirectoryBuildPropsFileName}")] = """
-                        <Project></Project>
-                        """,
+                    <Project></Project>
+                    """,
                 }
             );
 
@@ -62,11 +62,11 @@ public class ImportTests
                 new()
                 {
                     [testRoot.PathCombine($"root/{FileName}")] = """
-                        <Project></Project>
-                        """,
+                    <Project></Project>
+                    """,
                     [testRoot.PathCombine($"root/nested/{FileName}")] = """
-                        <Project></Project>
-                        """,
+                    <Project></Project>
+                    """,
                 }
             );
 

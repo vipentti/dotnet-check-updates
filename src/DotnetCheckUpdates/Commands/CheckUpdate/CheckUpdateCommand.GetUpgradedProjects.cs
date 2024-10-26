@@ -38,7 +38,7 @@ internal partial class CheckUpdateCommand
                 // Define tasks
                 var progressTask = ctx.AddTask(
                     $"[green]Fetching latest information for {totalPackageCount} packages[/]",
-                    new() { AutoStart = true, MaxValue = totalPackageCount, }
+                    new() { AutoStart = true, MaxValue = totalPackageCount }
                 );
 
                 var results = await Fetch(settings, projects, progressTask, cancellationToken);

@@ -24,9 +24,9 @@ public class CheckUpdateCommandInteractiveOutputTests
                 {
                     new("nested/project/project.csproj", Framework: Frameworks.Default)
                     {
-                        Packages = { ("Test3", "1.0") }
+                        Packages = { ("Test3", "1.0") },
                     },
-                }
+                },
             },
             new[]
             {
@@ -80,9 +80,9 @@ No packages matched provided filters.
                 {
                     new("nested/project/project.csproj", Framework: Frameworks.Default)
                     {
-                        Packages = { ("Test3", "1.0") }
+                        Packages = { ("Test3", "1.0") },
                     },
-                }
+                },
             },
             new[]
             {
@@ -162,9 +162,9 @@ Run dotnet restore to install new versions
                 {
                     new("nested/project/project.csproj", Framework: Frameworks.Default)
                     {
-                        Packages = { ("Test3", "3.0") }
+                        Packages = { ("Test3", "3.0") },
                     },
-                }
+                },
             },
             new[]
             {

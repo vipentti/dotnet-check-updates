@@ -146,9 +146,9 @@ Run dotnet restore to install new versions
                 {
                     new("nested/project/project.csproj", Framework: Frameworks.Default)
                     {
-                        Packages = { ("Test3", "1.0") }
+                        Packages = { ("Test3", "1.0") },
                     },
-                }
+                },
             },
             new[]
             {
@@ -204,9 +204,9 @@ No packages matched provided filters.
                 {
                     new("nested/project/project.csproj", Framework: Frameworks.Default)
                     {
-                        Packages = { ("Test3", "1.0") }
+                        Packages = { ("Test3", "1.0") },
                     },
-                }
+                },
             },
             new[]
             {
@@ -261,20 +261,20 @@ No packages matched provided filters.
                 {
                     new($"{CliConstants.DirectoryBuildPropsFileName}", Framework: Frameworks.Net8_0)
                     {
-                        Packages = { ("Test", "1.0") }
+                        Packages = { ("Test", "1.0") },
                     },
                     new(
                         $"nested/{CliConstants.DirectoryBuildPropsFileName}",
                         Framework: Frameworks.Net8_0
                     )
                     {
-                        Packages = { ("Test2", "1.0") }
+                        Packages = { ("Test2", "1.0") },
                     },
                     new("nested/project/project.csproj", Framework: "")
                     {
-                        Packages = { ("Test3", "1.0") }
+                        Packages = { ("Test3", "1.0") },
                     },
-                }
+                },
             },
             new[]
             {
@@ -353,20 +353,20 @@ Run dotnet restore to install new versions
                 {
                     new($"{CliConstants.DirectoryBuildPropsFileName}", Framework: Frameworks.Net8_0)
                     {
-                        Packages = { ("Test", "1.0") }
+                        Packages = { ("Test", "1.0") },
                     },
                     new(
                         $"nested/{CliConstants.DirectoryBuildPropsFileName}",
                         Framework: Frameworks.Net8_0
                     )
                     {
-                        Packages = { ("Test2", "1.0") }
+                        Packages = { ("Test2", "1.0") },
                     },
                     new("nested/project/project.csproj", Framework: "")
                     {
-                        Packages = { ("Test3", "1.0") }
+                        Packages = { ("Test3", "1.0") },
                     },
-                }
+                },
             },
             Array.Empty<MockUpgrade>(),
             console: console
@@ -449,8 +449,8 @@ Run dotnet restore to install new versions
             },
             new PackageDictionary()
             {
-                ["Microsoft.Extensions.Caching.Memory"] = new[] { "9.0.0".ToNuGetVersion(), },
-                ["System.Net.Http.Json"] = new[] { "10.0.0".ToNuGetVersion(), },
+                ["Microsoft.Extensions.Caching.Memory"] = new[] { "9.0.0".ToNuGetVersion() },
+                ["System.Net.Http.Json"] = new[] { "10.0.0".ToNuGetVersion() },
             }
         );
 
