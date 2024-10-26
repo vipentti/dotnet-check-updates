@@ -16,7 +16,8 @@ namespace DotnetCheckUpdates.Tests.Commands;
 
 public class CheckUpdateCommandPackageUpgradeTests
 {
-    public static CommandContext TestCommandContext => new([], Substitute.For<IRemainingArguments>(), "test", null);
+    public static CommandContext TestCommandContext =>
+        new([], Substitute.For<IRemainingArguments>(), "test", null);
 
     [Fact]
     public async Task DoesNotUpgradeWhenNoSupportedFrameworkIsFound()
