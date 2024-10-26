@@ -27,7 +27,7 @@ jobs:
     name: windows-latest
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Setup dotnet
@@ -35,10 +35,9 @@ jobs:
         with:
           dotnet-version: |
             6.x
-            7.x
             8.x
       - name: 'Cache: .nuke/temp, ~/.nuget/packages'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             .nuke/temp
@@ -50,7 +49,7 @@ jobs:
     name: ubuntu-latest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Setup dotnet
@@ -58,10 +57,9 @@ jobs:
         with:
           dotnet-version: |
             6.x
-            7.x
             8.x
       - name: 'Cache: .nuke/temp, ~/.nuget/packages'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             .nuke/temp
@@ -73,7 +71,7 @@ jobs:
     name: macos-latest
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Setup dotnet
@@ -81,10 +79,9 @@ jobs:
         with:
           dotnet-version: |
             6.x
-            7.x
             8.x
       - name: 'Cache: .nuke/temp, ~/.nuget/packages'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             .nuke/temp
