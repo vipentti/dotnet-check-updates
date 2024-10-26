@@ -16,6 +16,8 @@ namespace DotnetCheckUpdates.Tests.Commands;
 
 public class CheckUpdateCommandPackageUpgradeTests
 {
+    public static CommandContext TestCommandContext => new([], Substitute.For<IRemainingArguments>(), "test", null);
+
     [Fact]
     public async Task DoesNotUpgradeWhenNoSupportedFrameworkIsFound()
     {
@@ -44,7 +46,7 @@ public class CheckUpdateCommandPackageUpgradeTests
 
         // Act
         var result = await command.ExecuteAsync(
-            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            TestCommandContext,
             new CheckUpdateCommand.Settings
             {
                 Cwd = cwd,
@@ -92,7 +94,7 @@ public class CheckUpdateCommandPackageUpgradeTests
 
         // Act
         var result = await command.ExecuteAsync(
-            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            TestCommandContext,
             new CheckUpdateCommand.Settings
             {
                 Cwd = cwd,
@@ -152,7 +154,7 @@ public class CheckUpdateCommandPackageUpgradeTests
 
         // Act
         var result = await command.ExecuteAsync(
-            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            TestCommandContext,
             new CheckUpdateCommand.Settings
             {
                 Cwd = cwd,
@@ -205,7 +207,7 @@ public class CheckUpdateCommandPackageUpgradeTests
 
         // Act
         var result = await command.ExecuteAsync(
-            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
             new CheckUpdateCommand.Settings
             {
                 Cwd = cwd,
@@ -261,7 +263,7 @@ public class CheckUpdateCommandPackageUpgradeTests
 
         // Act
         var result = await command.ExecuteAsync(
-            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
             new CheckUpdateCommand.Settings
             {
                 Cwd = cwd,
@@ -328,7 +330,7 @@ public class CheckUpdateCommandPackageUpgradeTests
 
         // Act
         var result = await command.ExecuteAsync(
-            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            TestCommandContext,
             new CheckUpdateCommand.Settings
             {
                 Cwd = cwd,
@@ -398,7 +400,7 @@ public class CheckUpdateCommandPackageUpgradeTests
 
         // Act
         var result = await command.ExecuteAsync(
-            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            TestCommandContext,
             new CheckUpdateCommand.Settings
             {
                 Cwd = cwd,
@@ -448,7 +450,7 @@ public class CheckUpdateCommandPackageUpgradeTests
 
         // Act
         var result = await command.ExecuteAsync(
-            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            TestCommandContext,
             new CheckUpdateCommand.Settings
             {
                 Cwd = cwd,
@@ -492,7 +494,7 @@ public class CheckUpdateCommandPackageUpgradeTests
 
         // Act
         var result = await command.ExecuteAsync(
-            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            TestCommandContext,
             new CheckUpdateCommand.Settings
             {
                 Cwd = cwd,
@@ -534,7 +536,7 @@ public class CheckUpdateCommandPackageUpgradeTests
 
         // Act
         var result = await command.ExecuteAsync(
-            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            TestCommandContext,
             new CheckUpdateCommand.Settings
             {
                 Cwd = cwd,
@@ -601,7 +603,7 @@ public class CheckUpdateCommandPackageUpgradeTests
 
         // Act
         var result = await command.ExecuteAsync(
-            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            TestCommandContext,
             new CheckUpdateCommand.Settings
             {
                 Cwd = cwd,
@@ -685,7 +687,7 @@ public class CheckUpdateCommandPackageUpgradeTests
         var command = CreateCommand(console: default, fileSystem, service, finder: default);
 
         var result = await command.ExecuteAsync(
-            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            TestCommandContext,
             new CheckUpdateCommand.Settings
             {
                 Cwd = cwd,
@@ -774,7 +776,7 @@ public class CheckUpdateCommandPackageUpgradeTests
 
         // Act
         var result = await command.ExecuteAsync(
-            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            TestCommandContext,
             new CheckUpdateCommand.Settings
             {
                 Cwd = cwd,
@@ -849,7 +851,7 @@ public class CheckUpdateCommandPackageUpgradeTests
 
         // Act
         var result = await command.ExecuteAsync(
-            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            TestCommandContext,
             new CheckUpdateCommand.Settings
             {
                 Cwd = cwd,
@@ -909,7 +911,7 @@ public class CheckUpdateCommandPackageUpgradeTests
 
         // Act
         var result = await command.ExecuteAsync(
-            new CommandContext(Substitute.For<IRemainingArguments>(), "test", null),
+            TestCommandContext,
             new CheckUpdateCommand.Settings
             {
                 Cwd = cwd,

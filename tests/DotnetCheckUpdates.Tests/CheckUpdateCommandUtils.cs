@@ -20,7 +20,7 @@ namespace DotnetCheckUpdates.Tests;
 internal static class CheckUpdateCommandUtils
 {
     public static readonly CommandContext TestCommandContext =
-        new(Substitute.For<IRemainingArguments>(), "test", null);
+        new([], Substitute.For<IRemainingArguments>(), "test", null);
 
     public static (
         FullPath Cwd,
