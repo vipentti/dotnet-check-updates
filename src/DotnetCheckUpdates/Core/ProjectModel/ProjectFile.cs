@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using System.IO.Abstractions;
+using System.Xml;
 using System.Xml.Linq;
 using DotnetCheckUpdates.Core.Extensions;
 using NuGet.Frameworks;
@@ -20,6 +21,10 @@ internal record ProjectFile(
     public int PackageCount => PackageReferences.Length;
 
     public string? Sdk { get; init; }
+
+    public string? EncodingName { get; init; }
+
+    public bool HasUtf8ByteOrderMarker { get; init; }
 
     // TODO: This can be simplified once we drop support for older frameworks
 #pragma warning disable IDE0301 // Simplify collection initialization
@@ -114,7 +119,45 @@ internal record ProjectFile(
             NeedsUpdate = false;
         }
 
-        return Xml.ToString(SaveOptions.DisableFormatting);
+        Encoding encoding;
+
+        try
+        {
+            if (string.Equals(EncodingName, "utf-8", StringComparison.OrdinalIgnoreCase))
+            {
+                encoding = HasUtf8ByteOrderMarker
+                    ? Encoding.UTF8
+                    : ProjectFileParser.Utf8WithoutBom;
+            }
+            else
+            {
+                encoding = string.IsNullOrEmpty(Xml.Declaration?.Encoding)
+                    ? ProjectFileParser.Utf8WithoutBom
+                    : Encoding.GetEncoding(Xml.Declaration.Encoding);
+            }
+        }
+        catch
+        {
+            // Default to utf8 without bom
+            encoding = ProjectFileParser.Utf8WithoutBom;
+        }
+
+        using var ms = new MemoryStream();
+        using (
+            var xw = XmlWriter.Create(
+                ms,
+                new XmlWriterSettings()
+                {
+                    Encoding = encoding,
+                    OmitXmlDeclaration = Xml.Declaration is null,
+                }
+            )
+        )
+        {
+            Xml.Save(xw);
+        }
+
+        return encoding.GetString(ms.ToArray());
     }
 
     private XDocument GetUpdatedXml()

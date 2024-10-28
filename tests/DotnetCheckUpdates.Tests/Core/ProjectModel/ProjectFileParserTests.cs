@@ -265,6 +265,32 @@ public class ProjectFileParserTests
     }
 
     [Fact]
+    public void Maintains_Xml_Declaration()
+    {
+        var content = """
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+        <OutputType>Exe</OutputType>
+
+        <TargetFramework>net5.0</TargetFramework>
+
+    <Nullable>enable</Nullable>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Flurl" Version="3.2.0" /> <PackageReference Include="Flurl.Http" Version="3.2.1" />
+  </ItemGroup>
+</Project>
+""".TrimStart();
+
+        var projectFile = ProjectFileParser.ParseProjectFile(content, "testfile");
+
+        projectFile.ProjectFileToXml().Should().Be(content);
+    }
+
+    [Fact]
     public void Throws_with_unsupported_sdk()
     {
         var xml = @"

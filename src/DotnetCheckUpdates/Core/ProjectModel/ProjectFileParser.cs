@@ -2,6 +2,7 @@
 // Distributed under the MIT License.
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
+using System.Xml;
 using System.Xml.Linq;
 using CommunityToolkit.Diagnostics;
 using DotnetCheckUpdates.Core.Extensions;
@@ -49,14 +50,87 @@ internal static class ProjectFileParser
     ];
 
     public static IEnumerable<XElement> GetPackageReferenceElements(this XDocument xml) =>
-        xml.Descendants("PackageReference") ?? Enumerable.Empty<XElement>();
+        xml.Descendants("PackageReference") ?? [];
 
     public static IEnumerable<XElement> GetImportElements(this XDocument xml) =>
-        xml.Descendants("Import") ?? Enumerable.Empty<XElement>();
+        xml.Descendants("Import") ?? [];
+
+    private static MemoryStream ToStream(this string input)
+    {
+        var stream = new MemoryStream();
+        var writer = new StreamWriter(stream);
+        writer.Write(input);
+        writer.Flush();
+        stream.Position = 0;
+        return stream;
+    }
+
+    public static readonly Encoding Utf8WithoutBom = new UTF8Encoding(
+        encoderShouldEmitUTF8Identifier: false
+    );
+
+    private static string DetectEncoding(Stream stream)
+    {
+        if (stream.CanSeek)
+        {
+            stream.Seek(0, SeekOrigin.Begin);
+        }
+
+        using var reader = new StreamReader(
+            stream,
+            Utf8WithoutBom,
+            detectEncodingFromByteOrderMarks: true,
+            leaveOpen: true
+        );
+        reader.Peek();
+
+        if (stream.CanSeek)
+        {
+            stream.Seek(0, SeekOrigin.Begin);
+        }
+
+        var encoding = reader.CurrentEncoding;
+
+        return encoding.BodyName;
+    }
+
+    private static bool HasUtf8ByteOrderMarker(Stream stream)
+    {
+        if (stream.CanSeek)
+        {
+            stream.Seek(0, SeekOrigin.Begin);
+        }
+
+        Span<byte> buffer = stackalloc byte[3];
+
+        if (stream.Read(buffer) >= 3 && buffer.SequenceEqual(Encoding.UTF8.Preamble))
+        {
+            return true;
+        }
+
+        if (stream.CanSeek)
+        {
+            stream.Seek(0, SeekOrigin.Begin);
+        }
+
+        return false;
+    }
 
     public static ProjectFile ParseLessStrictProjectFile(string xmlContent, string filePath)
     {
-        var xml = XDocument.Parse(xmlContent, LoadOptions.PreserveWhitespace);
+        XDocument xml;
+        string encodingName;
+        bool hasByteOrderMarker;
+
+        using (var ms = xmlContent.ToStream())
+        {
+            encodingName = DetectEncoding(ms);
+            hasByteOrderMarker = HasUtf8ByteOrderMarker(ms);
+            using (var reader = XmlReader.Create(ms))
+            {
+                xml = XDocument.Load(reader, LoadOptions.PreserveWhitespace);
+            }
+        }
 
         if (xml?.Root is null)
         {
@@ -111,6 +185,8 @@ internal static class ProjectFileParser
             Xml = xml,
             Sdk = sdk,
             Imports = imports,
+            EncodingName = encodingName,
+            HasUtf8ByteOrderMarker = hasByteOrderMarker,
         };
     }
 
