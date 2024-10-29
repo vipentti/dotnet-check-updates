@@ -26,7 +26,7 @@ internal record ProjectFile(
 
     public bool HasUtf8ByteOrderMarker { get; init; }
 
-    // TODO: This can be simplified once we drop support for older frameworks
+    // This can be simplified once we drop support for older frameworks
 #pragma warning disable IDE0301 // Simplify collection initialization
     public ImmutableArray<Import> Imports { get; init; } = ImmutableArray<Import>.Empty;
 #pragma warning restore IDE0301 // Simplify collection initialization

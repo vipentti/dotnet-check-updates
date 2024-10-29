@@ -4,7 +4,7 @@
 
 namespace DotnetCheckUpdates.Core;
 
-internal class PromptCanceledException : Exception
+public class PromptCanceledException : Exception
 {
     public PromptCanceledException() { }
 

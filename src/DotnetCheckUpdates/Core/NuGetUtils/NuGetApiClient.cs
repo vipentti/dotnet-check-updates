@@ -37,7 +37,7 @@ internal class NuGetApiClient
         );
         try
         {
-            using var stream = await _httpClient.GetStreamAsync(url, cancellationToken);
+            await using var stream = await _httpClient.GetStreamAsync(url, cancellationToken);
 
             var reader = new NuspecReader(stream);
 

@@ -37,6 +37,7 @@ internal static class NuGetFrameworkCatalogEntryReader
 
         var frameworks = ImmutableHashSet.CreateBuilder<NuGetFramework>();
 
+#pragma warning disable S2589 // Boolean expressions should not be gratuitous
         if (
             catalogDocument.RootElement.TryGetProperty("dependencyGroups", out var depElement)
             && depElement.ValueKind == JsonValueKind.Array
@@ -107,6 +108,7 @@ internal static class NuGetFrameworkCatalogEntryReader
                 }
             }
         }
+#pragma warning restore S2589 // Boolean expressions should not be gratuitous
 
         return frameworks.ToImmutable();
     }

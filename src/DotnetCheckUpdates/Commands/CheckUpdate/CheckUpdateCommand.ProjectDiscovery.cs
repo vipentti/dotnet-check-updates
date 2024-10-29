@@ -48,7 +48,7 @@ internal partial class CheckUpdateCommand
                 for (var i = packages.Count - 1; i >= 0; --i)
                 {
                     var pkgName = packages[i].Name;
-                    if (includeFilters.Any(it => it.IsMatch(pkgName)) is false)
+                    if (!includeFilters.Any(it => it.IsMatch(pkgName)))
                     {
                         packages.RemoveAt(i);
                     }
@@ -60,7 +60,7 @@ internal partial class CheckUpdateCommand
                 for (var i = packages.Count - 1; i >= 0; --i)
                 {
                     var pkgName = packages[i].Name;
-                    if (excludeFilters.Any(it => it.IsMatch(pkgName)) is true)
+                    if (excludeFilters.Any(it => it.IsMatch(pkgName)))
                     {
                         packages.RemoveAt(i);
                     }

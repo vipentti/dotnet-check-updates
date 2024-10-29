@@ -23,7 +23,11 @@ internal static class ImmutableExtensions
         index >= 0 && index < arr.Length ? arr[index] : default;
 
     public static T? Find<T>(this ImmutableArray<T> array, Predicate<T> predicate) =>
-        array.FindIndex(predicate) is int i && i > -1 ? array[i] : default;
+        array.FindIndex(predicate) switch
+        {
+            var it when it > -1 => array[it],
+            _ => default,
+        };
 
     public static int FindIndex<T>(this ImmutableArray<T> array, Predicate<T> predicate)
     {

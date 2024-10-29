@@ -153,22 +153,19 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
             _currentDirectoryProvider.CurrentDirectory = cwd;
         }
 
-        if (_featureCollection is not null)
+        if (_featureCollection is not null && settings.NugetSources?.Length > 0)
         {
-            if (settings.NugetSources is not null && settings.NugetSources.Length > 0)
-            {
-                _featureCollection.Set<NuGetPackageSourceFeature>(
-                    new()
-                    {
-                        PackageSourceProvider = new NuGetPackageSourceProvider(
-                            _logger,
-                            settings.NugetSources.Select(
-                                it => new NuGet.Configuration.PackageSource(it)
-                            )
-                        ),
-                    }
-                );
-            }
+            _featureCollection.Set<NuGetPackageSourceFeature>(
+                new()
+                {
+                    PackageSourceProvider = new NuGetPackageSourceProvider(
+                        _logger,
+                        settings.NugetSources.Select(it => new NuGet.Configuration.PackageSource(
+                            it
+                        ))
+                    ),
+                }
+            );
         }
 
         if (settings.Interactive)

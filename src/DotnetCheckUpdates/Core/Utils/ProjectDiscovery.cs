@@ -56,11 +56,10 @@ internal sealed partial class ProjectDiscovery(
         }
         else if (!string.IsNullOrWhiteSpace(request.Solution))
         {
-            projectFiles.AddRange(
-                solutionProjectMap[request.Solution] = GetProjectFilePathsForSolution(
-                    request.Solution
-                )
+            var items = solutionProjectMap[request.Solution] = GetProjectFilePathsForSolution(
+                request.Solution
             );
+            projectFiles.AddRange(items);
         }
         else
         {
@@ -68,15 +67,18 @@ internal sealed partial class ProjectDiscovery(
                 await GetProjectFilesByPattern(request.Cwd, request.Recurse, request.Depth)
             );
 
+#pragma warning disable S2583 // Conditionally executed code should be reachable
             if (projectFiles.Count == 0)
             {
                 foreach (
                     var (solution, solutionProjects) in await SolutionProjectsByPattern(request.Cwd)
                 )
                 {
-                    projectFiles.AddRange(solutionProjectMap[solution] = solutionProjects);
+                    var items = solutionProjectMap[solution] = solutionProjects;
+                    projectFiles.AddRange(items);
                 }
             }
+#pragma warning restore S2583 // Conditionally executed code should be reachable
         }
 
         var directoryBuildPropFiles = ImmutableHashSet.CreateBuilder<string>();
@@ -102,17 +104,15 @@ internal sealed partial class ProjectDiscovery(
 
                 var solutionDirectory = Path.GetDirectoryName(solution);
 
-                {
-                    if (
-                        _fileFinder.TryGetPathOfFile(
-                            CliConstants.DirectoryBuildPropsFileName,
-                            solution,
-                            out var path
-                        )
+                if (
+                    _fileFinder.TryGetPathOfFile(
+                        CliConstants.DirectoryBuildPropsFileName,
+                        solution,
+                        out var path
                     )
-                    {
-                        LogAndAddPropsFile(path);
-                    }
+                )
+                {
+                    LogAndAddPropsFile(path);
                 }
 
                 foreach (var project in solutionProjects)
@@ -135,6 +135,8 @@ internal sealed partial class ProjectDiscovery(
                     }
                 }
 
+                // directoryBuildPropFiles will not be empty if directory build props files have been found
+#pragma warning disable S2583 // Conditionally executed code should be reachable
                 if (directoryBuildPropFiles.Count > 0)
                 {
                     solutionSpecificDirectoryBuildProps[solution] =
@@ -142,8 +144,11 @@ internal sealed partial class ProjectDiscovery(
                         .. directoryBuildPropFiles.OrderBy(it => it, StringComparer.Ordinal),
                     ];
                 }
+#pragma warning restore S2583 // Conditionally executed code should be reachable
             }
 
+            // solutionSpecificDirectoryBuildProps will not be empty if there are Directory.Build.props files
+#pragma warning disable S4158 // Empty collections should not be accessed or iterated
             foreach (var (solution, propsFiles) in solutionSpecificDirectoryBuildProps)
             {
                 var originalProjects = solutionProjectMap[solution];
@@ -155,6 +160,7 @@ internal sealed partial class ProjectDiscovery(
                 ];
                 projectFiles.AddRange(propsFiles);
             }
+#pragma warning restore S4158 // Empty collections should not be accessed or iterated
         }
         else
         {
@@ -175,7 +181,7 @@ internal sealed partial class ProjectDiscovery(
             projectFiles.AddRange(directoryBuildPropFiles);
         }
 
-        // TODO: This can be simplified once we drop support for older frameworks
+        // This can be simplified once we drop support for older frameworks
 #pragma warning disable IDE0305 // Simplify collection initialization
         return new(
             projectFiles.OrderBy(it => it, StringComparer.Ordinal).ToImmutableArray(),
@@ -202,8 +208,10 @@ internal sealed partial class ProjectDiscovery(
                 var maxDepth = Math.Min(depth, 16);
                 for (var i = 0; i < maxDepth; ++i)
                 {
+#pragma warning disable S1643 // Strings should not be concatenated using '+' in a loop
                     cspattern = "*/" + cspattern;
                     fspattern = "*/" + fspattern;
+#pragma warning restore S1643 // Strings should not be concatenated using '+' in a loop
                     patterns.Add(cspattern);
                     patterns.Add(fspattern);
                 }

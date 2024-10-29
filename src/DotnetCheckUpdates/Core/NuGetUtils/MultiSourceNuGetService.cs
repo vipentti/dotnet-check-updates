@@ -71,7 +71,7 @@ internal partial class MultiSourceNuGetService(
             {
                 var found = await service.GetPackageVersionsAsync(packageId, cancellationToken);
 
-                if (found is not null && found.Any())
+                if (found?.Any() is true)
                 {
                     LogPackagesResolvedByService(logger, method, packageId, service.GetType().Name);
                     return found;

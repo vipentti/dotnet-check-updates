@@ -22,7 +22,7 @@ internal partial class CheckUpdateCommand
     {
         InitializePackageService();
 
-        var totalPackageCount = projects.Select(it => it.PackageReferences.Length).Sum();
+        var totalPackageCount = projects.Sum(it => it.PackageReferences.Length);
 
         if (settings.NoProgress)
         {

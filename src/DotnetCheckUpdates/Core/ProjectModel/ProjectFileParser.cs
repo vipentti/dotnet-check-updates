@@ -11,6 +11,7 @@ using Spectre.Console;
 
 namespace DotnetCheckUpdates.Core.ProjectModel;
 
+#pragma warning disable S125 // Sections of code should not be commented out
 internal static class Errors
 {
     public const string FailedToReadXml = "Unable to read XML {0}";
@@ -35,6 +36,7 @@ internal static class Errors
 
     // public static readonly CompositeFormat CompositeTargetFrameworkMissing = CompositeFormat.Parse(TargetFrameworkMissing);
 }
+#pragma warning restore S125 // Sections of code should not be commented out
 
 internal static class ProjectFileParser
 {

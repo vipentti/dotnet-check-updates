@@ -21,7 +21,6 @@ internal class StandardNuGetService(
     private readonly SourceRepository _repository = repository;
     private readonly SourceCacheContext _sourceCacheContext = sourceCacheContext;
     private readonly NuGetLoggerAdapter _loggerAdapter = new(logger.CreateLogger("NuGetLogger"));
-    private readonly ILogger _logger = logger.CreateLogger(nameof(StandardNuGetService));
 
     public async Task<ImmutableHashSet<NuGetFramework>> GetSupportedFrameworksAsync(
         string packageId,

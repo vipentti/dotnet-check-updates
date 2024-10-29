@@ -14,7 +14,6 @@ internal class DefaultNuGetService : INuGetService
     private readonly NuGetApiClient _nuGetApiClient;
     private readonly SourceCacheContext _sourceCacheContext;
     private readonly SourceRepository _sourceRepository;
-    private readonly ILogger<DefaultNuGetService> _logger;
     private readonly NuGetLoggerAdapter _loggerAdapter;
 
     public DefaultNuGetService(
@@ -26,8 +25,7 @@ internal class DefaultNuGetService : INuGetService
     {
         _sourceCacheContext = sourceCacheContext;
         _sourceRepository = sourceRepository;
-        _logger = logger;
-        _loggerAdapter = new NuGetLoggerAdapter(_logger);
+        _loggerAdapter = new NuGetLoggerAdapter(logger);
         _nuGetApiClient = nuGetApiClient;
     }
 

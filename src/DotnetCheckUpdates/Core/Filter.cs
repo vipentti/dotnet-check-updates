@@ -36,5 +36,5 @@ public readonly record struct Filter
     }
 
     public override string ToString() =>
-        $"Filter({_originalPattern}, {(_regex is null ? "(null)" : _regex)})";
+        $"Filter({_originalPattern}, {_regex?.ToString() ?? "(null)"})";
 }

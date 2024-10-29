@@ -99,14 +99,18 @@ internal partial class PackageUpgradeService
 
             foreach (var ours in ourTargetFrameworks)
             {
+#pragma warning disable S3267 // Loops should be simplified with "LINQ" expressions
                 foreach (var supported in frameworks)
                 {
                     if (NuGetFrameworkUtility.IsCompatibleWithFallbackCheck(ours, supported))
                     {
                         foundSupported = true;
+#pragma warning disable S907 // "goto" statement should not be used
                         goto found;
+#pragma warning restore S907 // "goto" statement should not be used
                     }
                 }
+#pragma warning restore S3267 // Loops should be simplified with "LINQ" expressions
             }
 
             found:

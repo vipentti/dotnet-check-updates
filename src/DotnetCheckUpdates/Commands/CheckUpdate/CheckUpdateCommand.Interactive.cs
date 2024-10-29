@@ -112,7 +112,8 @@ internal partial class CheckUpdateCommand
         void WriteProjectsToSolutionOrPrompt(
             IEnumerable<(ProjectFile, PackageUpgradeVersionDictionary)> values,
             MultiSelectionPrompt<InteractiveTreeItem> prompt,
-            IMultiSelectionItem<InteractiveTreeItem>? solutionGroup
+            IMultiSelectionItem<InteractiveTreeItem>? solutionGroup,
+            ref bool didHaveUpgrades
         )
         {
             foreach (
@@ -179,13 +180,19 @@ internal partial class CheckUpdateCommand
                         solutionProjectArray.Includes(it.project.FilePath)
                     ),
                     prompt,
-                    solutionGroup
+                    solutionGroup,
+                    ref didHaveUpgrades
                 );
             }
         }
         else
         {
-            WriteProjectsToSolutionOrPrompt(projectsWithUpgrades, prompt, null);
+            WriteProjectsToSolutionOrPrompt(
+                projectsWithUpgrades,
+                prompt,
+                null,
+                ref didHaveUpgrades
+            );
         }
 
         if (!didHaveUpgrades)

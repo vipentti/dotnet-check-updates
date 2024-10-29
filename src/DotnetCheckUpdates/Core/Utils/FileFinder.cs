@@ -43,7 +43,7 @@ internal class FileFinder : IFileFinder
         {
             var file = dir.GetFiles(fileName, SearchOption.TopDirectoryOnly).FirstOrDefault();
 
-            if (file is not null && file.Exists)
+            if (file?.Exists is true)
             {
                 filePath = file.FullName;
                 return true;

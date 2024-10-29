@@ -22,9 +22,9 @@ internal partial class NuGetPackageSourceProvider(
 
     public IEnumerable<PackageSource> GetPackageSources()
     {
-        var sources = _providedSources.IsEmpty ? s_defaultSources : _providedSources;
+        var sourcesToUse = _providedSources.IsEmpty ? s_defaultSources : _providedSources;
 
-        foreach (var item in sources)
+        foreach (var item in sourcesToUse)
         {
             if (logger is not null)
             {

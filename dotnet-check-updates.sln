@@ -15,7 +15,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.cspr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{A7A44D27-BCBC-4860-AB61-CBA4FFAB0A94}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MajorVersionUpgrade", "examples\MajorVersionUpgrade\MajorVersionUpgrade.csproj", "{3A418D9D-F51A-4120-BA09-0331CAA45424}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MajorVersionUpgrade", "examples\MajorVersionUpgrade\MajorVersionUpgrade.csproj", "{3A418D9D-F51A-4120-BA09-0331CAA45424}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5AFB5895-FF92-4068-9643-3A393C80773D}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

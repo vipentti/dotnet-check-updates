@@ -19,7 +19,7 @@ using Spectre.Console.Rendering;
 
 var definedArgs = new HashSet<string>() { "--show-stack-trace" };
 
-var showStackTrace = args.Any(it => it == "--show-stack-trace");
+var showStackTrace = Array.Exists(args, it => it == "--show-stack-trace");
 
 var nugetApiBaseUrl = new Uri(NuGetConstants.V3FeedUrl, UriKind.Absolute).GetLeftPart(
     UriPartial.Authority
@@ -159,14 +159,18 @@ catch (Exception ex)
 
 void WriteException(Exception ex)
 {
+#pragma warning disable S1854 // Unused assignments should be removed
     var showStack = showStackTrace;
 #if DEBUG
     showStack = true;
 #endif
+#pragma warning disable S2583 // Conditionally executed code should be reachable
     if (showStack || !TryRenderPrettyException(ex))
     {
         AnsiConsole.WriteException(ex, ExceptionFormats.Default);
     }
+#pragma warning restore S2583 // Conditionally executed code should be reachable
+#pragma warning restore S1854 // Unused assignments should be removed
 }
 
 static bool TryRenderPrettyException(Exception ex)
