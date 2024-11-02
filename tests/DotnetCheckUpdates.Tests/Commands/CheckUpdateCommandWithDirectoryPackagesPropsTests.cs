@@ -192,7 +192,10 @@ public class CheckUpdateCommandWithDirectoryPackagesPropsTests
             {
                 Projects =
                 {
-                    new($"{CliConstants.DirectoryPackagesPropsFileName}", Framework: Frameworks.Net8_0)
+                    new(
+                        $"{CliConstants.DirectoryPackagesPropsFileName}",
+                        Framework: Frameworks.Net8_0
+                    )
                     {
                         Packages = { ("Test", "1.0") },
                     },
