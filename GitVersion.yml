@@ -1,7 +1,7 @@
 assembly-versioning-scheme: MajorMinorPatch
 assembly-file-versioning-scheme: MajorMinorPatchTag
 assembly-informational-format: '{SemVer}+{BranchName}.{ShortSha}'
-next-version: 0.3.1
+next-version: 0.4.0
 branches: {}
 ignore:
   sha: []

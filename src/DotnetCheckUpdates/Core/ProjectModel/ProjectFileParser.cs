@@ -51,8 +51,18 @@ internal static class ProjectFileParser
         "Microsoft.NET.Sdk.WindowsDesktop",
     ];
 
-    public static IEnumerable<XElement> GetPackageReferenceElements(this XDocument xml) =>
-        xml.Descendants("PackageReference") ?? [];
+    public static IEnumerable<XElement> GetPackageReferenceElements(this XDocument xml)
+    {
+        foreach (var el in xml.Descendants("PackageReference") ?? [])
+        {
+            yield return el;
+        }
+
+        foreach (var el in xml.Descendants("PackageVersion") ?? [])
+        {
+            yield return el;
+        }
+    }
 
     public static IEnumerable<XElement> GetImportElements(this XDocument xml) =>
         xml.Descendants("Import") ?? [];
@@ -164,16 +174,7 @@ internal static class ProjectFileParser
             .ToImmutableArray();
 
         var packageReferences = xml.GetPackageReferenceElements()
-            .Select(item =>
-                (
-                    include: (string?)item.Attribute("Include"),
-                    version: (string?)item.Attribute("Version")
-                )
-            )
-            .Where(item =>
-                !string.IsNullOrWhiteSpace(item.include) && !string.IsNullOrWhiteSpace(item.version)
-            )
-            .Select(item => new PackageReference(item.include!, item.version!.ToVersionRange()))
+            .ToPackageReferences()
             .ToImmutableArray();
 
         var frameworks = targetFramework
@@ -191,6 +192,19 @@ internal static class ProjectFileParser
             HasUtf8ByteOrderMarker = hasByteOrderMarker,
         };
     }
+
+    private static IEnumerable<PackageReference> ToPackageReferences(
+        this IEnumerable<XElement> elements
+    ) =>
+        elements
+            .Select(item =>
+                (
+                    include: (string?)item.Attribute("Include"),
+                    version: (string?)item.Attribute("Version")
+                )
+            )
+            .Where(item => !string.IsNullOrWhiteSpace(item.include))
+            .Select(item => new PackageReference(item.include!, item.version.ToVersionRange()));
 
     public static ProjectFile ParseProjectFile(string xmlContent, string filePath)
     {

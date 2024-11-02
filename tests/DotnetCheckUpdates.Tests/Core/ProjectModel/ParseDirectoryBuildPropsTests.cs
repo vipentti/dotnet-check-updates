@@ -36,6 +36,7 @@ public class ParseDirectoryBuildPropsTests
 
     <ItemGroup>
         <PackageReference Include="Example" Version="3.0.178" />
+        <PackageReference Include="Example2" />
     </ItemGroup>
 </Project>
 """;
@@ -46,11 +47,18 @@ public class ParseDirectoryBuildPropsTests
         file.TargetFrameworks.Should().BeEmpty();
 
         file.PackageReferences.Should()
-            .SatisfyRespectively(it =>
-            {
-                it.Name.Should().Be("Example");
-                it.GetVersionString().Should().Be("3.0.178");
-            });
+            .SatisfyRespectively(
+                it =>
+                {
+                    it.Name.Should().Be("Example");
+                    it.GetVersionString().Should().Be("3.0.178");
+                },
+                it =>
+                {
+                    it.Name.Should().Be("Example2");
+                    it.GetVersionString().Should().BeEmpty();
+                }
+            );
     }
 
     [Fact]

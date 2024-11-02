@@ -38,7 +38,8 @@ dotnet tool install --global dotnet-check-updates
 
 ## Limitations
 
-- Currently only supports upgrading packages using [PackageReferences](https://learn.microsoft.com/en-us/nuget/consume-packages/package-references-in-project-files) in project files
+- Supports upgrading packages using [PackageReferences](https://learn.microsoft.com/en-us/nuget/consume-packages/package-references-in-project-files) in project and `Directory.Build.props` files
+- Supports upgrading packages using [PackageVersion](https://devblogs.microsoft.com/nuget/introducing-central-package-management/) in `Directory.Packages.props` files
 - Only certain [Version ranges](https://learn.microsoft.com/en-us/nuget/concepts/package-versioning#version-ranges) are supported when checking for upgrades (pre-releases are supported for these ranges):
 
 | Notation | Description                |

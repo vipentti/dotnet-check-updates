@@ -11,6 +11,7 @@ internal static class CliConstants
     public const string JsonExtensionWithDot = ".json";
 
     public const string DirectoryBuildPropsFileName = "Directory.Build.props";
+    public const string DirectoryPackagesPropsFileName = "Directory.Packages.props";
 
     public const string SlnExtensionWithoutDot = "sln";
     public const string SlnExtensionWithDot = "." + SlnExtensionWithoutDot;

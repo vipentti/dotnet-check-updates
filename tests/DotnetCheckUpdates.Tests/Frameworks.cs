@@ -12,6 +12,7 @@ internal static class Frameworks
     public const string Net6_0 = "net6.0";
     public const string Net7_0 = "net7.0";
     public const string Net8_0 = "net8.0";
+    public const string Net9_0 = "net9.0";
     public const string NetStandard2_0 = "netstandard2.0";
     public const string NetStandard2_1 = "netstandard2.1";
 

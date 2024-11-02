@@ -11,6 +11,8 @@ internal interface IPackageReference
     public string Name { get; }
     public VersionRange Version { get; }
 
+    public bool HasVersion { get; }
+
     public bool HasName(string name) =>
         string.Equals(Name, name, StringComparison.OrdinalIgnoreCase);
 }
