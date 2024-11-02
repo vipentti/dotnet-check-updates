@@ -4,6 +4,7 @@
 
 using System.Globalization;
 using System.Text;
+using DotnetCheckUpdates.Core.Extensions;
 using DotnetCheckUpdates.Core.ProjectModel;
 
 namespace DotnetCheckUpdates.Tests;
@@ -12,12 +13,22 @@ internal static class ProjectFileUtils
 {
     public static string ProjectFileXml(
         IEnumerable<(string id, string version)> packages,
-        string framework = Frameworks.Default
-    ) => ProjectFileXml(packages.Select(it => PackageReference.From(it.id, it.version)), framework);
+        string framework = Frameworks.Default,
+        ReferenceType referenceType = ReferenceType.PackageReference
+    ) =>
+        ProjectFileXml(
+            packages.Select(it => new PackageReference(
+                it.id,
+                string.IsNullOrWhiteSpace(it.version) ? null! : it.version.ToVersionRange()
+            )),
+            framework,
+            referenceType
+        );
 
     public static string ProjectFileXml(
         IEnumerable<PackageReference> packages,
-        string framework = Frameworks.Default
+        string framework = Frameworks.Default,
+        ReferenceType referenceType = ReferenceType.PackageReference
     ) =>
         $@"
 <Project Sdk=""Microsoft.NET.Sdk"">
@@ -28,7 +39,7 @@ internal static class ProjectFileUtils
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>{PackagesToString(packages)}
+  <ItemGroup>{PackagesToString(packages, referenceType: referenceType)}
   </ItemGroup>
 
 </Project>
@@ -61,7 +72,11 @@ EndGlobal
             """;
     }
 
-    private static string PackagesToString(IEnumerable<PackageReference>? packages, int indent = 4)
+    private static string PackagesToString(
+        IEnumerable<PackageReference>? packages,
+        int indent = 4,
+        ReferenceType referenceType = ReferenceType.PackageReference
+    )
     {
         if (packages?.Any() != true)
         {
@@ -79,7 +94,7 @@ EndGlobal
 #pragma warning disable RCS1197 // Optimize StringBuilder.Append/AppendLine call.
             sb.AppendLine(
                 CultureInfo.InvariantCulture,
-                $"<PackageReference Include=\"{package.Name}\" Version=\"{package.GetVersionString()}\" />"
+                $"""<{referenceType} Include="{package.Name}" {(package.Version is null ? "" : $"Version=\"{package.GetVersionString()}\"")} />"""
             );
 #pragma warning restore RCS1197 // Optimize StringBuilder.Append/AppendLine call.
         }

@@ -22,6 +22,11 @@ internal static class VersionExtensions
         UpgradeTarget target
     )
     {
+        if (range.Equals(VersionRange.None))
+        {
+            return false;
+        }
+
         var isExact = range.IsExact();
 
         // Currently not supporting non-exact versions with an upper bound
@@ -56,6 +61,11 @@ internal static class VersionExtensions
         UpgradeTarget target
     )
     {
+        if (range.Equals(VersionRange.None))
+        {
+            return false;
+        }
+
         var minVersion = range.MinVersion ?? NuGetVersion.Parse("0.0.0");
         var extraCondition = true;
 
@@ -128,8 +138,13 @@ internal static class VersionExtensions
             };
     }
 
-    public static VersionRange ToVersionRange(this string version)
+    public static VersionRange ToVersionRange(this string? version)
     {
+        if (string.IsNullOrWhiteSpace(version))
+        {
+            return VersionRange.None;
+        }
+
         return VersionRange.Parse(version);
     }
 

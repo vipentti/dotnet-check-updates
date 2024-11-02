@@ -12,11 +12,15 @@ using DotnetCheckUpdates.Core.ProjectModel;
 using NuGet.Frameworks;
 using NuGet.Protocol.Core.Types;
 using Nuke.Common.IO;
+using Spectre.Console.Cli;
 
 namespace DotnetCheckUpdates.Tests;
 
 internal static class TestUtils
 {
+    public static CommandContext DefaultCommandContext =>
+        new([], Substitute.For<IRemainingArguments>(), "test", null);
+
     public static bool IsWindows() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
     public static bool IsMacOS() => RuntimeInformation.IsOSPlatform(OSPlatform.OSX);

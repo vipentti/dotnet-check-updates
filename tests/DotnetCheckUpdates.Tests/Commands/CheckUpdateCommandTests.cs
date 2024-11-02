@@ -6,7 +6,6 @@ using DotnetCheckUpdates.Commands.CheckUpdate;
 using DotnetCheckUpdates.Core.ProjectModel;
 using DotnetCheckUpdates.Core.Utils;
 using NuGet.Versioning;
-using Spectre.Console.Cli;
 using static DotnetCheckUpdates.Tests.CheckUpdateCommandUtils;
 using static DotnetCheckUpdates.Tests.ProjectFileUtils;
 using static DotnetCheckUpdates.Tests.TestUtils;
@@ -15,9 +14,6 @@ namespace DotnetCheckUpdates.Tests.Commands;
 
 public partial class CheckUpdateCommandTests
 {
-    public static readonly CommandContext DefaultCommandContext =
-        new([], Substitute.For<IRemainingArguments>(), "test", null);
-
     [Fact]
     public async Task DefaultFinderPattern()
     {

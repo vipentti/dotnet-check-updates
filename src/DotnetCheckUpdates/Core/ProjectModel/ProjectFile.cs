@@ -59,7 +59,7 @@ internal record ProjectFile(
         var index = 0;
         foreach (var pkgRef in PackageReferences)
         {
-            if (packages.TryGetValue(pkgRef.Name, out var version))
+            if (pkgRef.HasVersion && packages.TryGetValue(pkgRef.Name, out var version))
             {
                 if (builder is null)
                 {

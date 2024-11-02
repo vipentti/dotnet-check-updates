@@ -254,7 +254,7 @@ No packages matched provided filters.
     {
         var console = new TestConsole();
 
-        var (cwd, fileSystem, command) = SetupCommand(
+        var (cwd, _, command) = SetupCommand(
             new MockSolution("test.sln")
             {
                 Projects =
@@ -362,7 +362,7 @@ Run dotnet restore to install new versions
                     {
                         Packages = { ("Test2", "1.0") },
                     },
-                    new("nested/project/project.csproj", Framework: "")
+                    new("nested/project/project.csproj", Framework: Frameworks.Unspecified)
                     {
                         Packages = { ("Test3", "1.0") },
                     },

@@ -62,6 +62,11 @@ internal partial class PackageUpgradeService
         CancellationToken cancellationToken = default
     )
     {
+        if (!package.HasVersion)
+        {
+            return null;
+        }
+
         LogSearchingForUpgrades(_logger, package.Name, package.Version);
 
         var ourTargetFrameworks = targetFrameworks.ToImmutableArray();
