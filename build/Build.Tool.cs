@@ -23,6 +23,7 @@ partial class Build
                 .SetGlobal(true)
                 .AddSources(From<IPack>().PackagesDirectory)
                 .SetPackageName("dotnet-check-updates")
+                .SetVersion(GitVersion.NuGetVersionV2)
             );
         });
 #pragma warning restore IDE0051 // Remove unused private members
