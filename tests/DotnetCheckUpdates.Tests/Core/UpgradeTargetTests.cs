@@ -99,6 +99,48 @@ public class UpgradeTargetTests
                 "1.0.0"
             },
             {
+                "non-major with both patch and minor options",
+                UpgradeTarget.NonMajor,
+                "1.0.0",
+                new[] { "1.0.1-alpha", "1.0.1", "1.0.2", "1.1.0", "1.2.0" },
+                "1.2.0"
+            },
+            {
+                "non-major with with only patch options",
+                UpgradeTarget.NonMajor,
+                "1.0.0",
+                new[] { "1.0.1-alpha", "1.0.1", "1.0.2", "1.0.3" },
+                "1.0.3"
+            },
+            {
+                "non-major with both with no matches",
+                UpgradeTarget.NonMajor,
+                "1.0.0",
+                new[] { "1.0.1-alpha", "1.1.0-alpha", "2.0.0" },
+                "1.0.0"
+            },
+            {
+                "prerelease-non-major with both patch and minor options",
+                UpgradeTarget.PrereleaseNonMajor,
+                "1.0.0",
+                new[] { "1.0.1-alpha", "1.0.1", "1.0.2", "1.1.0", "1.2.0", "1.3.0-alpha" },
+                "1.3.0-alpha"
+            },
+            {
+                "prerelease-non-major with with only patch options",
+                UpgradeTarget.PrereleaseNonMajor,
+                "1.0.0",
+                new[] { "1.0.1-alpha", "1.0.1", "1.0.2", "1.0.3", "1.0.4-alpha" },
+                "1.0.4-alpha"
+            },
+            {
+                "prerelease-non-major with both with no matches",
+                UpgradeTarget.PrereleaseNonMajor,
+                "1.0.0",
+                new[] { "2.0.1-alpha", "2.1.0-alpha", "2.0.0" },
+                "1.0.0"
+            },
+            {
                 "greatest non-pre-release major version",
                 UpgradeTarget.Major,
                 "1.0.0",

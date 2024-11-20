@@ -48,6 +48,8 @@ public static class PackageUpgradeServiceTests
         [InlineData(UpgradeTarget.Major, "2.0.1")]
         [InlineData(UpgradeTarget.Minor, "1.1.0")]
         [InlineData(UpgradeTarget.Patch, "1.0.1")]
+        [InlineData(UpgradeTarget.NonMajor, "1.1.0")]
+        [InlineData(UpgradeTarget.PrereleaseNonMajor, "1.2.0-minor")]
         [InlineData(UpgradeTarget.PrereleaseMajor, "3.0.1-rc")]
         [InlineData(UpgradeTarget.PrereleaseMinor, "1.2.0-minor")]
         [InlineData(UpgradeTarget.PrereleasePatch, "1.0.2-patch")]

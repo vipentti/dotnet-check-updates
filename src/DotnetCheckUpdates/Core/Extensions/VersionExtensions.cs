@@ -84,6 +84,16 @@ internal static class VersionExtensions
                 current ??= range.MinVersion;
                 extraCondition = BetterMajor(considering, minVersion);
                 break;
+            case UpgradeTarget.NonMajor:
+                current ??= range.MinVersion;
+                extraCondition =
+                    BetterMinor(considering, minVersion) || BetterPatch(considering, minVersion);
+                break;
+            case UpgradeTarget.PrereleaseNonMajor:
+                minVersion = new NuGetVersion(minVersion.Version, releaseLabel: "0");
+                extraCondition =
+                    BetterMinor(considering, minVersion) || BetterPatch(considering, minVersion);
+                break;
             case UpgradeTarget.PrereleaseMinor:
                 minVersion = new NuGetVersion(minVersion.Version, releaseLabel: "0");
                 extraCondition = BetterMinor(considering, minVersion);
@@ -104,16 +114,55 @@ internal static class VersionExtensions
                 throw new NotImplementedException(target.ToString());
         }
 
-        var floatBehavior = ToNuGetFloatVersion(target);
-        FloatRange? floatRange =
-            floatBehavior == NuGetVersionFloatBehavior.None ? null : new(floatBehavior, minVersion);
-
-        if (floatRange is not null)
+        if (target == UpgradeTarget.NonMajor)
         {
-            range = new VersionRange(range, floatRange);
-        }
+            var lhsRange = new VersionRange(
+                range,
+                new FloatRange(NuGetVersionFloatBehavior.Minor, minVersion)
+            );
+            var rhsRange = new VersionRange(
+                range,
+                new FloatRange(NuGetVersionFloatBehavior.Patch, minVersion)
+            );
 
-        return extraCondition && range.IsBetter(current, considering);
+            return extraCondition
+                && (
+                    lhsRange.IsBetter(current, considering)
+                    || rhsRange.IsBetter(current, considering)
+                );
+        }
+        else if (target == UpgradeTarget.PrereleaseNonMajor)
+        {
+            var lhsRange = new VersionRange(
+                range,
+                new FloatRange(NuGetVersionFloatBehavior.PrereleaseMinor, minVersion)
+            );
+            var rhsRange = new VersionRange(
+                range,
+                new FloatRange(NuGetVersionFloatBehavior.PrereleasePatch, minVersion)
+            );
+
+            return extraCondition
+                && (
+                    lhsRange.IsBetter(current, considering)
+                    || rhsRange.IsBetter(current, considering)
+                );
+        }
+        else
+        {
+            var floatBehavior = ToNuGetFloatVersion(target);
+            FloatRange? floatRange =
+                floatBehavior == NuGetVersionFloatBehavior.None
+                    ? null
+                    : new(floatBehavior, minVersion);
+
+            if (floatRange is not null)
+            {
+                range = new VersionRange(range, floatRange);
+            }
+
+            return extraCondition && range.IsBetter(current, considering);
+        }
 
         static bool BetterMajor(NuGetVersion lhs, NuGetVersion rhs) => lhs.Major > rhs.Major;
 
