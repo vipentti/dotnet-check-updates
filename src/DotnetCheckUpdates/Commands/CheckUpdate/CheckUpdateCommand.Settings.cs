@@ -245,6 +245,11 @@ internal partial class CheckUpdateCommand
                 sb.Append(" --solution ").Append(Solution);
             }
 
+            if (Target != UpgradeTarget.Latest)
+            {
+                sb.Append(" --target ").Append(Target.DisplayName());
+            }
+
             if (Recurse)
             {
                 sb.Append(" -r");
