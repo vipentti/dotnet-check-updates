@@ -135,7 +135,7 @@ internal partial class CheckUpdateCommand
         [Description(
             """
                 Determines the version to upgrade to:
-                latest, greatest, major, minor, patch, pre-major, pre-minor, pre-patch. (default: latest)
+                latest, greatest, major, minor, patch, non-major (aliases !major, ~major), pre-major, pre-non-major (aliases pre-!major, pre-~major), pre-minor, pre-patch. (default: latest)
                 """
         )]
         [TypeConverter(typeof(UpgradeTargetConverter))]

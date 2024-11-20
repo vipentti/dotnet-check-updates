@@ -48,6 +48,16 @@ public enum UpgradeTarget
     /// Latest patch version including pre-releases
     /// </summary>
     PrereleasePatch,
+
+    /// <summary>
+    /// Latest non-major version
+    /// </summary>
+    NonMajor,
+
+    /// <summary>
+    /// Latest non-major version, including pre-releases
+    /// </summary>
+    PrereleaseNonMajor,
 }
 
 internal static class UpgradeTargetExtensions
@@ -67,6 +77,8 @@ internal static class UpgradeTargetExtensions
         {
             UpgradeTarget.Latest => "latest",
             UpgradeTarget.Greatest => "greatest",
+            UpgradeTarget.NonMajor => "non-major",
+            UpgradeTarget.PrereleaseNonMajor => "pre-non-major",
             UpgradeTarget.Major => "major",
             UpgradeTarget.Minor => "minor",
             UpgradeTarget.Patch => "patch",
@@ -82,6 +94,14 @@ internal class UpgradeTargetConverter : TypeConverter
             ["pre-major"] = UpgradeTarget.PrereleaseMajor,
             ["pre-minor"] = UpgradeTarget.PrereleaseMinor,
             ["pre-patch"] = UpgradeTarget.PrereleasePatch,
+            ["pre-non-major"] = UpgradeTarget.PrereleaseNonMajor,
+            ["pre-not-major"] = UpgradeTarget.PrereleaseNonMajor,
+            ["pre-!major"] = UpgradeTarget.PrereleaseNonMajor,
+            ["pre-~major"] = UpgradeTarget.PrereleaseNonMajor,
+            ["non-major"] = UpgradeTarget.NonMajor,
+            ["not-major"] = UpgradeTarget.NonMajor,
+            ["!major"] = UpgradeTarget.NonMajor,
+            ["~major"] = UpgradeTarget.NonMajor,
         };
 
     public override bool GetStandardValuesSupported(ITypeDescriptorContext? context) => true;
