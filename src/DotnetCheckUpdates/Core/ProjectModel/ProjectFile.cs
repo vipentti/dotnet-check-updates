@@ -84,7 +84,7 @@ internal record ProjectFile(
 
         if (builder is not null)
         {
-            Debug.Assert(builder.Count == PackageCount, "Updated PackageReference counts differ.");
+            Debug.Assert(builder.Count == PackageCount);
 
             return this with
             {

@@ -187,7 +187,7 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
     }
 
     private async Task RestorePackages(
-        IReadOnlyDictionary<string, string[]> solutionProjectMap,
+        ImmutableDictionary<string, string[]> solutionProjectMap,
         bool hasSolutions,
         List<ProjectFile> upgradedProjects,
         Func<string, string> formatPath
