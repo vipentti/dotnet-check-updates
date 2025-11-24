@@ -206,7 +206,12 @@ internal partial class CheckUpdateCommand
 
         try
         {
-            choices = [.. (await prompt.ShowAsync(_ansiConsole, cancellationToken)).OfType<InteractiveTreePackage>()];
+            choices =
+            [
+                .. (
+                    await prompt.ShowAsync(_ansiConsole, cancellationToken)
+                ).OfType<InteractiveTreePackage>(),
+            ];
         }
         catch (TaskCanceledException ex)
         {

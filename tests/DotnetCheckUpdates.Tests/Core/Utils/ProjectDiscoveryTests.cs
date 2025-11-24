@@ -58,7 +58,10 @@ public class ProjectDiscoveryTests
     [Theory]
     [InlineData("test.sln", SolutionFileFormat.Sln)]
     [InlineData("test.slnx", SolutionFileFormat.Slnx)]
-    public async Task FindDirectoryBuildPropsFilesWhenDiscoveringSolution(string solutionFileName, SolutionFileFormat solutionFileFormat)
+    public async Task FindDirectoryBuildPropsFilesWhenDiscoveringSolution(
+        string solutionFileName,
+        SolutionFileFormat solutionFileFormat
+    )
     {
         // Arrange
         var testRoot = RootedTestPath();

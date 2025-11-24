@@ -110,7 +110,11 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
         string projectType
     );
 
-    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+    public override async Task<int> ExecuteAsync(
+        CommandContext context,
+        Settings settings,
+        CancellationToken cancellationToken
+    )
     {
         var includeFilters = CheckUpdateCommandHelpers.SplitFilters(settings.Include);
         var excludeFilters = CheckUpdateCommandHelpers.SplitFilters(settings.Exclude);

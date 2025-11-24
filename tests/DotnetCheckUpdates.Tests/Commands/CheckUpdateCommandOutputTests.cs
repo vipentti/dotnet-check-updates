@@ -44,7 +44,13 @@ public class CheckUpdateCommandOutputTests
 
         var console = new TestConsole();
 
-        var command = CreateCommand(console: console, fileSystem, service, finder: default, solutionFileFormat: SolutionFileFormat.Sln);
+        var command = CreateCommand(
+            console: console,
+            fileSystem,
+            service,
+            finder: default,
+            solutionFileFormat: SolutionFileFormat.Sln
+        );
 
         var result = await command.ExecuteAsync(
             new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
@@ -101,7 +107,13 @@ Projects
 
         var console = new TestConsole();
 
-        var command = CreateCommand(console: console, fileSystem, service, finder: default, solutionFileFormat: SolutionFileFormat.Sln);
+        var command = CreateCommand(
+            console: console,
+            fileSystem,
+            service,
+            finder: default,
+            solutionFileFormat: SolutionFileFormat.Sln
+        );
 
         var result = await command.ExecuteAsync(
             new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
@@ -138,7 +150,10 @@ Run dotnet restore to install new versions
     [Theory]
     [InlineData("test.sln", SolutionFileFormat.Sln)]
     [InlineData("test.slnx", SolutionFileFormat.Slnx)]
-    public async Task Outputs_When_No_Packages_Were_Matched_With_Include(string solutionFileName, SolutionFileFormat solutionFileFormat)
+    public async Task Outputs_When_No_Packages_Were_Matched_With_Include(
+        string solutionFileName,
+        SolutionFileFormat solutionFileFormat
+    )
     {
         // Arrange
         var console = new TestConsole();
@@ -199,7 +214,10 @@ No packages matched provided filters.
     [Theory]
     [InlineData("test.sln", SolutionFileFormat.Sln)]
     [InlineData("test.slnx", SolutionFileFormat.Slnx)]
-    public async Task Outputs_When_No_Packages_Were_Matched_With_Exclude(string solutionFileName, SolutionFileFormat solutionFileFormat)
+    public async Task Outputs_When_No_Packages_Were_Matched_With_Exclude(
+        string solutionFileName,
+        SolutionFileFormat solutionFileFormat
+    )
     {
         // Arrange
         var console = new TestConsole();
@@ -260,7 +278,10 @@ No packages matched provided filters.
     [Theory]
     [InlineData("test.sln", SolutionFileFormat.Sln)]
     [InlineData("test.slnx", SolutionFileFormat.Slnx)]
-    public async Task Output_contains_Directory_Build_props_when_found_in_solution(string solutionFileName, SolutionFileFormat solutionFileFormat)
+    public async Task Output_contains_Directory_Build_props_when_found_in_solution(
+        string solutionFileName,
+        SolutionFileFormat solutionFileFormat
+    )
     {
         var console = new TestConsole();
 
@@ -355,7 +376,10 @@ Run dotnet restore to install new versions
     [Theory]
     [InlineData("test.sln", SolutionFileFormat.Sln)]
     [InlineData("test.slnx", SolutionFileFormat.Slnx)]
-    public async Task Output_contains_Directory_Build_props_when_found_in_solution_with_no_upgrades(string solutionFileName, SolutionFileFormat solutionFileFormat)
+    public async Task Output_contains_Directory_Build_props_when_found_in_solution_with_no_upgrades(
+        string solutionFileName,
+        SolutionFileFormat solutionFileFormat
+    )
     {
         var console = new TestConsole();
 

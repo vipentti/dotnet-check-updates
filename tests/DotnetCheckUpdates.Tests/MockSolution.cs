@@ -10,16 +10,18 @@ internal sealed record MockSolution(string SolutionPath, SolutionFileFormat Solu
 
     public string GetSolution()
     {
-        var items =
-            Projects
-                .Where(it =>
-                    !it.ProjectPath.Contains(
-                        CliConstants.DirectoryBuildPropsFileName,
-                        StringComparison.OrdinalIgnoreCase
-                    )
+        var items = Projects
+            .Where(it =>
+                !it.ProjectPath.Contains(
+                    CliConstants.DirectoryBuildPropsFileName,
+                    StringComparison.OrdinalIgnoreCase
                 )
-                .Select((it, index) => ($"{index}-{Path.GetFileNameWithoutExtension(it.ProjectPath)}", it.ProjectPath))
-                .ToArray();
+            )
+            .Select(
+                (it, index) =>
+                    ($"{index}-{Path.GetFileNameWithoutExtension(it.ProjectPath)}", it.ProjectPath)
+            )
+            .ToArray();
 
         return SolutionFileFormat switch
         {

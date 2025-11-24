@@ -13,7 +13,10 @@ public class CheckUpdateCommandSolutionTests
     [Theory]
     [InlineData("test.sln", SolutionFileFormat.Sln)]
     [InlineData("test.slnx", SolutionFileFormat.Slnx)]
-    public async Task SupportsSpecifyingSolutionPath(string solutionFileName, SolutionFileFormat solutionFileFormat)
+    public async Task SupportsSpecifyingSolutionPath(
+        string solutionFileName,
+        SolutionFileFormat solutionFileFormat
+    )
     {
         // csharpier-ignore
         var (cwd, fileSystem, command) = SetupCommand(
@@ -67,7 +70,10 @@ public class CheckUpdateCommandSolutionTests
     [Theory]
     [InlineData("test.sln", SolutionFileFormat.Sln)]
     [InlineData("test.slnx", SolutionFileFormat.Slnx)]
-    public async Task SupportsUpgradingMultipleProjectsInSolution(string solutionFileName, SolutionFileFormat solutionFileFormat)
+    public async Task SupportsUpgradingMultipleProjectsInSolution(
+        string solutionFileName,
+        SolutionFileFormat solutionFileFormat
+    )
     {
         // csharpier-ignore
         var (cwd, fileSystem, command) = SetupCommand(
@@ -145,7 +151,10 @@ public class CheckUpdateCommandSolutionTests
     [Theory]
     [InlineData("test.sln", SolutionFileFormat.Sln)]
     [InlineData("test.slnx", SolutionFileFormat.Slnx)]
-    public async Task SupportsFsharpProjectsInSolution(string solutionFileName, SolutionFileFormat solutionFileFormat)
+    public async Task SupportsFsharpProjectsInSolution(
+        string solutionFileName,
+        SolutionFileFormat solutionFileFormat
+    )
     {
         var (cwd, fileSystem, command) = SetupCommand(
             new MockSolution(solutionFileName, solutionFileFormat)
@@ -187,7 +196,10 @@ public class CheckUpdateCommandSolutionTests
 
     [Theory]
     [InlineData("test.sln", SolutionFileFormat.Sln)]
-    public async Task DoesNothingIfTheProjectFileDoesNotHaveCsprojSuffix(string solutionFileName, SolutionFileFormat solutionFileFormat)
+    public async Task DoesNothingIfTheProjectFileDoesNotHaveCsprojSuffix(
+        string solutionFileName,
+        SolutionFileFormat solutionFileFormat
+    )
     {
         var (cwd, fileSystem, command) = SetupCommand(
             new MockSolution(solutionFileName, solutionFileFormat)
@@ -230,7 +242,10 @@ public class CheckUpdateCommandSolutionTests
     [Theory]
     [InlineData("test.sln", SolutionFileFormat.Sln)]
     [InlineData("test.slnx", SolutionFileFormat.Slnx)]
-    public async Task SupportsLoadingProjectsFromSolutionWithSpecificPath(string solutionFileName, SolutionFileFormat solutionFileFormat)
+    public async Task SupportsLoadingProjectsFromSolutionWithSpecificPath(
+        string solutionFileName,
+        SolutionFileFormat solutionFileFormat
+    )
     {
         var (cwd, fileSystem, command) = SetupCommand(
             new MockSolution(solutionFileName, solutionFileFormat)
@@ -279,7 +294,10 @@ public class CheckUpdateCommandSolutionTests
     [Theory]
     [InlineData("test.sln", SolutionFileFormat.Sln)]
     [InlineData("test.slnx", SolutionFileFormat.Slnx)]
-    public async Task SupportsSolutionsWithDirectoryBuildProps(string solutionFileName, SolutionFileFormat solutionFileFormat)
+    public async Task SupportsSolutionsWithDirectoryBuildProps(
+        string solutionFileName,
+        SolutionFileFormat solutionFileFormat
+    )
     {
         var (cwd, fileSystem, command) = SetupCommand(
             new MockSolution(solutionFileName, solutionFileFormat)

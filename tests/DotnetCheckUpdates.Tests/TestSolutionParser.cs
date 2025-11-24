@@ -12,7 +12,10 @@ internal sealed class TestSolutionParser : ISolutionParser
     private readonly IFileSystem _fileSystem;
     private readonly SolutionFileFormat _solutionFileFormat;
 
-    public TestSolutionParser(IFileSystem fileSystem, SolutionFileFormat solutionFileFormat = SolutionFileFormat.Sln)
+    public TestSolutionParser(
+        IFileSystem fileSystem,
+        SolutionFileFormat solutionFileFormat = SolutionFileFormat.Sln
+    )
     {
         _fileSystem = fileSystem;
         _solutionFileFormat = solutionFileFormat;
@@ -55,7 +58,12 @@ internal sealed class TestSolutionParser : ISolutionParser
             // path to the solution
             var solutionFilePath = _fileSystem.Path.GetDirectoryName(solutionPath);
 
-            return [.. DefaultSolutionParser.ParseProjectPathsFromSlnFile(tempSln).Select(it => it.Replace(tempDir, solutionFilePath))];
+            return
+            [
+                .. DefaultSolutionParser
+                    .ParseProjectPathsFromSlnFile(tempSln)
+                    .Select(it => it.Replace(tempDir, solutionFilePath)),
+            ];
         }
         finally
         {

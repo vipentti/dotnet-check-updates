@@ -7,5 +7,5 @@ namespace DotnetCheckUpdates.Tests;
 public enum SolutionFileFormat
 {
     Sln,
-    Slnx
+    Slnx,
 }

@@ -40,7 +40,13 @@ internal static class CheckUpdateCommandUtils
 
         var service = SetupMockPackages(upgrades);
 
-        var command = CreateCommand(console: default, fileSystem, service, finder: default, solutionFileFormat: SolutionFileFormat.Sln);
+        var command = CreateCommand(
+            console: default,
+            fileSystem,
+            service,
+            finder: default,
+            solutionFileFormat: SolutionFileFormat.Sln
+        );
 
         return (cwd, projectsWithPaths.Keys.ToArray(), fileSystem, command);
     }
@@ -63,7 +69,13 @@ internal static class CheckUpdateCommandUtils
 
         var service = SetupMockPackages(upgrades);
 
-        var command = CreateCommand(console: console, fileSystem, service, finder: default, solutionFileFormat: solution.SolutionFileFormat);
+        var command = CreateCommand(
+            console: console,
+            fileSystem,
+            service,
+            finder: default,
+            solutionFileFormat: solution.SolutionFileFormat
+        );
 
         return (cwd, fileSystem, command);
     }
@@ -86,7 +98,13 @@ internal static class CheckUpdateCommandUtils
 
         var service = SetupSimpleNuGetService(packageUpgrades);
 
-        var command = CreateCommand(console: default, fileSystem, service, finder: default, solutionFileFormat: SolutionFileFormat.Sln);
+        var command = CreateCommand(
+            console: default,
+            fileSystem,
+            service,
+            finder: default,
+            solutionFileFormat: SolutionFileFormat.Sln
+        );
 
         return (cwd, projectsWithPaths.Keys.ToArray(), fileSystem, command);
     }
@@ -113,7 +131,13 @@ internal static class CheckUpdateCommandUtils
 
         var service = SetupSimpleNuGetService(packageUpgrades);
 
-        var command = CreateCommand(console: console, fileSystem, service, finder: default, solutionFileFormat: SolutionFileFormat.Sln);
+        var command = CreateCommand(
+            console: console,
+            fileSystem,
+            service,
+            finder: default,
+            solutionFileFormat: SolutionFileFormat.Sln
+        );
 
         return (cwd, projectsWithPaths.Keys.ToArray(), fileSystem, command);
     }

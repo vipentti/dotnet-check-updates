@@ -86,8 +86,8 @@ EndGlobal
         if (Path.GetExtension(path) == ".props")
         {
             return $$"""
-            <File Path="{{path}}" />
-            """;
+                <File Path="{{path}}" />
+                """;
         }
 
         return $$"""

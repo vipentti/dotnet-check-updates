@@ -12,8 +12,7 @@ internal partial class NuGetSettingsProvider(
     ICurrentDirectory currentDirectory
 )
 {
-    private ISettings? _settings;
-    public ISettings NuGetSettings => _settings ??= LoadSettings();
+    public ISettings NuGetSettings => field ??= LoadSettings();
 
     private ISettings LoadSettings()
     {

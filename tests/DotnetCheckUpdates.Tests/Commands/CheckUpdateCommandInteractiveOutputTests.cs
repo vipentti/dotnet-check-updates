@@ -14,7 +14,10 @@ public class CheckUpdateCommandInteractiveOutputTests
     [Theory]
     [InlineData("test.sln", SolutionFileFormat.Sln)]
     [InlineData("test.slnx", SolutionFileFormat.Slnx)]
-    public async Task OutputsMessageWhenNoMatchingPackages(string solutionFileName, SolutionFileFormat solutionFileFormat)
+    public async Task OutputsMessageWhenNoMatchingPackages(
+        string solutionFileName,
+        SolutionFileFormat solutionFileFormat
+    )
     {
         // Arrange
         var console = new TestConsole().Interactive();
@@ -73,7 +76,10 @@ No packages matched provided filters.
     [Theory]
     [InlineData("test.sln", SolutionFileFormat.Sln)]
     [InlineData("test.slnx", SolutionFileFormat.Slnx)]
-    public async Task SupportsSelectingPackagesToUpgradeUsingInput(string solutionFileName, SolutionFileFormat solutionFileFormat)
+    public async Task SupportsSelectingPackagesToUpgradeUsingInput(
+        string solutionFileName,
+        SolutionFileFormat solutionFileFormat
+    )
     {
         // Arrange
         var console = new TestConsole().Interactive();
@@ -117,7 +123,6 @@ No packages matched provided filters.
                 HideProgressAfterComplete = true,
             },
             CancellationToken.None
-
         );
 
         var result = await cmdTask;
@@ -159,7 +164,10 @@ Run dotnet restore to install new versions
     [Theory]
     [InlineData("test.sln", SolutionFileFormat.Sln)]
     [InlineData("test.slnx", SolutionFileFormat.Slnx)]
-    public async Task OutputsMessageWhenAllPackagesMatchTheirLatestVersion(string solutionFileName, SolutionFileFormat solutionFileFormat)
+    public async Task OutputsMessageWhenAllPackagesMatchTheirLatestVersion(
+        string solutionFileName,
+        SolutionFileFormat solutionFileFormat
+    )
     {
         // Arrange
         var console = new TestConsole().Interactive();

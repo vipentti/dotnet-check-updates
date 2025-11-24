@@ -113,7 +113,10 @@ public class CheckUpdateCommandWithDirectoryPackagesPropsTests
     [Theory]
     [InlineData("test.sln", SolutionFileFormat.Sln)]
     [InlineData("test.slnx", SolutionFileFormat.Slnx)]
-    public async Task Output_contains_Directory_Packages_props_when_found_in_solution_with_no_upgrades(string solutionFileName, SolutionFileFormat solutionFileFormat)
+    public async Task Output_contains_Directory_Packages_props_when_found_in_solution_with_no_upgrades(
+        string solutionFileName,
+        SolutionFileFormat solutionFileFormat
+    )
     {
         var console = new TestConsole();
 
@@ -177,7 +180,10 @@ public class CheckUpdateCommandWithDirectoryPackagesPropsTests
     [Theory]
     [InlineData("test.sln", SolutionFileFormat.Sln)]
     [InlineData("test.slnx", SolutionFileFormat.Slnx)]
-    public async Task Output_contains_Directory_Packages_props_when_found_in_solution(string solutionFileName, SolutionFileFormat solutionFileFormat)
+    public async Task Output_contains_Directory_Packages_props_when_found_in_solution(
+        string solutionFileName,
+        SolutionFileFormat solutionFileFormat
+    )
     {
         var console = new TestConsole();
 
