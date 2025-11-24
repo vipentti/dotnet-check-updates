@@ -55,13 +55,15 @@ public class ProjectDiscoveryTests
             );
     }
 
-    [Fact]
-    public async Task FindDirectoryBuildPropsFilesWhenDiscoveringSolution()
+    [Theory]
+    [InlineData("test.sln", SolutionFileFormat.Sln)]
+    [InlineData("test.slnx", SolutionFileFormat.Slnx)]
+    public async Task FindDirectoryBuildPropsFilesWhenDiscoveringSolution(string solutionFileName, SolutionFileFormat solutionFileFormat)
     {
         // Arrange
         var testRoot = RootedTestPath();
 
-        var solution = new MockSolution("solution/test.sln")
+        var solution = new MockSolution($"solution/{solutionFileName}", solutionFileFormat)
         {
             Projects =
             {
@@ -89,7 +91,7 @@ public class ProjectDiscoveryTests
         var sut = new ProjectDiscovery(
             NullLogger<ProjectDiscovery>.Instance,
             new FileFinder(fileSystem),
-            new TestSolutionParser(fileSystem)
+            new TestSolutionParser(fileSystem, solutionFileFormat)
         );
 
         // Act

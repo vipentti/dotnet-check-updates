@@ -40,7 +40,7 @@ internal static class CheckUpdateCommandUtils
 
         var service = SetupMockPackages(upgrades);
 
-        var command = CreateCommand(console: default, fileSystem, service, finder: default);
+        var command = CreateCommand(console: default, fileSystem, service, finder: default, solutionFileFormat: SolutionFileFormat.Sln);
 
         return (cwd, projectsWithPaths.Keys.ToArray(), fileSystem, command);
     }
@@ -63,7 +63,7 @@ internal static class CheckUpdateCommandUtils
 
         var service = SetupMockPackages(upgrades);
 
-        var command = CreateCommand(console: console, fileSystem, service, finder: default);
+        var command = CreateCommand(console: console, fileSystem, service, finder: default, solutionFileFormat: solution.SolutionFileFormat);
 
         return (cwd, fileSystem, command);
     }
@@ -86,7 +86,7 @@ internal static class CheckUpdateCommandUtils
 
         var service = SetupSimpleNuGetService(packageUpgrades);
 
-        var command = CreateCommand(console: default, fileSystem, service, finder: default);
+        var command = CreateCommand(console: default, fileSystem, service, finder: default, solutionFileFormat: SolutionFileFormat.Sln);
 
         return (cwd, projectsWithPaths.Keys.ToArray(), fileSystem, command);
     }
@@ -113,7 +113,7 @@ internal static class CheckUpdateCommandUtils
 
         var service = SetupSimpleNuGetService(packageUpgrades);
 
-        var command = CreateCommand(console: console, fileSystem, service, finder: default);
+        var command = CreateCommand(console: console, fileSystem, service, finder: default, solutionFileFormat: SolutionFileFormat.Sln);
 
         return (cwd, projectsWithPaths.Keys.ToArray(), fileSystem, command);
     }
@@ -122,7 +122,8 @@ internal static class CheckUpdateCommandUtils
         TestConsole? console,
         IFileSystem fileSystem,
         INuGetService nugetService,
-        IFileFinder? finder
+        IFileFinder? finder,
+        SolutionFileFormat solutionFileFormat
     ) =>
         new(
             console ?? new TestConsole(),
@@ -135,7 +136,7 @@ internal static class CheckUpdateCommandUtils
             projectDiscovery: new ProjectDiscovery(
                 NullLogger<ProjectDiscovery>.Instance,
                 finder ?? new FileFinder(fileSystem),
-                new TestSolutionParser(fileSystem)
+                new TestSolutionParser(fileSystem, solutionFileFormat)
             )
         );
 

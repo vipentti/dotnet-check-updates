@@ -110,13 +110,15 @@ public class CheckUpdateCommandWithDirectoryPackagesPropsTests
             );
     }
 
-    [Fact]
-    public async Task Output_contains_Directory_Packages_props_when_found_in_solution_with_no_upgrades()
+    [Theory]
+    [InlineData("test.sln", SolutionFileFormat.Sln)]
+    [InlineData("test.slnx", SolutionFileFormat.Slnx)]
+    public async Task Output_contains_Directory_Packages_props_when_found_in_solution_with_no_upgrades(string solutionFileName, SolutionFileFormat solutionFileFormat)
     {
         var console = new TestConsole();
 
         var (cwd, _fileSystem, command) = SetupCommand(
-            new MockSolution("test.sln")
+            new MockSolution(solutionFileName, solutionFileFormat)
             {
                 Projects =
                 {
@@ -158,10 +160,10 @@ public class CheckUpdateCommandWithDirectoryPackagesPropsTests
 
         var expected =
             $@"
-{slnRoot.PathCombine("test.sln")}
+{slnRoot.PathCombine(solutionFileName)}
 |-- {slnRoot.PathCombine("Directory.Packages.props")}
 `-- {slnRoot.PathCombine("nested/project/project.csproj")}
-{slnRoot.PathCombine("test.sln")}
+{slnRoot.PathCombine(solutionFileName)}
 |-- {slnRoot.PathCombine("Directory.Packages.props")}
 |   `-- All packages match their latest versions.
 |
@@ -172,13 +174,15 @@ public class CheckUpdateCommandWithDirectoryPackagesPropsTests
         CheckUpdateCommandOutputTests.AssertOutput(console, expected);
     }
 
-    [Fact]
-    public async Task Output_contains_Directory_Packages_props_when_found_in_solution()
+    [Theory]
+    [InlineData("test.sln", SolutionFileFormat.Sln)]
+    [InlineData("test.slnx", SolutionFileFormat.Slnx)]
+    public async Task Output_contains_Directory_Packages_props_when_found_in_solution(string solutionFileName, SolutionFileFormat solutionFileFormat)
     {
         var console = new TestConsole();
 
         var (cwd, _, command) = SetupCommand(
-            new MockSolution("test.sln")
+            new MockSolution(solutionFileName, solutionFileFormat)
             {
                 Projects =
                 {
@@ -236,10 +240,10 @@ public class CheckUpdateCommandWithDirectoryPackagesPropsTests
 
         var expected =
             $@"
-{slnRoot.PathCombine("test.sln")}
+{slnRoot.PathCombine(solutionFileName)}
 |-- {slnRoot.PathCombine("Directory.Packages.props")}
 `-- {slnRoot.PathCombine("nested/project/project.csproj")}
-{slnRoot.PathCombine("test.sln")}
+{slnRoot.PathCombine(solutionFileName)}
 |-- {slnRoot.PathCombine("Directory.Packages.props")}
 |   `-- Test   1.0.0  →  1.5.0
 |

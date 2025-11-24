@@ -17,6 +17,10 @@ internal static class CliConstants
     public const string SlnExtensionWithDot = "." + SlnExtensionWithoutDot;
     public const string SlnPattern = "*" + SlnExtensionWithDot;
 
+    public const string SlnxExtensionWithoutDot = "slnx";
+    public const string SlnxExtensionWithDot = "." + SlnxExtensionWithoutDot;
+    public const string SlnxPattern = "*" + SlnxExtensionWithDot;
+
     public const string CsProjExtensionWithoutDot = "csproj";
     public const string CsProjExtensionWithDot = "." + CsProjExtensionWithoutDot;
     public const string CsProjPattern = "*" + CsProjExtensionWithDot;

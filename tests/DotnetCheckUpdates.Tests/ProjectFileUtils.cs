@@ -63,12 +63,35 @@ Global
 EndGlobal
 ".Trim();
 
+    public static string SolutionFileXml(IEnumerable<(string name, string path)> projects) =>
+        $@"
+<Solution>
+    {string.Join(Environment.NewLine, projects.Select(FormatSolutionXmlProject))}
+</Solution>
+".Trim();
+
     private static string FormatSolutionProject((string name, string path) tuple)
     {
         var (name, path) = tuple;
         return $$"""
             Project("{{{Guid.NewGuid()}}}") = "{{name}}", "{{path}}", "{{{Guid.NewGuid()}}}"
             EndProject
+            """;
+    }
+
+    private static string FormatSolutionXmlProject((string name, string path) tuple)
+    {
+        var (_, path) = tuple;
+
+        if (Path.GetExtension(path) == ".props")
+        {
+            return $$"""
+            <File Path="{{path}}" />
+            """;
+        }
+
+        return $$"""
+            <Project Path="{{path}}" />
             """;
     }
 

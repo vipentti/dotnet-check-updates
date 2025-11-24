@@ -2,20 +2,20 @@
 // Distributed under the MIT License.
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
-using System;
 using System.IO.Abstractions;
 using DotnetCheckUpdates.Core.ProjectModel;
-using Nuke.Common.ProjectModel;
 
 namespace DotnetCheckUpdates.Tests;
 
 internal sealed class TestSolutionParser : ISolutionParser
 {
     private readonly IFileSystem _fileSystem;
+    private readonly SolutionFileFormat _solutionFileFormat;
 
-    public TestSolutionParser(IFileSystem fileSystem)
+    public TestSolutionParser(IFileSystem fileSystem, SolutionFileFormat solutionFileFormat = SolutionFileFormat.Sln)
     {
         _fileSystem = fileSystem;
+        _solutionFileFormat = solutionFileFormat;
     }
 
     public IEnumerable<string> GetProjectPaths(string solutionPath)
@@ -32,7 +32,11 @@ internal sealed class TestSolutionParser : ISolutionParser
 
         var tempFile = Path.GetTempFileName();
         var tempDir = Path.GetDirectoryName(tempFile)!;
-        var tempSln = Path.ChangeExtension(tempFile, ".sln");
+        var tempSln = _solutionFileFormat switch
+        {
+            SolutionFileFormat.Slnx => Path.ChangeExtension(tempFile, ".slnx"),
+            _ => Path.ChangeExtension(tempFile, ".sln"),
+        };
 
         try
         {

@@ -11,14 +11,16 @@ namespace DotnetCheckUpdates.Tests.Commands;
 
 public class CheckUpdateCommandInteractiveOutputTests
 {
-    [Fact]
-    public async Task OutputsMessageWhenNoMatchingPackages()
+    [Theory]
+    [InlineData("test.sln", SolutionFileFormat.Sln)]
+    [InlineData("test.slnx", SolutionFileFormat.Slnx)]
+    public async Task OutputsMessageWhenNoMatchingPackages(string solutionFileName, SolutionFileFormat solutionFileFormat)
     {
         // Arrange
         var console = new TestConsole().Interactive();
 
         var (cwd, _, command) = SetupCommand(
-            new MockSolution("test.sln")
+            new MockSolution(solutionFileName, solutionFileFormat)
             {
                 Projects =
                 {
@@ -68,14 +70,16 @@ No packages matched provided filters.
         AssertOutput(console, expected);
     }
 
-    [Fact]
-    public async Task SupportsSelectingPackagesToUpgradeUsingInput()
+    [Theory]
+    [InlineData("test.sln", SolutionFileFormat.Sln)]
+    [InlineData("test.slnx", SolutionFileFormat.Slnx)]
+    public async Task SupportsSelectingPackagesToUpgradeUsingInput(string solutionFileName, SolutionFileFormat solutionFileFormat)
     {
         // Arrange
         var console = new TestConsole().Interactive();
 
         var (cwd, _, command) = SetupCommand(
-            new MockSolution("test.sln")
+            new MockSolution(solutionFileName, solutionFileFormat)
             {
                 Projects =
                 {
@@ -128,18 +132,18 @@ No packages matched provided filters.
             $@"
 Choose which packages to update
 
-> [ ] {slnRoot / "test.sln"}
+> [ ] {slnRoot / solutionFileName}
     [ ] {slnRoot / "nested/project/project.csproj"}
       [ ] Test3 1.0.0  → 3.0.0
 
 (Press <space> to select, <enter> to accept, <ctrl + c> to cancel)Choose which packages to update
 
-> [X] {slnRoot / "test.sln"}
+> [X] {slnRoot / solutionFileName}
     [X] {slnRoot / "nested/project/project.csproj"}
       [X] Test3 1.0.0  → 3.0.0
 
 (Press <space> to select, <enter> to accept, <ctrl + c> to cancel)Upgrading selected packages
-{slnRoot / "test.sln"}
+{slnRoot / solutionFileName}
 `-- {slnRoot / "nested/project/project.csproj"}
     `-- Test3  1.0.0  →  3.0.0
 
@@ -152,14 +156,16 @@ Run dotnet restore to install new versions
         AssertOutput(console, expected);
     }
 
-    [Fact]
-    public async Task OutputsMessageWhenAllPackagesMatchTheirLatestVersion()
+    [Theory]
+    [InlineData("test.sln", SolutionFileFormat.Sln)]
+    [InlineData("test.slnx", SolutionFileFormat.Slnx)]
+    public async Task OutputsMessageWhenAllPackagesMatchTheirLatestVersion(string solutionFileName, SolutionFileFormat solutionFileFormat)
     {
         // Arrange
         var console = new TestConsole().Interactive();
 
         var (cwd, _, command) = SetupCommand(
-            new MockSolution("test.sln")
+            new MockSolution(solutionFileName, solutionFileFormat)
             {
                 Projects =
                 {

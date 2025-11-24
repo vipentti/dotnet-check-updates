@@ -30,7 +30,7 @@ public partial class CheckUpdateCommandTests
             .GetMatchingPaths(Arg.Any<string>(), Arg.Any<IEnumerable<string>>())
             .Returns(Task.FromResult(Enumerable.Empty<string>()));
 
-        var command = CreateCommand(console: default, fileSystem, service, finder);
+        var command = CreateCommand(console: default, fileSystem, service, finder, solutionFileFormat: SolutionFileFormat.Sln);
 
         // Act
         var result = await command.ExecuteAsync(
@@ -70,7 +70,7 @@ public partial class CheckUpdateCommandTests
             .GetMatchingPaths(Arg.Any<string>(), Arg.Any<IEnumerable<string>>())
             .Returns(Task.FromResult(Enumerable.Empty<string>()));
 
-        var command = CreateCommand(console: default, fileSystem, service, finder);
+        var command = CreateCommand(console: default, fileSystem, service, finder, solutionFileFormat: SolutionFileFormat.Sln);
 
         var result = await command.ExecuteAsync(
             TestCommandContext,
@@ -168,7 +168,7 @@ public partial class CheckUpdateCommandTests
             BasicMockPackage("Flurl.Http", "3.2.1")
         );
 
-        var command = CreateCommand(console: default, fileSystem, service, finder: default);
+        var command = CreateCommand(console: default, fileSystem, service, finder: default, solutionFileFormat: SolutionFileFormat.Sln);
 
         var result = await command.ExecuteAsync(
             TestCommandContext,

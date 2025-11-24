@@ -696,7 +696,7 @@ public class CheckUpdateCommandPackageUpgradeTests
             }
         );
 
-        var command = CreateCommand(console: default, fileSystem, service, finder: default);
+        var command = CreateCommand(console: default, fileSystem, service, finder: default, solutionFileFormat: SolutionFileFormat.Sln);
 
         var result = await command.ExecuteAsync(
             TestCommandContext,

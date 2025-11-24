@@ -263,8 +263,10 @@ internal sealed partial class ProjectDiscovery(
         string cwd
     )
     {
-        var solutions = (await _fileFinder.GetMatchingPaths(cwd, CliConstants.SlnPattern)).ToList();
-        return solutions.ConvertAll(sln => (sln, GetProjectFilePathsForSolution(sln)));
+        var allSolutions = new List<string>();
+        allSolutions.AddRange(await _fileFinder.GetMatchingPaths(cwd, CliConstants.SlnPattern));
+        allSolutions.AddRange(await _fileFinder.GetMatchingPaths(cwd, CliConstants.SlnxPattern));
+        return allSolutions.ConvertAll(sln => (sln, GetProjectFilePathsForSolution(sln)));
     }
 
     private string[] GetProjectFilePathsForSolution(string solutionPath)

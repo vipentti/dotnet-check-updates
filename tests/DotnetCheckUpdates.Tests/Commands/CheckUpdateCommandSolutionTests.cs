@@ -10,12 +10,14 @@ namespace DotnetCheckUpdates.Tests.Commands;
 
 public class CheckUpdateCommandSolutionTests
 {
-    [Fact]
-    public async Task SupportsSpecifyingSolutionPath()
+    [Theory]
+    [InlineData("test.sln", SolutionFileFormat.Sln)]
+    [InlineData("test.slnx", SolutionFileFormat.Slnx)]
+    public async Task SupportsSpecifyingSolutionPath(string solutionFileName, SolutionFileFormat solutionFileFormat)
     {
         // csharpier-ignore
         var (cwd, fileSystem, command) = SetupCommand(
-            new MockSolution("inner/test.sln")
+            new MockSolution($"inner/{solutionFileName}", solutionFileFormat)
             {
                 Projects =
                 {
@@ -46,7 +48,7 @@ public class CheckUpdateCommandSolutionTests
                 Cwd = cwd,
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
-                Solution = cwd.PathCombine("inner/test.sln"),
+                Solution = cwd.PathCombine($"inner/{solutionFileName}"),
             },
             CancellationToken.None
         );
@@ -62,12 +64,14 @@ public class CheckUpdateCommandSolutionTests
         });
     }
 
-    [Fact]
-    public async Task SupportsUpgradingMultipleProjectsInSolution()
+    [Theory]
+    [InlineData("test.sln", SolutionFileFormat.Sln)]
+    [InlineData("test.slnx", SolutionFileFormat.Slnx)]
+    public async Task SupportsUpgradingMultipleProjectsInSolution(string solutionFileName, SolutionFileFormat solutionFileFormat)
     {
         // csharpier-ignore
         var (cwd, fileSystem, command) = SetupCommand(
-            new MockSolution("test.sln")
+            new MockSolution(solutionFileName, solutionFileFormat)
             {
                 Projects =
                 {
@@ -112,7 +116,7 @@ public class CheckUpdateCommandSolutionTests
                 Cwd = cwd,
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
-                Solution = cwd.PathCombine("test.sln"),
+                Solution = cwd.PathCombine(solutionFileName),
             },
             CancellationToken.None
         );
@@ -138,11 +142,13 @@ public class CheckUpdateCommandSolutionTests
         });
     }
 
-    [Fact]
-    public async Task SupportsFsharpProjectsInSolution()
+    [Theory]
+    [InlineData("test.sln", SolutionFileFormat.Sln)]
+    [InlineData("test.slnx", SolutionFileFormat.Slnx)]
+    public async Task SupportsFsharpProjectsInSolution(string solutionFileName, SolutionFileFormat solutionFileFormat)
     {
         var (cwd, fileSystem, command) = SetupCommand(
-            new MockSolution("test.sln")
+            new MockSolution(solutionFileName, solutionFileFormat)
             {
                 Projects = { new("nested/project.fsproj") { Packages = { ("Test", "1.0") } } },
             },
@@ -179,11 +185,12 @@ public class CheckUpdateCommandSolutionTests
         });
     }
 
-    [Fact]
-    public async Task DoesNothingIfTheProjectFileDoesNotHaveCsprojSuffix()
+    [Theory]
+    [InlineData("test.sln", SolutionFileFormat.Sln)]
+    public async Task DoesNothingIfTheProjectFileDoesNotHaveCsprojSuffix(string solutionFileName, SolutionFileFormat solutionFileFormat)
     {
         var (cwd, fileSystem, command) = SetupCommand(
-            new MockSolution("test.sln")
+            new MockSolution(solutionFileName, solutionFileFormat)
             {
                 Projects = { new("nested/project.notcsproj") { Packages = { ("Test", "1.0") } } },
             },
@@ -220,11 +227,13 @@ public class CheckUpdateCommandSolutionTests
         });
     }
 
-    [Fact]
-    public async Task SupportsLoadingProjectsFromSolutionWithSpecificPath()
+    [Theory]
+    [InlineData("test.sln", SolutionFileFormat.Sln)]
+    [InlineData("test.slnx", SolutionFileFormat.Slnx)]
+    public async Task SupportsLoadingProjectsFromSolutionWithSpecificPath(string solutionFileName, SolutionFileFormat solutionFileFormat)
     {
         var (cwd, fileSystem, command) = SetupCommand(
-            new MockSolution("test.sln")
+            new MockSolution(solutionFileName, solutionFileFormat)
             {
                 Projects =
                 {
@@ -267,11 +276,13 @@ public class CheckUpdateCommandSolutionTests
         }, framework: Frameworks.Net5_0);
     }
 
-    [Fact]
-    public async Task SupportsSolutionsWithDirectoryBuildProps()
+    [Theory]
+    [InlineData("test.sln", SolutionFileFormat.Sln)]
+    [InlineData("test.slnx", SolutionFileFormat.Slnx)]
+    public async Task SupportsSolutionsWithDirectoryBuildProps(string solutionFileName, SolutionFileFormat solutionFileFormat)
     {
         var (cwd, fileSystem, command) = SetupCommand(
-            new MockSolution("test.sln")
+            new MockSolution(solutionFileName, solutionFileFormat)
             {
                 Projects =
                 {

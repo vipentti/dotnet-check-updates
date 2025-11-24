@@ -4,13 +4,13 @@
 
 namespace DotnetCheckUpdates.Tests;
 
-internal sealed record MockSolution(string SolutionPath)
+internal sealed record MockSolution(string SolutionPath, SolutionFileFormat SolutionFileFormat)
 {
     public List<MockProject> Projects { get; init; } = [];
 
     public string GetSolution()
     {
-        return ProjectFileUtils.SolutionFile(
+        var items =
             Projects
                 .Where(it =>
                     !it.ProjectPath.Contains(
@@ -19,7 +19,13 @@ internal sealed record MockSolution(string SolutionPath)
                     )
                 )
                 .Select((it, index) => ($"{index}-{Path.GetFileNameWithoutExtension(it.ProjectPath)}", it.ProjectPath))
-        );
+                .ToArray();
+
+        return SolutionFileFormat switch
+        {
+            SolutionFileFormat.Slnx => ProjectFileUtils.SolutionFileXml(items),
+            _ => ProjectFileUtils.SolutionFile(items),
+        };
     }
 
     public MockFiles GetMockFiles(string cwd)

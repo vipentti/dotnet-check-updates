@@ -44,7 +44,7 @@ public class CheckUpdateCommandOutputTests
 
         var console = new TestConsole();
 
-        var command = CreateCommand(console: console, fileSystem, service, finder: default);
+        var command = CreateCommand(console: console, fileSystem, service, finder: default, solutionFileFormat: SolutionFileFormat.Sln);
 
         var result = await command.ExecuteAsync(
             new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
@@ -101,7 +101,7 @@ Projects
 
         var console = new TestConsole();
 
-        var command = CreateCommand(console: console, fileSystem, service, finder: default);
+        var command = CreateCommand(console: console, fileSystem, service, finder: default, solutionFileFormat: SolutionFileFormat.Sln);
 
         var result = await command.ExecuteAsync(
             new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
@@ -135,14 +135,16 @@ Run dotnet restore to install new versions
         AssertOutput(console, expected);
     }
 
-    [Fact]
-    public async Task Outputs_When_No_Packages_Were_Matched_With_Include()
+    [Theory]
+    [InlineData("test.sln", SolutionFileFormat.Sln)]
+    [InlineData("test.slnx", SolutionFileFormat.Slnx)]
+    public async Task Outputs_When_No_Packages_Were_Matched_With_Include(string solutionFileName, SolutionFileFormat solutionFileFormat)
     {
         // Arrange
         var console = new TestConsole();
 
         var (cwd, _, command) = SetupCommand(
-            new MockSolution("test.sln")
+            new MockSolution(solutionFileName, solutionFileFormat)
             {
                 Projects =
                 {
@@ -185,7 +187,7 @@ Run dotnet restore to install new versions
 
         var expected =
             $@"
-{slnRoot.PathCombine("test.sln")}
+{slnRoot.PathCombine(solutionFileName)}
 `-- {slnRoot.PathCombine("nested/project/project.csproj")}
 
 No packages matched provided filters.
@@ -194,14 +196,16 @@ No packages matched provided filters.
         AssertOutput(console, expected);
     }
 
-    [Fact]
-    public async Task Outputs_When_No_Packages_Were_Matched_With_Exclude()
+    [Theory]
+    [InlineData("test.sln", SolutionFileFormat.Sln)]
+    [InlineData("test.slnx", SolutionFileFormat.Slnx)]
+    public async Task Outputs_When_No_Packages_Were_Matched_With_Exclude(string solutionFileName, SolutionFileFormat solutionFileFormat)
     {
         // Arrange
         var console = new TestConsole();
 
         var (cwd, _, command) = SetupCommand(
-            new MockSolution("test.sln")
+            new MockSolution(solutionFileName, solutionFileFormat)
             {
                 Projects =
                 {
@@ -244,7 +248,7 @@ No packages matched provided filters.
 
         var expected =
             $@"
-{slnRoot.PathCombine("test.sln")}
+{slnRoot.PathCombine(solutionFileName)}
 `-- {slnRoot.PathCombine("nested/project/project.csproj")}
 
 No packages matched provided filters.
@@ -253,13 +257,15 @@ No packages matched provided filters.
         AssertOutput(console, expected);
     }
 
-    [Fact]
-    public async Task Output_contains_Directory_Build_props_when_found_in_solution()
+    [Theory]
+    [InlineData("test.sln", SolutionFileFormat.Sln)]
+    [InlineData("test.slnx", SolutionFileFormat.Slnx)]
+    public async Task Output_contains_Directory_Build_props_when_found_in_solution(string solutionFileName, SolutionFileFormat solutionFileFormat)
     {
         var console = new TestConsole();
 
         var (cwd, _, command) = SetupCommand(
-            new MockSolution("test.sln")
+            new MockSolution(solutionFileName, solutionFileFormat)
             {
                 Projects =
                 {
@@ -321,11 +327,11 @@ No packages matched provided filters.
 
         var expected =
             $@"
-{slnRoot.PathCombine("test.sln")}
+{slnRoot.PathCombine(solutionFileName)}
 |-- {slnRoot.PathCombine("Directory.Build.props")}
 |-- {slnRoot.PathCombine("nested/Directory.Build.props")}
 `-- {slnRoot.PathCombine("nested/project/project.csproj")}
-{slnRoot.PathCombine("test.sln")}
+{slnRoot.PathCombine(solutionFileName)}
 |-- {slnRoot.PathCombine("Directory.Build.props")}
 |   `-- Test   1.0.0  →  1.5.0
 |
@@ -346,13 +352,15 @@ Run dotnet restore to install new versions
         AssertOutput(console, expected);
     }
 
-    [Fact]
-    public async Task Output_contains_Directory_Build_props_when_found_in_solution_with_no_upgrades()
+    [Theory]
+    [InlineData("test.sln", SolutionFileFormat.Sln)]
+    [InlineData("test.slnx", SolutionFileFormat.Slnx)]
+    public async Task Output_contains_Directory_Build_props_when_found_in_solution_with_no_upgrades(string solutionFileName, SolutionFileFormat solutionFileFormat)
     {
         var console = new TestConsole();
 
         var (cwd, _fileSystem, command) = SetupCommand(
-            new MockSolution("test.sln")
+            new MockSolution(solutionFileName, solutionFileFormat)
             {
                 Projects =
                 {
@@ -397,11 +405,11 @@ Run dotnet restore to install new versions
 
         var expected =
             $@"
-{slnRoot.PathCombine("test.sln")}
+{slnRoot.PathCombine(solutionFileName)}
 |-- {slnRoot.PathCombine("Directory.Build.props")}
 |-- {slnRoot.PathCombine("nested/Directory.Build.props")}
 `-- {slnRoot.PathCombine("nested/project/project.csproj")}
-{slnRoot.PathCombine("test.sln")}
+{slnRoot.PathCombine(solutionFileName)}
 |-- {slnRoot.PathCombine("Directory.Build.props")}
 |   `-- All packages match their latest versions.
 |
