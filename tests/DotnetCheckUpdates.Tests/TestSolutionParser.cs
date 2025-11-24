@@ -2,6 +2,7 @@
 // Distributed under the MIT License.
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
+using System;
 using System.IO.Abstractions;
 using DotnetCheckUpdates.Core.ProjectModel;
 using Nuke.Common.ProjectModel;
@@ -31,28 +32,39 @@ internal sealed class TestSolutionParser : ISolutionParser
 
         var tempFile = Path.GetTempFileName();
         var tempDir = Path.GetDirectoryName(tempFile)!;
+        var tempSln = Path.ChangeExtension(tempFile, ".sln");
 
         try
         {
+            // Ensure the temp file has .sln extension
+            if (!string.Equals(tempFile, tempSln, StringComparison.OrdinalIgnoreCase))
+            {
+                // Move the originally created temp file to the .sln path
+                File.Move(tempFile, tempSln, overwrite: true);
+            }
+
             var contents = _fileSystem.File.ReadAllText(solutionPath);
 
             // Write to actual FS
-            File.WriteAllText(tempFile, contents);
+            File.WriteAllText(tempSln, contents);
 
             // path to the solution
             var solutionFilePath = _fileSystem.Path.GetDirectoryName(solutionPath);
 
-            var solution = SolutionModelTasks.ParseSolution(tempFile);
-
-            return solution
-                .AllProjects.Select(it => it.Path.ToString().Replace(tempDir, solutionFilePath))
-                .ToArray();
+            return [.. DefaultSolutionParser.ParseProjectPathsFromSlnFile(tempSln).Select(it => it.Replace(tempDir, solutionFilePath))];
         }
         finally
         {
             try
             {
-                File.Delete(tempFile);
+                if (File.Exists(tempSln))
+                {
+                    File.Delete(tempSln);
+                }
+                else if (File.Exists(tempFile))
+                {
+                    File.Delete(tempFile);
+                }
             }
             catch
             {

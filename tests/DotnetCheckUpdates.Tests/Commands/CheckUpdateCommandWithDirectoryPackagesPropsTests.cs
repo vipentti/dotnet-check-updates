@@ -58,7 +58,8 @@ public class CheckUpdateCommandWithDirectoryPackagesPropsTests
                 Cwd = cwd,
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -127,14 +128,6 @@ public class CheckUpdateCommandWithDirectoryPackagesPropsTests
                         ReferenceType = ReferenceType.PackageVersion,
                         Packages = { ("Test", "1.0") },
                     },
-                    new(
-                        $"nested/{CliConstants.DirectoryPackagesPropsFileName}",
-                        Framework: Frameworks.Net8_0
-                    )
-                    {
-                        ReferenceType = ReferenceType.PackageVersion,
-                        Packages = { ("Test2", "1.0") },
-                    },
                     new("nested/project/project.csproj", Framework: Frameworks.Unspecified)
                     {
                         Packages = [("Test2", "")],
@@ -154,7 +147,8 @@ public class CheckUpdateCommandWithDirectoryPackagesPropsTests
                 Upgrade = true,
                 AsciiTree = true,
                 ShowAbsolute = true,
-            }
+            },
+            CancellationToken.None
         );
 
         using var scope = new AssertionScope();
@@ -166,13 +160,9 @@ public class CheckUpdateCommandWithDirectoryPackagesPropsTests
             $@"
 {slnRoot.PathCombine("test.sln")}
 |-- {slnRoot.PathCombine("Directory.Packages.props")}
-|-- {slnRoot.PathCombine("nested/Directory.Packages.props")}
 `-- {slnRoot.PathCombine("nested/project/project.csproj")}
 {slnRoot.PathCombine("test.sln")}
 |-- {slnRoot.PathCombine("Directory.Packages.props")}
-|   `-- All packages match their latest versions.
-|
-|-- {slnRoot.PathCombine("nested/Directory.Packages.props")}
 |   `-- All packages match their latest versions.
 |
 `-- {slnRoot.PathCombine("nested/project/project.csproj")}
@@ -198,13 +188,6 @@ public class CheckUpdateCommandWithDirectoryPackagesPropsTests
                     )
                     {
                         Packages = { ("Test", "1.0") },
-                    },
-                    new(
-                        $"nested/{CliConstants.DirectoryPackagesPropsFileName}",
-                        Framework: Frameworks.Net8_0
-                    )
-                    {
-                        Packages = { ("Test2", "1.0") },
                     },
                     new("nested/project/project.csproj", Framework: "")
                     {
@@ -242,7 +225,8 @@ public class CheckUpdateCommandWithDirectoryPackagesPropsTests
                 Upgrade = true,
                 AsciiTree = true,
                 ShowAbsolute = true,
-            }
+            },
+            CancellationToken.None
         );
 
         using var scope = new AssertionScope();
@@ -254,21 +238,16 @@ public class CheckUpdateCommandWithDirectoryPackagesPropsTests
             $@"
 {slnRoot.PathCombine("test.sln")}
 |-- {slnRoot.PathCombine("Directory.Packages.props")}
-|-- {slnRoot.PathCombine("nested/Directory.Packages.props")}
 `-- {slnRoot.PathCombine("nested/project/project.csproj")}
 {slnRoot.PathCombine("test.sln")}
 |-- {slnRoot.PathCombine("Directory.Packages.props")}
 |   `-- Test   1.0.0  →  1.5.0
-|
-|-- {slnRoot.PathCombine("nested/Directory.Packages.props")}
-|   `-- Test2  1.0.0  →  2.0.0
 |
 `-- {slnRoot.PathCombine("nested/project/project.csproj")}
     `-- Test3  1.0.0  →  3.0.0
 
 
 Upgrading packages in {slnRoot.PathCombine("Directory.Packages.props")}
-Upgrading packages in {slnRoot.PathCombine("nested/Directory.Packages.props")}
 Upgrading packages in {slnRoot.PathCombine("nested/project/project.csproj")}
 
 Run dotnet restore to install new versions

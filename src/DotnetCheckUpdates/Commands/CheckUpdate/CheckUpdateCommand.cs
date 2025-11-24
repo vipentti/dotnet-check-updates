@@ -110,7 +110,7 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
         string projectType
     );
 
-    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         var includeFilters = CheckUpdateCommandHelpers.SplitFilters(settings.Include);
         var excludeFilters = CheckUpdateCommandHelpers.SplitFilters(settings.Exclude);
@@ -139,7 +139,7 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
             return 0;
         }
 
-        var cancellationToken = _exitHandler?.GracefulToken ?? CancellationToken.None;
+        var ct = _exitHandler?.GracefulToken ?? cancellationToken;
 
         var cwd = _fileSystem.Path.GetFullPath(
             _fileSystem.Path.Combine(
@@ -170,11 +170,11 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
 
         if (settings.Interactive)
         {
-            await ExecuteInteractiveUpgrade(cwd, settings, cancellationToken);
+            await ExecuteInteractiveUpgrade(cwd, settings, ct);
         }
         else
         {
-            await ExecuteNonInteractiveUpgradeAsync(cwd, settings, cancellationToken);
+            await ExecuteNonInteractiveUpgradeAsync(cwd, settings, ct);
         }
 
         return 0;

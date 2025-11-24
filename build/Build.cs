@@ -23,6 +23,7 @@ namespace build;
     [
         "8.x",
         "9.x",
+        "10.x",
     ]
     , InvokedTargets =
     [
@@ -42,6 +43,7 @@ namespace build;
     [
         "8.x",
         "9.x",
+        "10.x",
     ]
     , InvokedTargets =
     [

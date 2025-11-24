@@ -53,7 +53,8 @@ public class CheckUpdateCommandPackageUpgradeTests
                 Cwd = cwd,
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -101,7 +102,8 @@ public class CheckUpdateCommandPackageUpgradeTests
                 Cwd = cwd,
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -161,7 +163,8 @@ public class CheckUpdateCommandPackageUpgradeTests
                 Cwd = cwd,
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -214,7 +217,8 @@ public class CheckUpdateCommandPackageUpgradeTests
                 Cwd = cwd,
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -272,7 +276,8 @@ public class CheckUpdateCommandPackageUpgradeTests
                 Target = UpgradeTarget.Latest,
                 Include = ["Package2.Include"],
                 Exclude = ["*Exclude* Package1.Include"],
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -338,7 +343,8 @@ public class CheckUpdateCommandPackageUpgradeTests
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
                 Include = ["Include"],
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -408,7 +414,8 @@ public class CheckUpdateCommandPackageUpgradeTests
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
                 Exclude = ["Exclude"],
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -457,7 +464,8 @@ public class CheckUpdateCommandPackageUpgradeTests
                 Cwd = cwd,
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -501,7 +509,8 @@ public class CheckUpdateCommandPackageUpgradeTests
                 Cwd = cwd,
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -543,7 +552,8 @@ public class CheckUpdateCommandPackageUpgradeTests
                 Cwd = cwd,
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -610,7 +620,8 @@ public class CheckUpdateCommandPackageUpgradeTests
                 Cwd = cwd,
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -694,7 +705,8 @@ public class CheckUpdateCommandPackageUpgradeTests
                 Cwd = cwd,
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
-            }
+            },
+            CancellationToken.None
         );
 
         result.Should().Be(0);
@@ -783,7 +795,8 @@ public class CheckUpdateCommandPackageUpgradeTests
                 Cwd = cwd,
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -858,7 +871,8 @@ public class CheckUpdateCommandPackageUpgradeTests
                 Cwd = cwd,
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -918,7 +932,8 @@ public class CheckUpdateCommandPackageUpgradeTests
                 Cwd = cwd,
                 Upgrade = true,
                 Target = target,
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert

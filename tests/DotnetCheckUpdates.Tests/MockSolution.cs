@@ -18,7 +18,7 @@ internal sealed record MockSolution(string SolutionPath)
                         StringComparison.OrdinalIgnoreCase
                     )
                 )
-                .Select(it => (Path.GetFileNameWithoutExtension(it.ProjectPath), it.ProjectPath))
+                .Select((it, index) => ($"{index}-{Path.GetFileNameWithoutExtension(it.ProjectPath)}", it.ProjectPath))
         );
     }
 

@@ -54,7 +54,8 @@ public class CheckUpdateCommandOutputTests
                 Upgrade = true,
                 AsciiTree = true,
                 ShowAbsolute = true,
-            }
+            },
+            CancellationToken.None
         );
 
         result.Should().Be(0);
@@ -110,7 +111,8 @@ Projects
                 Upgrade = true,
                 AsciiTree = true,
                 ShowAbsolute = true,
-            }
+            },
+            CancellationToken.None
         );
 
         result.Should().Be(0);
@@ -171,7 +173,8 @@ Run dotnet restore to install new versions
                 AsciiTree = true,
                 ShowAbsolute = true,
                 Include = ["ShouldNotMatchAnything"],
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -229,7 +232,8 @@ No packages matched provided filters.
                 AsciiTree = true,
                 ShowAbsolute = true,
                 Exclude = ["*"],
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -306,7 +310,8 @@ No packages matched provided filters.
                 Upgrade = true,
                 AsciiTree = true,
                 ShowAbsolute = true,
-            }
+            },
+            CancellationToken.None
         );
 
         using var scope = new AssertionScope();
@@ -381,7 +386,8 @@ Run dotnet restore to install new versions
                 Upgrade = true,
                 AsciiTree = true,
                 ShowAbsolute = true,
-            }
+            },
+            CancellationToken.None
         );
 
         using var scope = new AssertionScope();
@@ -463,7 +469,8 @@ Run dotnet restore to install new versions
                 List = true,
                 AsciiTree = true,
                 ShowAbsolute = true,
-            }
+            },
+            CancellationToken.None
         );
 
         result.Should().Be(0);

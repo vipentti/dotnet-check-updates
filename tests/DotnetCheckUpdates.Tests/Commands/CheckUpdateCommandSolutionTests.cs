@@ -47,7 +47,8 @@ public class CheckUpdateCommandSolutionTests
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
                 Solution = cwd.PathCombine("inner/test.sln"),
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -112,7 +113,8 @@ public class CheckUpdateCommandSolutionTests
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
                 Solution = cwd.PathCombine("test.sln"),
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -162,7 +164,8 @@ public class CheckUpdateCommandSolutionTests
                 Cwd = cwd,
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -202,7 +205,8 @@ public class CheckUpdateCommandSolutionTests
                 Cwd = cwd,
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -248,7 +252,8 @@ public class CheckUpdateCommandSolutionTests
                 Cwd = cwd,
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -315,7 +320,8 @@ public class CheckUpdateCommandSolutionTests
                 Cwd = cwd,
                 Upgrade = true,
                 Target = UpgradeTarget.Latest,
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert

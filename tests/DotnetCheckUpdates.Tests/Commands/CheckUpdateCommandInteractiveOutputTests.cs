@@ -50,7 +50,8 @@ public class CheckUpdateCommandInteractiveOutputTests
                 ShowAbsolute = true,
                 Interactive = true,
                 Include = ["ShouldNotMatchAnything"],
-            }
+            },
+            CancellationToken.None
         );
 
         // Assert
@@ -110,7 +111,9 @@ No packages matched provided filters.
                 ShowAbsolute = true,
                 Interactive = true,
                 HideProgressAfterComplete = true,
-            }
+            },
+            CancellationToken.None
+
         );
 
         var result = await cmdTask;
@@ -189,7 +192,8 @@ Run dotnet restore to install new versions
                 ShowAbsolute = true,
                 Interactive = true,
                 HideProgressAfterComplete = true,
-            }
+            },
+            CancellationToken.None
         );
 
         var result = await cmdTask;
