@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- Add support for .NET 10 and .NET 9
 
 ## [0.4.2] / 2024-11-20
 - Add `--target` to command help output
