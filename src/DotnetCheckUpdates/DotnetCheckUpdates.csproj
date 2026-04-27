@@ -46,7 +46,7 @@
     <PackageReference Include="CliWrap" Version="3.10.1" />
     <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.4.2" />
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.4.2" />
-    <PackageReference Include="Flurl" Version="[4.0.0,)" />
+    <PackageReference Include="Flurl" Version="4.0.0" />
     <PackageReference Include="Flurl.Http" Version="4.0.2" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.7" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="10.0.7" />
@@ -63,7 +63,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="semver" Version="[3.0.0]" />
+    <PackageReference Include="semver" Version="3.0.0" />
     <PackageReference Include="SonarAnalyzer.CSharp" Version="10.24.0.138807">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -72,7 +72,7 @@
     <PackageReference Include="Spectre.Console" Version="0.55.2" />
     <PackageReference Include="Spectre.Console.Cli" Version="0.55.0" />
     <PackageReference Include="System.IO.Abstractions" Version="22.1.1" />
-    <PackageReference Include="System.Net.Http.Json" Version="[10.0.7,)" />
+    <PackageReference Include="System.Net.Http.Json" Version="10.0.7" />
     <PackageReference Include="Vipentti.IO.Abstractions.FileSystemGlobbing" Version="1.0.4" />
   </ItemGroup>
 
