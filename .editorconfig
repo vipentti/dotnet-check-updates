@@ -42,7 +42,7 @@ dotnet_separate_import_directive_groups = false
 dotnet_sort_system_directives_first = true
 
 # Require file header
-file_header_template = Copyright 2023-2024 Ville Penttinen\nDistributed under the MIT License.\nhttps://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
+file_header_template = Copyright 2023-2026 Ville Penttinen\nDistributed under the MIT License.\nhttps://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 dotnet_diagnostic.IDE0073.severity = warning
 
 # this. and Me. preferences
