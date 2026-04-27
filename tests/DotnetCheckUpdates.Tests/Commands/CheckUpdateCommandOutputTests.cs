@@ -52,7 +52,7 @@ public class CheckUpdateCommandOutputTests
             solutionFileFormat: SolutionFileFormat.Sln
         );
 
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
             new CheckUpdateCommand.Settings
             {
@@ -115,7 +115,7 @@ Projects
             solutionFileFormat: SolutionFileFormat.Sln
         );
 
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
             new CheckUpdateCommand.Settings
             {
@@ -181,7 +181,7 @@ Run dotnet restore to install new versions
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -245,7 +245,7 @@ No packages matched provided filters.
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -329,7 +329,7 @@ No packages matched provided filters.
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -410,7 +410,7 @@ Run dotnet restore to install new versions
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -492,7 +492,7 @@ Run dotnet restore to install new versions
             }
         );
 
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
             new CheckUpdateCommand.Settings
             {

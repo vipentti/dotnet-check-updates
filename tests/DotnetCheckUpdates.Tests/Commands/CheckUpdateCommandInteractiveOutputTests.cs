@@ -45,7 +45,7 @@ public class CheckUpdateCommandInteractiveOutputTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -111,7 +111,7 @@ No packages matched provided filters.
         console.Input.PushKey(ConsoleKey.Spacebar);
         console.Input.PushKey(ConsoleKey.Enter);
 
-        var cmdTask = command.ExecuteAsync(
+        var cmdTask = command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -196,7 +196,7 @@ Run dotnet restore to install new versions
 
         // Act
 
-        var cmdTask = command.ExecuteAsync(
+        var cmdTask = command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {

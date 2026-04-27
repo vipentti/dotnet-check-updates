@@ -43,41 +43,41 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CliWrap" Version="3.10.0" />
-    <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.4.0" />
-    <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.4.0" />
+    <PackageReference Include="CliWrap" Version="3.10.1" />
+    <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.4.2" />
+    <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.4.2" />
     <PackageReference Include="Flurl" Version="[4.0.0,)" />
     <PackageReference Include="Flurl.Http" Version="4.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.0" />
-    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="10.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.7" />
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
-    <PackageReference Include="NuGet.Frameworks" Version="7.0.0" />
-    <PackageReference Include="NuGet.Packaging" Version="7.0.0" />
-    <PackageReference Include="NuGet.Protocol" Version="7.0.0" />
-    <PackageReference Include="NuGet.Versioning" Version="7.0.0" />
-    <PackageReference Include="Nuke.SolutionModel" Version="10.0.0" />
-    <PackageReference Include="roslynator.analyzers" Version="4.14.1">
+    <PackageReference Include="NuGet.Frameworks" Version="7.3.1" />
+    <PackageReference Include="NuGet.Packaging" Version="7.3.1" />
+    <PackageReference Include="NuGet.Protocol" Version="7.3.1" />
+    <PackageReference Include="NuGet.Versioning" Version="7.3.1" />
+    <PackageReference Include="Nuke.SolutionModel" Version="10.1.0" />
+    <PackageReference Include="roslynator.analyzers" Version="4.15.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="semver" Version="[3.0.0]" />
-    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.15.0.120848">
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.24.0.138807">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="SpanUtils" Version="0.4.1" />
-    <PackageReference Include="Spectre.Console" Version="0.54.0" />
-    <PackageReference Include="Spectre.Console.Cli" Version="0.53.0" />
-    <PackageReference Include="System.IO.Abstractions" Version="22.1.0" />
-    <PackageReference Include="System.Net.Http.Json" Version="[10.0.0,)" />
+    <PackageReference Include="Spectre.Console" Version="0.55.2" />
+    <PackageReference Include="Spectre.Console.Cli" Version="0.55.0" />
+    <PackageReference Include="System.IO.Abstractions" Version="22.1.1" />
+    <PackageReference Include="System.Net.Http.Json" Version="[10.0.7,)" />
     <PackageReference Include="Vipentti.IO.Abstractions.FileSystemGlobbing" Version="1.0.4" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseReproducibleBuild)' == 'true'">
-    <PackageReference Include="DotNet.ReproducibleBuilds" Version="1.2.39">
+    <PackageReference Include="DotNet.ReproducibleBuilds" Version="2.0.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

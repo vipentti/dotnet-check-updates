@@ -39,7 +39,7 @@ public partial class CheckUpdateCommandTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             DefaultCommandContext,
             new CheckUpdateCommand.Settings { Cwd = cwd, Recurse = false },
             CancellationToken.None
@@ -84,7 +84,7 @@ public partial class CheckUpdateCommandTests
             solutionFileFormat: SolutionFileFormat.Sln
         );
 
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -188,7 +188,7 @@ public partial class CheckUpdateCommandTests
             solutionFileFormat: SolutionFileFormat.Sln
         );
 
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings { Cwd = cwd, Upgrade = true },
             CancellationToken.None

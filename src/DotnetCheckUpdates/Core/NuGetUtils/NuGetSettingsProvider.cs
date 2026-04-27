@@ -25,7 +25,9 @@ internal partial class NuGetSettingsProvider(
 
         var config = Settings.LoadDefaultSettings(currentDirectory.CurrentDirectory);
 
+#pragma warning disable CA1873 // Avoid potentially expensive logging
         LogFoundConfigurations(logger, config.GetConfigFilePaths());
+#pragma warning restore CA1873 // Avoid potentially expensive logging
 
         return config;
     }

@@ -54,7 +54,7 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
         _featureCollection = featureCollection;
     }
 
-    public override ValidationResult Validate(CommandContext context, Settings settings)
+    protected override ValidationResult Validate(CommandContext context, Settings settings)
     {
         if (
             !string.IsNullOrWhiteSpace(settings.Solution)
@@ -110,7 +110,7 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
         string projectType
     );
 
-    public override async Task<int> ExecuteAsync(
+    protected override async Task<int> ExecuteAsync(
         CommandContext context,
         Settings settings,
         CancellationToken cancellationToken
@@ -121,6 +121,7 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
 
         if (_logger.IsEnabled(LogLevel.Debug))
         {
+#pragma warning disable CA1873 // Avoid potentially expensive logging
             LogSettings(
                 _logger,
                 LogLevel.Debug,
@@ -134,6 +135,7 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
                     Exclude = string.Join("|", excludeFilters),
                 }
             );
+#pragma warning restore CA1873 // Avoid potentially expensive logging
         }
 
         if (settings.ShowVersion)

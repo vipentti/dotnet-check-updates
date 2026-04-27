@@ -18,6 +18,8 @@ namespace DotnetCheckUpdates.Tests;
 
 internal static class TestUtils
 {
+    public static ICommand AsICommand<T>(this T command) where T : ICommand => command;
+
     public static CommandContext DefaultCommandContext =>
         new([], Substitute.For<IRemainingArguments>(), "test", null);
 

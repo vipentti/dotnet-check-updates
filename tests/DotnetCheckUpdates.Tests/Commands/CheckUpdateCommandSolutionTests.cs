@@ -44,7 +44,7 @@ public class CheckUpdateCommandSolutionTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -115,7 +115,7 @@ public class CheckUpdateCommandSolutionTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -172,7 +172,7 @@ public class CheckUpdateCommandSolutionTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -217,7 +217,7 @@ public class CheckUpdateCommandSolutionTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -269,7 +269,7 @@ public class CheckUpdateCommandSolutionTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -342,7 +342,7 @@ public class CheckUpdateCommandSolutionTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {

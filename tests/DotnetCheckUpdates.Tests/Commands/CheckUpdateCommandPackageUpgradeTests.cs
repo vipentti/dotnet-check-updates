@@ -46,7 +46,7 @@ public class CheckUpdateCommandPackageUpgradeTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -95,7 +95,7 @@ public class CheckUpdateCommandPackageUpgradeTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -156,7 +156,7 @@ public class CheckUpdateCommandPackageUpgradeTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -210,7 +210,7 @@ public class CheckUpdateCommandPackageUpgradeTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
             new CheckUpdateCommand.Settings
             {
@@ -267,7 +267,7 @@ public class CheckUpdateCommandPackageUpgradeTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
             new CheckUpdateCommand.Settings
             {
@@ -335,7 +335,7 @@ public class CheckUpdateCommandPackageUpgradeTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -406,7 +406,7 @@ public class CheckUpdateCommandPackageUpgradeTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -457,7 +457,7 @@ public class CheckUpdateCommandPackageUpgradeTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -502,7 +502,7 @@ public class CheckUpdateCommandPackageUpgradeTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -545,7 +545,7 @@ public class CheckUpdateCommandPackageUpgradeTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -613,7 +613,7 @@ public class CheckUpdateCommandPackageUpgradeTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -704,7 +704,7 @@ public class CheckUpdateCommandPackageUpgradeTests
             solutionFileFormat: SolutionFileFormat.Sln
         );
 
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -794,7 +794,7 @@ public class CheckUpdateCommandPackageUpgradeTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -870,7 +870,7 @@ public class CheckUpdateCommandPackageUpgradeTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -931,7 +931,7 @@ public class CheckUpdateCommandPackageUpgradeTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {

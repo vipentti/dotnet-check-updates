@@ -51,7 +51,7 @@ public class CheckUpdateCommandWithDirectoryPackagesPropsTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             DefaultCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -144,7 +144,7 @@ public class CheckUpdateCommandWithDirectoryPackagesPropsTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             DefaultCommandContext,
             new CheckUpdateCommand.Settings
             {
@@ -227,7 +227,7 @@ public class CheckUpdateCommandWithDirectoryPackagesPropsTests
         );
 
         // Act
-        var result = await command.ExecuteAsync(
+        var result = await command.AsICommand().ExecuteAsync(
             TestCommandContext,
             new CheckUpdateCommand.Settings
             {
