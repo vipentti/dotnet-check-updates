@@ -15,8 +15,11 @@ internal class NuGetApiClient
 {
     private readonly HttpClient _httpClient;
 
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions =
-        new() { AllowTrailingCommas = true, PropertyNameCaseInsensitive = true };
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
+    {
+        AllowTrailingCommas = true,
+        PropertyNameCaseInsensitive = true,
+    };
 
     public NuGetApiClient(HttpClient httpClient)
     {

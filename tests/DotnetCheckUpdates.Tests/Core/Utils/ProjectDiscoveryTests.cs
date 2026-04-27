@@ -47,12 +47,10 @@ public class ProjectDiscoveryTests
         result.ProjectFiles.Should().HaveCount(2);
         result
             .ProjectFiles.Should()
-            .BeEquivalentTo(
-                [
-                    testRoot.PathCombine($"some/path/{FileName}"),
-                    testRoot.PathCombine("some/path/project.csproj"),
-                ]
-            );
+            .BeEquivalentTo([
+                testRoot.PathCombine($"some/path/{FileName}"),
+                testRoot.PathCombine("some/path/project.csproj"),
+            ]);
     }
 
     [Theory]
@@ -109,16 +107,14 @@ public class ProjectDiscoveryTests
         result.ProjectFiles.Should().HaveCount(7);
         result
             .ProjectFiles.Should()
-            .BeEquivalentTo(
-                [
-                    testRoot.PathCombine($"solution/{FileName}"),
-                    testRoot.PathCombine($"solution/src/{FileName}"),
-                    testRoot.PathCombine("solution/src/project1/project1.csproj"),
-                    testRoot.PathCombine($"solution/src/project2/{FileName}"),
-                    testRoot.PathCombine("solution/src/project2/project2.csproj"),
-                    testRoot.PathCombine($"solution/tests/{FileName}"),
-                    testRoot.PathCombine("solution/tests/project3/project3.csproj"),
-                ]
-            );
+            .BeEquivalentTo([
+                testRoot.PathCombine($"solution/{FileName}"),
+                testRoot.PathCombine($"solution/src/{FileName}"),
+                testRoot.PathCombine("solution/src/project1/project1.csproj"),
+                testRoot.PathCombine($"solution/src/project2/{FileName}"),
+                testRoot.PathCombine("solution/src/project2/project2.csproj"),
+                testRoot.PathCombine($"solution/tests/{FileName}"),
+                testRoot.PathCombine("solution/tests/project3/project3.csproj"),
+            ]);
     }
 }

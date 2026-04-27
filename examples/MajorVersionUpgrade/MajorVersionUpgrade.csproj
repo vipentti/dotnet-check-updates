@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net8.0</TargetFrameworks>
@@ -11,5 +10,4 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
     <PackageReference Include="System.Net.Http.Json" />
   </ItemGroup>
-
 </Project>

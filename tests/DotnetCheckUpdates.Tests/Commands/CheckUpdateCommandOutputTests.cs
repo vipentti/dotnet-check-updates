@@ -52,17 +52,19 @@ public class CheckUpdateCommandOutputTests
             solutionFileFormat: SolutionFileFormat.Sln
         );
 
-        var result = await command.AsICommand().ExecuteAsync(
-            new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd,
-                Upgrade = true,
-                AsciiTree = true,
-                ShowAbsolute = true,
-            },
-            CancellationToken.None
-        );
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = true,
+                    AsciiTree = true,
+                    ShowAbsolute = true,
+                },
+                CancellationToken.None
+            );
 
         result.Should().Be(0);
 
@@ -115,17 +117,19 @@ Projects
             solutionFileFormat: SolutionFileFormat.Sln
         );
 
-        var result = await command.AsICommand().ExecuteAsync(
-            new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd,
-                Upgrade = true,
-                AsciiTree = true,
-                ShowAbsolute = true,
-            },
-            CancellationToken.None
-        );
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = true,
+                    AsciiTree = true,
+                    ShowAbsolute = true,
+                },
+                CancellationToken.None
+            );
 
         result.Should().Be(0);
 
@@ -181,18 +185,20 @@ Run dotnet restore to install new versions
         );
 
         // Act
-        var result = await command.AsICommand().ExecuteAsync(
-            TestCommandContext,
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd,
-                Upgrade = true,
-                AsciiTree = true,
-                ShowAbsolute = true,
-                Include = ["ShouldNotMatchAnything"],
-            },
-            CancellationToken.None
-        );
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                TestCommandContext,
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = true,
+                    AsciiTree = true,
+                    ShowAbsolute = true,
+                    Include = ["ShouldNotMatchAnything"],
+                },
+                CancellationToken.None
+            );
 
         // Assert
         using var scope = new AssertionScope();
@@ -245,18 +251,20 @@ No packages matched provided filters.
         );
 
         // Act
-        var result = await command.AsICommand().ExecuteAsync(
-            TestCommandContext,
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd,
-                Upgrade = true,
-                AsciiTree = true,
-                ShowAbsolute = true,
-                Exclude = ["*"],
-            },
-            CancellationToken.None
-        );
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                TestCommandContext,
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = true,
+                    AsciiTree = true,
+                    ShowAbsolute = true,
+                    Exclude = ["*"],
+                },
+                CancellationToken.None
+            );
 
         // Assert
         using var scope = new AssertionScope();
@@ -329,17 +337,19 @@ No packages matched provided filters.
         );
 
         // Act
-        var result = await command.AsICommand().ExecuteAsync(
-            TestCommandContext,
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd,
-                Upgrade = true,
-                AsciiTree = true,
-                ShowAbsolute = true,
-            },
-            CancellationToken.None
-        );
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                TestCommandContext,
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = true,
+                    AsciiTree = true,
+                    ShowAbsolute = true,
+                },
+                CancellationToken.None
+            );
 
         using var scope = new AssertionScope();
         result.Should().Be(0);
@@ -410,17 +420,19 @@ Run dotnet restore to install new versions
         );
 
         // Act
-        var result = await command.AsICommand().ExecuteAsync(
-            TestCommandContext,
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd,
-                Upgrade = true,
-                AsciiTree = true,
-                ShowAbsolute = true,
-            },
-            CancellationToken.None
-        );
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                TestCommandContext,
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = true,
+                    AsciiTree = true,
+                    ShowAbsolute = true,
+                },
+                CancellationToken.None
+            );
 
         using var scope = new AssertionScope();
         result.Should().Be(0);
@@ -492,18 +504,20 @@ Run dotnet restore to install new versions
             }
         );
 
-        var result = await command.AsICommand().ExecuteAsync(
-            new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd,
-                Upgrade = false,
-                List = true,
-                AsciiTree = true,
-                ShowAbsolute = true,
-            },
-            CancellationToken.None
-        );
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = false,
+                    List = true,
+                    AsciiTree = true,
+                    ShowAbsolute = true,
+                },
+                CancellationToken.None
+            );
 
         result.Should().Be(0);
 

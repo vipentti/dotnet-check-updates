@@ -88,21 +88,22 @@ internal static class UpgradeTargetExtensions
 
 internal class UpgradeTargetConverter : TypeConverter
 {
-    private static readonly Dictionary<string, UpgradeTarget> s_additionalNames =
-        new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["pre-major"] = UpgradeTarget.PrereleaseMajor,
-            ["pre-minor"] = UpgradeTarget.PrereleaseMinor,
-            ["pre-patch"] = UpgradeTarget.PrereleasePatch,
-            ["pre-non-major"] = UpgradeTarget.PrereleaseNonMajor,
-            ["pre-not-major"] = UpgradeTarget.PrereleaseNonMajor,
-            ["pre-!major"] = UpgradeTarget.PrereleaseNonMajor,
-            ["pre-~major"] = UpgradeTarget.PrereleaseNonMajor,
-            ["non-major"] = UpgradeTarget.NonMajor,
-            ["not-major"] = UpgradeTarget.NonMajor,
-            ["!major"] = UpgradeTarget.NonMajor,
-            ["~major"] = UpgradeTarget.NonMajor,
-        };
+    private static readonly Dictionary<string, UpgradeTarget> s_additionalNames = new(
+        StringComparer.OrdinalIgnoreCase
+    )
+    {
+        ["pre-major"] = UpgradeTarget.PrereleaseMajor,
+        ["pre-minor"] = UpgradeTarget.PrereleaseMinor,
+        ["pre-patch"] = UpgradeTarget.PrereleasePatch,
+        ["pre-non-major"] = UpgradeTarget.PrereleaseNonMajor,
+        ["pre-not-major"] = UpgradeTarget.PrereleaseNonMajor,
+        ["pre-!major"] = UpgradeTarget.PrereleaseNonMajor,
+        ["pre-~major"] = UpgradeTarget.PrereleaseNonMajor,
+        ["non-major"] = UpgradeTarget.NonMajor,
+        ["not-major"] = UpgradeTarget.NonMajor,
+        ["!major"] = UpgradeTarget.NonMajor,
+        ["~major"] = UpgradeTarget.NonMajor,
+    };
 
     public override bool GetStandardValuesSupported(ITypeDescriptorContext? context) => true;
 

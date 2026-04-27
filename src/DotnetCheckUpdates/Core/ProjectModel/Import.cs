@@ -12,11 +12,10 @@ internal partial record Import(string Project)
 #if NET7_0_OR_GREATER
     private static readonly Regex s_GetPathOfFileAboveRE = GeneratePathofFileAboveRegex();
 #else
-    private static readonly Regex s_GetPathOfFileAboveRE =
-        new(
-            """::GetPathOfFileAbove\(\s*['"]\s*([\$\(\)\w\./]+)['"]\s*,\s*['""]\s*([\$\(\)\w\./]+)\s*['""]\s*\)""",
-            RegexOptions.Compiled
-        );
+    private static readonly Regex s_GetPathOfFileAboveRE = new(
+        """::GetPathOfFileAbove\(\s*['"]\s*([\$\(\)\w\./]+)['"]\s*,\s*['""]\s*([\$\(\)\w\./]+)\s*['""]\s*\)""",
+        RegexOptions.Compiled
+    );
 #endif
 
     public string GetImportedProjectPath(IFileFinder fileFinder, string thisFileDirectory)

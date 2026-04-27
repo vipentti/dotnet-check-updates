@@ -51,16 +51,18 @@ public class CheckUpdateCommandWithDirectoryPackagesPropsTests
         );
 
         // Act
-        var result = await command.AsICommand().ExecuteAsync(
-            DefaultCommandContext,
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd,
-                Upgrade = true,
-                Target = UpgradeTarget.Latest,
-            },
-            CancellationToken.None
-        );
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                DefaultCommandContext,
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = true,
+                    Target = UpgradeTarget.Latest,
+                },
+                CancellationToken.None
+            );
 
         // Assert
         using var _as = new AssertionScope();
@@ -144,17 +146,19 @@ public class CheckUpdateCommandWithDirectoryPackagesPropsTests
         );
 
         // Act
-        var result = await command.AsICommand().ExecuteAsync(
-            DefaultCommandContext,
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd,
-                Upgrade = true,
-                AsciiTree = true,
-                ShowAbsolute = true,
-            },
-            CancellationToken.None
-        );
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                DefaultCommandContext,
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = true,
+                    AsciiTree = true,
+                    ShowAbsolute = true,
+                },
+                CancellationToken.None
+            );
 
         using var scope = new AssertionScope();
         result.Should().Be(0);
@@ -227,17 +231,19 @@ public class CheckUpdateCommandWithDirectoryPackagesPropsTests
         );
 
         // Act
-        var result = await command.AsICommand().ExecuteAsync(
-            TestCommandContext,
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd,
-                Upgrade = true,
-                AsciiTree = true,
-                ShowAbsolute = true,
-            },
-            CancellationToken.None
-        );
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                TestCommandContext,
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = true,
+                    AsciiTree = true,
+                    ShowAbsolute = true,
+                },
+                CancellationToken.None
+            );
 
         using var scope = new AssertionScope();
         result.Should().Be(0);

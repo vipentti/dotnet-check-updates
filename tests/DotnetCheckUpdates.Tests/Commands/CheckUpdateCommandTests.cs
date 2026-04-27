@@ -39,11 +39,13 @@ public partial class CheckUpdateCommandTests
         );
 
         // Act
-        var result = await command.AsICommand().ExecuteAsync(
-            DefaultCommandContext,
-            new CheckUpdateCommand.Settings { Cwd = cwd, Recurse = false },
-            CancellationToken.None
-        );
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                DefaultCommandContext,
+                new CheckUpdateCommand.Settings { Cwd = cwd, Recurse = false },
+                CancellationToken.None
+            );
 
         // Assert
 
@@ -84,16 +86,18 @@ public partial class CheckUpdateCommandTests
             solutionFileFormat: SolutionFileFormat.Sln
         );
 
-        var result = await command.AsICommand().ExecuteAsync(
-            TestCommandContext,
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd,
-                Recurse = true,
-                Depth = depth,
-            },
-            CancellationToken.None
-        );
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                TestCommandContext,
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Recurse = true,
+                    Depth = depth,
+                },
+                CancellationToken.None
+            );
 
         result.Should().Be(0);
 
@@ -105,54 +109,53 @@ public partial class CheckUpdateCommandTests
             );
     }
 
-    public static readonly TheoryData<int, string[]> RecursionDepthPatternData =
-        new()
+    public static readonly TheoryData<int, string[]> RecursionDepthPatternData = new()
+    {
+        { 0, new[] { "**/*.csproj", "**/*.fsproj" } },
+        { 1, new[] { "*.csproj", "*.fsproj", "*/*.csproj", "*/*.fsproj" } },
         {
-            { 0, new[] { "**/*.csproj", "**/*.fsproj" } },
-            { 1, new[] { "*.csproj", "*.fsproj", "*/*.csproj", "*/*.fsproj" } },
+            2,
+            new[]
             {
-                2,
-                new[]
-                {
-                    "*.csproj",
-                    "*.fsproj",
-                    "*/*.csproj",
-                    "*/*.fsproj",
-                    "*/*/*.csproj",
-                    "*/*/*.fsproj",
-                }
-            },
+                "*.csproj",
+                "*.fsproj",
+                "*/*.csproj",
+                "*/*.fsproj",
+                "*/*/*.csproj",
+                "*/*/*.fsproj",
+            }
+        },
+        {
+            3,
+            new[]
             {
-                3,
-                new[]
-                {
-                    "*.csproj",
-                    "*.fsproj",
-                    "*/*.csproj",
-                    "*/*.fsproj",
-                    "*/*/*.csproj",
-                    "*/*/*.fsproj",
-                    "*/*/*/*.csproj",
-                    "*/*/*/*.fsproj",
-                }
-            },
+                "*.csproj",
+                "*.fsproj",
+                "*/*.csproj",
+                "*/*.fsproj",
+                "*/*/*.csproj",
+                "*/*/*.fsproj",
+                "*/*/*/*.csproj",
+                "*/*/*/*.fsproj",
+            }
+        },
+        {
+            4,
+            new[]
             {
-                4,
-                new[]
-                {
-                    "*.csproj",
-                    "*.fsproj",
-                    "*/*.csproj",
-                    "*/*.fsproj",
-                    "*/*/*.csproj",
-                    "*/*/*.fsproj",
-                    "*/*/*/*.csproj",
-                    "*/*/*/*.fsproj",
-                    "*/*/*/*/*.csproj",
-                    "*/*/*/*/*.fsproj",
-                }
-            },
-        };
+                "*.csproj",
+                "*.fsproj",
+                "*/*.csproj",
+                "*/*.fsproj",
+                "*/*/*.csproj",
+                "*/*/*.fsproj",
+                "*/*/*/*.csproj",
+                "*/*/*/*.fsproj",
+                "*/*/*/*/*.csproj",
+                "*/*/*/*/*.fsproj",
+            }
+        },
+    };
 
     [Fact]
     public async Task Writes_Upgraded_ProjectFile()
@@ -188,11 +191,13 @@ public partial class CheckUpdateCommandTests
             solutionFileFormat: SolutionFileFormat.Sln
         );
 
-        var result = await command.AsICommand().ExecuteAsync(
-            TestCommandContext,
-            new CheckUpdateCommand.Settings { Cwd = cwd, Upgrade = true },
-            CancellationToken.None
-        );
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                TestCommandContext,
+                new CheckUpdateCommand.Settings { Cwd = cwd, Upgrade = true },
+                CancellationToken.None
+            );
 
         result.Should().Be(0);
 

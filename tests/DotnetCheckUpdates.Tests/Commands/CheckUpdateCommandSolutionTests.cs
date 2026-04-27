@@ -44,17 +44,19 @@ public class CheckUpdateCommandSolutionTests
         );
 
         // Act
-        var result = await command.AsICommand().ExecuteAsync(
-            TestCommandContext,
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd,
-                Upgrade = true,
-                Target = UpgradeTarget.Latest,
-                Solution = cwd.PathCombine($"inner/{solutionFileName}"),
-            },
-            CancellationToken.None
-        );
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                TestCommandContext,
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = true,
+                    Target = UpgradeTarget.Latest,
+                    Solution = cwd.PathCombine($"inner/{solutionFileName}"),
+                },
+                CancellationToken.None
+            );
 
         // Assert
         result.Should().Be(0);
@@ -115,17 +117,19 @@ public class CheckUpdateCommandSolutionTests
         );
 
         // Act
-        var result = await command.AsICommand().ExecuteAsync(
-            TestCommandContext,
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd,
-                Upgrade = true,
-                Target = UpgradeTarget.Latest,
-                Solution = cwd.PathCombine(solutionFileName),
-            },
-            CancellationToken.None
-        );
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                TestCommandContext,
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = true,
+                    Target = UpgradeTarget.Latest,
+                    Solution = cwd.PathCombine(solutionFileName),
+                },
+                CancellationToken.None
+            );
 
         // Assert
         result.Should().Be(0);
@@ -172,16 +176,18 @@ public class CheckUpdateCommandSolutionTests
         );
 
         // Act
-        var result = await command.AsICommand().ExecuteAsync(
-            TestCommandContext,
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd,
-                Upgrade = true,
-                Target = UpgradeTarget.Latest,
-            },
-            CancellationToken.None
-        );
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                TestCommandContext,
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = true,
+                    Target = UpgradeTarget.Latest,
+                },
+                CancellationToken.None
+            );
 
         // Assert
         result.Should().Be(0);
@@ -217,16 +223,18 @@ public class CheckUpdateCommandSolutionTests
         );
 
         // Act
-        var result = await command.AsICommand().ExecuteAsync(
-            TestCommandContext,
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd,
-                Upgrade = true,
-                Target = UpgradeTarget.Latest,
-            },
-            CancellationToken.None
-        );
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                TestCommandContext,
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = true,
+                    Target = UpgradeTarget.Latest,
+                },
+                CancellationToken.None
+            );
 
         // Assert
         result.Should().Be(0);
@@ -269,16 +277,18 @@ public class CheckUpdateCommandSolutionTests
         );
 
         // Act
-        var result = await command.AsICommand().ExecuteAsync(
-            TestCommandContext,
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd,
-                Upgrade = true,
-                Target = UpgradeTarget.Latest,
-            },
-            CancellationToken.None
-        );
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                TestCommandContext,
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = true,
+                    Target = UpgradeTarget.Latest,
+                },
+                CancellationToken.None
+            );
 
         // Assert
         result.Should().Be(0);
@@ -342,16 +352,18 @@ public class CheckUpdateCommandSolutionTests
         );
 
         // Act
-        var result = await command.AsICommand().ExecuteAsync(
-            TestCommandContext,
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd,
-                Upgrade = true,
-                Target = UpgradeTarget.Latest,
-            },
-            CancellationToken.None
-        );
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                TestCommandContext,
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = true,
+                    Target = UpgradeTarget.Latest,
+                },
+                CancellationToken.None
+            );
 
         // Assert
         result.Should().Be(0);

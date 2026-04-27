@@ -201,8 +201,7 @@ internal static partial class CheckUpdateCommandHelpers
         {
             if (
                 updated.FindByNameWithIndex(originalPackage.Name)
-                    is
-                    (_, PackageReference updatedPackage)
+                    is (_, PackageReference updatedPackage)
                 && !originalPackage.Version.Equals(updatedPackage.Version)
             )
             {
@@ -251,8 +250,7 @@ internal static partial class CheckUpdateCommandHelpers
 
             if (
                 updated.FindByNameWithIndex(originalPackage.Name)
-                    is
-                    (_, PackageReference updatedPackage)
+                    is (_, PackageReference updatedPackage)
                 && !originalPackage.Version.Equals(updatedPackage.Version)
             )
             {

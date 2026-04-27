@@ -1,36 +1,36 @@
 <Project>
-    <!-- General -->
-    <PropertyGroup>
-        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
-        <LangVersion>14.0</LangVersion>
-        <Nullable>enable</Nullable>
-        <Features>strict</Features>
-    </PropertyGroup>
+  <!-- General -->
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <LangVersion>14.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <Features>strict</Features>
+  </PropertyGroup>
 
-    <!-- Build -->
-    <PropertyGroup>
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-        <WarnOnPackingNonPackableProject>true</WarnOnPackingNonPackableProject>
+  <!-- Build -->
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <WarnOnPackingNonPackableProject>true</WarnOnPackingNonPackableProject>
 
-        <EnableNETAnalyzers>true</EnableNETAnalyzers>
-        <AnalysisLevel>latest</AnalysisLevel>
-        <AnalysisMode>Recommended</AnalysisMode>
-    </PropertyGroup>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
+  </PropertyGroup>
 
-    <!-- Packaging -->
-    <PropertyGroup Label="Packaging">
-        <!-- Enable packaging on a per-project basis. -->
-        <IsPackable>false</IsPackable>
-        <IsPublishable>false</IsPublishable>
+  <!-- Packaging -->
+  <PropertyGroup Label="Packaging">
+    <!-- Enable packaging on a per-project basis. -->
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
 
-        <Authors>Ville Penttinen</Authors>
-        <Copyright>Copyright © 2023-2024 Ville Penttinen</Copyright>
+    <Authors>Ville Penttinen</Authors>
+    <Copyright>Copyright © 2023-2024 Ville Penttinen</Copyright>
 
-        <RepositoryType>git</RepositoryType>
-        <PackageProjectUrl>https://github.com/vipentti/dotnet-check-updates</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/vipentti/dotnet-check-updates</RepositoryUrl>
-        <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
-        <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    </PropertyGroup>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/vipentti/dotnet-check-updates</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/vipentti/dotnet-check-updates</RepositoryUrl>
+    <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+  </PropertyGroup>
 </Project>

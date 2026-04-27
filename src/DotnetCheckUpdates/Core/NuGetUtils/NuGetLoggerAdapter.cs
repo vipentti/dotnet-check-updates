@@ -6,7 +6,11 @@ using Microsoft.Extensions.Logging;
 
 namespace DotnetCheckUpdates.Core.NuGetUtils;
 
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1873:Avoid potentially expensive logging", Justification = "Existing functionality.")]
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Performance",
+    "CA1873:Avoid potentially expensive logging",
+    Justification = "Existing functionality."
+)]
 internal partial class NuGetLoggerAdapter : NuGet.Common.ILogger
 {
     private readonly ILogger _logger;

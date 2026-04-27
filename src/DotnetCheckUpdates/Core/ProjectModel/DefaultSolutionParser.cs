@@ -21,8 +21,8 @@ internal class DefaultSolutionParser : ISolutionParser
 
         var solutionRootDirectory = Path.GetDirectoryName(solutionPath)!;
 
-        var solutionModel = AsyncHelper.RunSync(
-            async () => await serializer.OpenAsync(solutionPath, CancellationToken.None)
+        var solutionModel = AsyncHelper.RunSync(async () =>
+            await serializer.OpenAsync(solutionPath, CancellationToken.None)
         );
 
         return solutionModel

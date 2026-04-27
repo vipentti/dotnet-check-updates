@@ -6,13 +6,12 @@ namespace DotnetCheckUpdates.Core.Utils;
 
 internal static class AsyncHelper
 {
-    private static readonly TaskFactory s_taskFactory =
-        new(
-            CancellationToken.None,
-            TaskCreationOptions.None,
-            TaskContinuationOptions.None,
-            TaskScheduler.Default
-        );
+    private static readonly TaskFactory s_taskFactory = new(
+        CancellationToken.None,
+        TaskCreationOptions.None,
+        TaskContinuationOptions.None,
+        TaskScheduler.Default
+    );
 
     public static TResult RunSync<TResult>(Func<Task<TResult>> func)
     {

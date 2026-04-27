@@ -84,9 +84,8 @@ services.AddSingletonVia<ICurrentDirectory, CurrentDirectoryProvider>();
 
 services
     .AddHttpClient<NuGetApiClient>(client => client.BaseAddress = new Uri(nugetApiBaseUrl))
-    .ConfigurePrimaryHttpMessageHandler(
-        () =>
-            new HttpClientHandler() { AutomaticDecompression = System.Net.DecompressionMethods.All }
+    .ConfigurePrimaryHttpMessageHandler(() =>
+        new HttpClientHandler() { AutomaticDecompression = System.Net.DecompressionMethods.All }
     );
 
 using var applicationExitHandler = new ApplicationExitHandler();

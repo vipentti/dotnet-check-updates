@@ -45,19 +45,21 @@ public class CheckUpdateCommandInteractiveOutputTests
         );
 
         // Act
-        var result = await command.AsICommand().ExecuteAsync(
-            TestCommandContext,
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd,
-                Upgrade = true,
-                AsciiTree = true,
-                ShowAbsolute = true,
-                Interactive = true,
-                Include = ["ShouldNotMatchAnything"],
-            },
-            CancellationToken.None
-        );
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                TestCommandContext,
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = true,
+                    AsciiTree = true,
+                    ShowAbsolute = true,
+                    Interactive = true,
+                    Include = ["ShouldNotMatchAnything"],
+                },
+                CancellationToken.None
+            );
 
         // Assert
         using var scope = new AssertionScope();
@@ -111,19 +113,21 @@ No packages matched provided filters.
         console.Input.PushKey(ConsoleKey.Spacebar);
         console.Input.PushKey(ConsoleKey.Enter);
 
-        var cmdTask = command.AsICommand().ExecuteAsync(
-            TestCommandContext,
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd,
-                Upgrade = true,
-                AsciiTree = true,
-                ShowAbsolute = true,
-                Interactive = true,
-                HideProgressAfterComplete = true,
-            },
-            CancellationToken.None
-        );
+        var cmdTask = command
+            .AsICommand()
+            .ExecuteAsync(
+                TestCommandContext,
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = true,
+                    AsciiTree = true,
+                    ShowAbsolute = true,
+                    Interactive = true,
+                    HideProgressAfterComplete = true,
+                },
+                CancellationToken.None
+            );
 
         var result = await cmdTask;
 
@@ -196,19 +200,21 @@ Run dotnet restore to install new versions
 
         // Act
 
-        var cmdTask = command.AsICommand().ExecuteAsync(
-            TestCommandContext,
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd,
-                Upgrade = true,
-                AsciiTree = true,
-                ShowAbsolute = true,
-                Interactive = true,
-                HideProgressAfterComplete = true,
-            },
-            CancellationToken.None
-        );
+        var cmdTask = command
+            .AsICommand()
+            .ExecuteAsync(
+                TestCommandContext,
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = true,
+                    AsciiTree = true,
+                    ShowAbsolute = true,
+                    Interactive = true,
+                    HideProgressAfterComplete = true,
+                },
+                CancellationToken.None
+            );
 
         var result = await cmdTask;
 

@@ -66,217 +66,216 @@ public class UpgradeTargetTests
         string,
         string[],
         string
-    > UpgradeTargetCases =
-        new()
+    > UpgradeTargetCases = new()
+    {
         {
+            "prefers non-pre-release",
+            UpgradeTarget.Latest,
+            "1.0.0",
+            new[] { "1.0.1-alpha", "1.0.1" },
+            "1.0.1"
+        },
+        {
+            "prefers greatest version including pre-releases",
+            UpgradeTarget.Greatest,
+            "1.0.0",
+            new[]
             {
-                "prefers non-pre-release",
-                UpgradeTarget.Latest,
-                "1.0.0",
-                new[] { "1.0.1-alpha", "1.0.1" },
-                "1.0.1"
+                "1.0.1-alpha",
+                "1.0.1",
+                "1.0.2",
+                "1.0.3-beta",
+                "1.0.4-beta",
+                "1.0.4-release-candidate",
             },
+            "1.0.4-release-candidate"
+        },
+        {
+            "no matching major version",
+            UpgradeTarget.Major,
+            "1.0.0",
+            new[] { "1.0.1-alpha", "1.0.1", "1.0.2", "1.0.3-beta" },
+            "1.0.0"
+        },
+        {
+            "non-major with both patch and minor options",
+            UpgradeTarget.NonMajor,
+            "1.0.0",
+            new[] { "1.0.1-alpha", "1.0.1", "1.0.2", "1.1.0", "1.2.0" },
+            "1.2.0"
+        },
+        {
+            "non-major with with only patch options",
+            UpgradeTarget.NonMajor,
+            "1.0.0",
+            new[] { "1.0.1-alpha", "1.0.1", "1.0.2", "1.0.3" },
+            "1.0.3"
+        },
+        {
+            "non-major with both with no matches",
+            UpgradeTarget.NonMajor,
+            "1.0.0",
+            new[] { "1.0.1-alpha", "1.1.0-alpha", "2.0.0" },
+            "1.0.0"
+        },
+        {
+            "prerelease-non-major with both patch and minor options",
+            UpgradeTarget.PrereleaseNonMajor,
+            "1.0.0",
+            new[] { "1.0.1-alpha", "1.0.1", "1.0.2", "1.1.0", "1.2.0", "1.3.0-alpha" },
+            "1.3.0-alpha"
+        },
+        {
+            "prerelease-non-major with with only patch options",
+            UpgradeTarget.PrereleaseNonMajor,
+            "1.0.0",
+            new[] { "1.0.1-alpha", "1.0.1", "1.0.2", "1.0.3", "1.0.4-alpha" },
+            "1.0.4-alpha"
+        },
+        {
+            "prerelease-non-major with both with no matches",
+            UpgradeTarget.PrereleaseNonMajor,
+            "1.0.0",
+            new[] { "2.0.1-alpha", "2.1.0-alpha", "2.0.0" },
+            "1.0.0"
+        },
+        {
+            "greatest non-pre-release major version",
+            UpgradeTarget.Major,
+            "1.0.0",
+            new[]
             {
-                "prefers greatest version including pre-releases",
-                UpgradeTarget.Greatest,
-                "1.0.0",
-                new[]
-                {
-                    "1.0.1-alpha",
-                    "1.0.1",
-                    "1.0.2",
-                    "1.0.3-beta",
-                    "1.0.4-beta",
-                    "1.0.4-release-candidate",
-                },
-                "1.0.4-release-candidate"
+                "1.0.1-alpha",
+                "1.0.1",
+                "1.0.2",
+                "1.0.3-beta",
+                "3.0.0",
+                "2.0.0",
+                "4.0.0",
+                "5.0.0-rc",
             },
+            "4.0.0"
+        },
+        {
+            "greatest major version when pre-release",
+            UpgradeTarget.Major,
+            "1.0.0-beta",
+            new[]
             {
-                "no matching major version",
-                UpgradeTarget.Major,
-                "1.0.0",
-                new[] { "1.0.1-alpha", "1.0.1", "1.0.2", "1.0.3-beta" },
-                "1.0.0"
+                "1.0.1-alpha",
+                "1.0.1",
+                "1.0.2",
+                "1.0.3-beta",
+                "3.0.0",
+                "2.0.0",
+                "4.0.0",
+                "5.0.0-rc",
             },
+            "4.0.0"
+        },
+        {
+            "greatest major version when pre-release",
+            UpgradeTarget.PrereleaseMajor,
+            "1.0.0-beta",
+            new[]
             {
-                "non-major with both patch and minor options",
-                UpgradeTarget.NonMajor,
-                "1.0.0",
-                new[] { "1.0.1-alpha", "1.0.1", "1.0.2", "1.1.0", "1.2.0" },
-                "1.2.0"
+                "1.0.1-alpha",
+                "1.0.1",
+                "1.0.2",
+                "1.0.3-beta",
+                "3.0.0",
+                "2.0.0",
+                "4.0.0",
+                "5.0.0-rc",
             },
+            "5.0.0-rc"
+        },
+        {
+            "greatest major version",
+            UpgradeTarget.PrereleaseMajor,
+            "1.0.0",
+            new[]
             {
-                "non-major with with only patch options",
-                UpgradeTarget.NonMajor,
-                "1.0.0",
-                new[] { "1.0.1-alpha", "1.0.1", "1.0.2", "1.0.3" },
-                "1.0.3"
+                "1.0.1-alpha",
+                "1.0.1",
+                "1.0.2",
+                "1.0.3-beta",
+                "3.0.0",
+                "2.0.0",
+                "4.0.0",
+                "5.0.0-rc",
             },
-            {
-                "non-major with both with no matches",
-                UpgradeTarget.NonMajor,
-                "1.0.0",
-                new[] { "1.0.1-alpha", "1.1.0-alpha", "2.0.0" },
-                "1.0.0"
-            },
-            {
-                "prerelease-non-major with both patch and minor options",
-                UpgradeTarget.PrereleaseNonMajor,
-                "1.0.0",
-                new[] { "1.0.1-alpha", "1.0.1", "1.0.2", "1.1.0", "1.2.0", "1.3.0-alpha" },
-                "1.3.0-alpha"
-            },
-            {
-                "prerelease-non-major with with only patch options",
-                UpgradeTarget.PrereleaseNonMajor,
-                "1.0.0",
-                new[] { "1.0.1-alpha", "1.0.1", "1.0.2", "1.0.3", "1.0.4-alpha" },
-                "1.0.4-alpha"
-            },
-            {
-                "prerelease-non-major with both with no matches",
-                UpgradeTarget.PrereleaseNonMajor,
-                "1.0.0",
-                new[] { "2.0.1-alpha", "2.1.0-alpha", "2.0.0" },
-                "1.0.0"
-            },
-            {
-                "greatest non-pre-release major version",
-                UpgradeTarget.Major,
-                "1.0.0",
-                new[]
-                {
-                    "1.0.1-alpha",
-                    "1.0.1",
-                    "1.0.2",
-                    "1.0.3-beta",
-                    "3.0.0",
-                    "2.0.0",
-                    "4.0.0",
-                    "5.0.0-rc",
-                },
-                "4.0.0"
-            },
-            {
-                "greatest major version when pre-release",
-                UpgradeTarget.Major,
-                "1.0.0-beta",
-                new[]
-                {
-                    "1.0.1-alpha",
-                    "1.0.1",
-                    "1.0.2",
-                    "1.0.3-beta",
-                    "3.0.0",
-                    "2.0.0",
-                    "4.0.0",
-                    "5.0.0-rc",
-                },
-                "4.0.0"
-            },
-            {
-                "greatest major version when pre-release",
-                UpgradeTarget.PrereleaseMajor,
-                "1.0.0-beta",
-                new[]
-                {
-                    "1.0.1-alpha",
-                    "1.0.1",
-                    "1.0.2",
-                    "1.0.3-beta",
-                    "3.0.0",
-                    "2.0.0",
-                    "4.0.0",
-                    "5.0.0-rc",
-                },
-                "5.0.0-rc"
-            },
-            {
-                "greatest major version",
-                UpgradeTarget.PrereleaseMajor,
-                "1.0.0",
-                new[]
-                {
-                    "1.0.1-alpha",
-                    "1.0.1",
-                    "1.0.2",
-                    "1.0.3-beta",
-                    "3.0.0",
-                    "2.0.0",
-                    "4.0.0",
-                    "5.0.0-rc",
-                },
-                "5.0.0-rc"
-            },
-            {
-                "no better minor version",
-                UpgradeTarget.Minor,
-                "1.0.0",
-                new[] { "1.0.1-alpha", "1.0.1", "1.0.2", "1.0.3-beta" },
-                "1.0.0"
-            },
-            {
-                "no better minor version",
-                UpgradeTarget.Minor,
-                "1.0.0",
-                new[] { "1.0.1-alpha", "2.1.1", "3.2.2", "4.0.3-beta" },
-                "1.0.0"
-            },
-            {
-                "no better minor version",
-                UpgradeTarget.PrereleaseMinor,
-                "1.0.0",
-                new[] { "1.0.1-alpha", "2.1.1", "3.2.2", "4.0.3-beta" },
-                "1.0.0"
-            },
-            {
-                "greatest non-pre-release minor version",
-                UpgradeTarget.Minor,
-                "1.0.0-beta",
-                new[] { "1.0.1-alpha", "1.1.1", "1.2.2", "1.3.3-beta" },
-                "1.2.2"
-            },
-            {
-                "greatest minor version",
-                UpgradeTarget.PrereleaseMinor,
-                "1.0.0-beta",
-                new[] { "1.0.1-alpha", "1.1.1", "1.2.2", "1.3.3-beta" },
-                "1.3.3-beta"
-            },
-            {
-                "no better patch version",
-                UpgradeTarget.Patch,
-                "1.0.0",
-                new[] { "1.0.1-alpha", "1.0.3-beta" },
-                "1.0.0"
-            },
-            {
-                "no better patch version",
-                UpgradeTarget.Patch,
-                "1.0.0",
-                new[] { "1.0.1-alpha", "2.0.0", "2.0.1" },
-                "1.0.0"
-            },
-            {
-                "no better patch version",
-                UpgradeTarget.PrereleasePatch,
-                "1.0.0",
-                new[] { "2.0.0", "2.0.1" },
-                "1.0.0"
-            },
-            {
-                "better patch version",
-                UpgradeTarget.Patch,
-                "1.0.0",
-                new[] { "1.0.1-alpha", "1.0.1", "1.0.3-beta" },
-                "1.0.1"
-            },
-            {
-                "better patch version",
-                UpgradeTarget.PrereleasePatch,
-                "1.0.0",
-                new[] { "1.0.1-alpha", "1.0.1", "1.0.3-beta" },
-                "1.0.3-beta"
-            },
-        };
+            "5.0.0-rc"
+        },
+        {
+            "no better minor version",
+            UpgradeTarget.Minor,
+            "1.0.0",
+            new[] { "1.0.1-alpha", "1.0.1", "1.0.2", "1.0.3-beta" },
+            "1.0.0"
+        },
+        {
+            "no better minor version",
+            UpgradeTarget.Minor,
+            "1.0.0",
+            new[] { "1.0.1-alpha", "2.1.1", "3.2.2", "4.0.3-beta" },
+            "1.0.0"
+        },
+        {
+            "no better minor version",
+            UpgradeTarget.PrereleaseMinor,
+            "1.0.0",
+            new[] { "1.0.1-alpha", "2.1.1", "3.2.2", "4.0.3-beta" },
+            "1.0.0"
+        },
+        {
+            "greatest non-pre-release minor version",
+            UpgradeTarget.Minor,
+            "1.0.0-beta",
+            new[] { "1.0.1-alpha", "1.1.1", "1.2.2", "1.3.3-beta" },
+            "1.2.2"
+        },
+        {
+            "greatest minor version",
+            UpgradeTarget.PrereleaseMinor,
+            "1.0.0-beta",
+            new[] { "1.0.1-alpha", "1.1.1", "1.2.2", "1.3.3-beta" },
+            "1.3.3-beta"
+        },
+        {
+            "no better patch version",
+            UpgradeTarget.Patch,
+            "1.0.0",
+            new[] { "1.0.1-alpha", "1.0.3-beta" },
+            "1.0.0"
+        },
+        {
+            "no better patch version",
+            UpgradeTarget.Patch,
+            "1.0.0",
+            new[] { "1.0.1-alpha", "2.0.0", "2.0.1" },
+            "1.0.0"
+        },
+        {
+            "no better patch version",
+            UpgradeTarget.PrereleasePatch,
+            "1.0.0",
+            new[] { "2.0.0", "2.0.1" },
+            "1.0.0"
+        },
+        {
+            "better patch version",
+            UpgradeTarget.Patch,
+            "1.0.0",
+            new[] { "1.0.1-alpha", "1.0.1", "1.0.3-beta" },
+            "1.0.1"
+        },
+        {
+            "better patch version",
+            UpgradeTarget.PrereleasePatch,
+            "1.0.0",
+            new[] { "1.0.1-alpha", "1.0.1", "1.0.3-beta" },
+            "1.0.3-beta"
+        },
+    };
 }
