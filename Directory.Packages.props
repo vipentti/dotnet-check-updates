@@ -23,8 +23,8 @@
     <PackageVersion Include="NuGet.Packaging" Version="7.3.1" />
     <PackageVersion Include="NuGet.Protocol" Version="7.3.1" />
     <PackageVersion Include="NuGet.Versioning" Version="7.3.1" />
-    <PackageVersion Include="Nuke.Common" Version="8.1.2" />
-    <PackageVersion Include="Nuke.Components" Version="8.1.2" />
+    <PackageVersion Include="Nuke.Common" Version="10.1.0" />
+    <PackageVersion Include="Nuke.Components" Version="10.1.0" />
     <PackageVersion Include="Nuke.SolutionModel" Version="10.1.0" />
     <PackageVersion Include="roslynator.analyzers" Version="4.15.0" />
     <PackageVersion Include="semver" Version="3.0.0" />
@@ -37,7 +37,7 @@
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="22.1.1" />
     <PackageVersion Include="System.Net.Http.Json" Version="10.0.7" />
     <PackageVersion Include="Vipentti.IO.Abstractions.FileSystemGlobbing" Version="1.0.4" />
-    <PackageVersion Include="Vipentti.Nuke.Components" Version="0.5.2" />
+    <PackageVersion Include="Vipentti.Nuke.Components" Version="0.6.0" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>

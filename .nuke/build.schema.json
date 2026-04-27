@@ -1,47 +1,5 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "properties": {
-    "CleanPackagesDirectory": {
-      "type": "boolean"
-    },
-    "Configuration": {
-      "type": "string",
-      "enum": [
-        "Debug",
-        "Release"
-      ]
-    },
-    "ForceReproducible": {
-      "type": "boolean",
-      "description": "Force UseReproducible to be set"
-    },
-    "GitHubReleaseGitHubToken": {
-      "type": "string",
-      "default": "Secrets must be entered via 'nuke :secrets [profile]'"
-    },
-    "GitRemoteName": {
-      "type": "string"
-    },
-    "IgnoreFailedSources": {
-      "type": "boolean",
-      "description": "Ignore unreachable sources during Restore"
-    },
-    "NuGetApiKey": {
-      "type": "string",
-      "default": "Secrets must be entered via 'nuke :secrets [profile]'"
-    },
-    "NuGetSource": {
-      "type": "string"
-    },
-    "PackageOwner": {
-      "type": "string",
-      "description": "Owner of the package(s)"
-    },
-    "Solution": {
-      "type": "string",
-      "description": "Path to a solution file that is automatically loaded"
-    }
-  },
   "definitions": {
     "Host": {
       "type": "string",
@@ -156,5 +114,53 @@
       }
     }
   },
-  "$ref": "#/definitions/NukeBuild"
+  "allOf": [
+    {
+      "properties": {
+        "CleanPackagesDirectory": {
+          "type": "boolean"
+        },
+        "Configuration": {
+          "type": "string",
+          "enum": [
+            "Debug",
+            "Release"
+          ]
+        },
+        "ForceReproducible": {
+          "type": "boolean",
+          "description": "Force UseReproducible to be set"
+        },
+        "GitHubReleaseGitHubToken": {
+          "type": "string",
+          "default": "Secrets must be entered via 'nuke :secrets [profile]'"
+        },
+        "GitRemoteName": {
+          "type": "string"
+        },
+        "IgnoreFailedSources": {
+          "type": "boolean",
+          "description": "Ignore unreachable sources during Restore"
+        },
+        "NuGetApiKey": {
+          "type": "string",
+          "default": "Secrets must be entered via 'nuke :secrets [profile]'"
+        },
+        "NuGetSource": {
+          "type": "string"
+        },
+        "PackageOwner": {
+          "type": "string",
+          "description": "Owner of the package(s)"
+        },
+        "Solution": {
+          "type": "string",
+          "description": "Path to a solution file that is automatically loaded"
+        }
+      }
+    },
+    {
+      "$ref": "#/definitions/NukeBuild"
+    }
+  ]
 }
