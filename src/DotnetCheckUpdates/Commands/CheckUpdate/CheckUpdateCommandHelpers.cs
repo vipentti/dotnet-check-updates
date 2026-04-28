@@ -14,7 +14,13 @@ using Spectre.Console.Rendering;
 
 namespace DotnetCheckUpdates.Commands.CheckUpdate;
 
-internal record PackageUpgrade(string Name, VersionRange From, VersionRange To);
+internal record PackageUpgrade(
+    string UpgradeKey,
+    string PackageName,
+    string DisplayName,
+    VersionRange From,
+    VersionRange To
+);
 
 internal static partial class CheckUpdateCommandHelpers
 {
@@ -123,11 +129,11 @@ internal static partial class CheckUpdateCommandHelpers
             {
                 var results = await Task.WhenAll(chunk.Select(BoundGetBestPackageVersion));
 
-                foreach (var upgrade in results)
+                foreach (var result in results)
                 {
-                    if (upgrade is not null)
+                    if (result.Upgrade is not null)
                     {
-                        pkgs[upgrade.Id] = upgrade.Version;
+                        pkgs[result.Package.UpgradeKey] = result.Upgrade.Version;
                     }
                 }
             }
@@ -136,21 +142,32 @@ internal static partial class CheckUpdateCommandHelpers
         {
             foreach (var pkgRef in project.PackageReferences)
             {
-                var upgrade = await BoundGetBestPackageVersion(pkgRef);
+                var result = await BoundGetBestPackageVersion(pkgRef);
 
-                if (upgrade is not null)
+                if (result.Upgrade is not null)
                 {
-                    pkgs[upgrade.Id] = upgrade.Version;
+                    pkgs[result.Package.UpgradeKey] = result.Upgrade.Version;
                 }
             }
         }
 
         return (project, pkgs);
 
-        async Task<PackageVersionUpgrade?> BoundGetBestPackageVersion(PackageReference pkgRef)
+        async Task<(
+            PackageReference Package,
+            PackageVersionUpgrade? Upgrade
+        )> BoundGetBestPackageVersion(PackageReference pkgRef)
         {
+            var applicableFrameworks = pkgRef.GetApplicableFrameworks(project.TargetFrameworks);
+
+            if (applicableFrameworks.IsEmpty)
+            {
+                progress?.Increment(1);
+                return (pkgRef, null);
+            }
+
             var upgrade = await packageService.GetPackageUpgrade(
-                project.TargetFrameworks,
+                applicableFrameworks,
                 pkgRef,
                 target,
                 cancellationToken
@@ -158,7 +175,7 @@ internal static partial class CheckUpdateCommandHelpers
 
             progress?.Increment(1);
 
-            return upgrade;
+            return (pkgRef, upgrade);
         }
     }
 
@@ -172,12 +189,16 @@ internal static partial class CheckUpdateCommandHelpers
         foreach (var pkgRef in project.PackageReferences)
         {
             if (
-                upgrades.TryGetValue(pkgRef.Name, out var version)
-                && !pkgRef.Version.Equals(version)
+                (
+                    upgrades.TryGetValue(pkgRef.UpgradeKey, out var version)
+                    || upgrades.TryGetValue(pkgRef.Name, out version)
+                ) && !pkgRef.Version.Equals(version)
             )
             {
                 builder ??= ImmutableArray.CreateBuilder<PackageUpgrade>();
-                builder.Add(new(pkgRef.Name, pkgRef.Version, version));
+                builder.Add(
+                    new(pkgRef.UpgradeKey, pkgRef.Name, pkgRef.DisplayName, pkgRef.Version, version)
+                );
             }
         }
 
@@ -194,20 +215,26 @@ internal static partial class CheckUpdateCommandHelpers
 
         foreach (
             var originalPackage in original.PackageReferences.OrderBy(
-                it => it.Name,
+                it => it.DisplayName,
                 StringComparer.Ordinal
             )
         )
         {
             if (
-                updated.FindByNameWithIndex(originalPackage.Name)
+                updated.FindByIdentityWithIndex(originalPackage)
                     is (_, PackageReference updatedPackage)
                 && !originalPackage.Version.Equals(updatedPackage.Version)
             )
             {
                 didUpdate = true;
                 upgrades.Add(
-                    new(originalPackage.Name, originalPackage.Version, updatedPackage.Version)
+                    new(
+                        originalPackage.UpgradeKey,
+                        originalPackage.Name,
+                        originalPackage.DisplayName,
+                        originalPackage.Version,
+                        updatedPackage.Version
+                    )
                 );
             }
         }
@@ -234,12 +261,12 @@ internal static partial class CheckUpdateCommandHelpers
 
         var versionSpaces = new string(' ', longestVersion);
 
-        foreach (var originalPackage in original.PackageReferences.OrderBy(it => it.Name))
+        foreach (var originalPackage in original.PackageReferences.OrderBy(it => it.DisplayName))
         {
-            var nameLengthToPad = longestPackageName - originalPackage.Name.Length;
+            var nameLengthToPad = longestPackageName - originalPackage.DisplayName.Length;
 
             var paddedPackageName = new Padder(
-                new Text(originalPackage.Name),
+                new Text(originalPackage.DisplayName),
                 new(0, 0, nameLengthToPad, 0)
             );
 
@@ -249,7 +276,7 @@ internal static partial class CheckUpdateCommandHelpers
             var originalVersion = new Markup(originalVersionString.EscapeMarkup());
 
             if (
-                updated.FindByNameWithIndex(originalPackage.Name)
+                updated.FindByIdentityWithIndex(originalPackage)
                     is (_, PackageReference updatedPackage)
                 && !originalPackage.Version.Equals(updatedPackage.Version)
             )

@@ -184,7 +184,13 @@ internal static class CheckUpdateCommandUtils
 
         using (new AssertionScope())
         {
-            project.PackageReferences.Should().BeEquivalentTo(packageVersions);
+            project.PackageReferences.Should().HaveCount(packageVersions.Length);
+
+            foreach (var (actual, expected) in project.PackageReferences.Zip(packageVersions))
+            {
+                actual.Name.Should().Be(expected.Name);
+                actual.GetVersionString().Should().Be(expected.GetVersionString());
+            }
 
             project.ProjectFileToXml().Should().Be(ProjectFileXml(packages, framework));
         }

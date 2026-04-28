@@ -59,7 +59,13 @@ internal record ProjectFile(
         var index = 0;
         foreach (var pkgRef in PackageReferences)
         {
-            if (pkgRef.HasVersion && packages.TryGetValue(pkgRef.Name, out var version))
+            if (
+                pkgRef.HasVersion
+                && (
+                    packages.TryGetValue(pkgRef.UpgradeKey, out var version)
+                    || packages.TryGetValue(pkgRef.Name, out version)
+                )
+            )
             {
                 if (builder is null)
                 {
@@ -102,6 +108,23 @@ internal record ProjectFile(
             : (-1, null);
 
     public int FindIndexByName(string name) => FindIndex(pkg => pkg.HasName(name));
+
+    public (int index, PackageReference? reference) FindByReferenceIdWithIndex(int referenceId) =>
+        FindIndex(pkg => pkg.HasReferenceId(referenceId)) is var index && index > -1
+            ? (index, PackageReferences[index])
+            : (-1, null);
+
+    public (int index, PackageReference? reference) FindByIdentityWithIndex(
+        PackageReference reference
+    )
+    {
+        if (reference.ReferenceId >= 0)
+        {
+            return FindByReferenceIdWithIndex(reference.ReferenceId);
+        }
+
+        return FindByNameWithIndex(reference.Name);
+    }
 
     public int FindIndex(Predicate<PackageReference> predicate) =>
         PackageReferences.FindIndex(predicate);
@@ -166,11 +189,17 @@ internal record ProjectFile(
 
         var references = newDocument.GetPackageReferenceElements().ToImmutableArray();
 
-        foreach (var element in references)
+        var hasReferenceIds = PackageReferences.Any(it => it.ReferenceId >= 0);
+
+        foreach (
+            var (element, elementIndex) in references.Select((element, index) => (element, index))
+        )
         {
-            var foundRef = PackageReferences.Find(item =>
-                item.HasName((string?)element.Attribute("Include") ?? "")
-            );
+            var foundRef = hasReferenceIds
+                ? PackageReferences.Find(item => item.HasReferenceId(elementIndex))
+                : PackageReferences.Find(item =>
+                    item.HasName((string?)element.Attribute("Include") ?? "")
+                );
 
             // Skip filtered packages
             if (foundRef is null)

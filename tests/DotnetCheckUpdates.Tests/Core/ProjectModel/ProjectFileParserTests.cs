@@ -388,6 +388,111 @@ public class ProjectFileParserTests
             .WithMessage("Unsupported Project format: TargetFramework(s) are not specified");
     }
 
+    [Fact]
+    public void ParsesCombinedItemGroupAndItemConditions()
+    {
+        var xml = @"
+<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+  </PropertyGroup>
+  <ItemGroup Condition=""'$(TargetFramework)' != 'net9.0'"">
+    <PackageReference Include=""Example"" Version=""1.0.0"" Condition=""'$(TargetFramework)' == 'net8.0'"" />
+  </ItemGroup>
+</Project>
+".TrimStart();
+
+        var file = ProjectFileParser.ParseProjectFile(xml, "test");
+
+        file.PackageReferences.Should().ContainSingle();
+
+        var package = file.PackageReferences[0];
+
+        package.TargetFrameworkConditions.Should().HaveCount(2);
+
+        package
+            .GetApplicableFrameworks(file.TargetFrameworks)
+            .Select(it => it.GetShortFolderName())
+            .Should()
+            .Equal("net8.0");
+    }
+
+    [Fact]
+    public void ParsesOrCondition()
+    {
+        var xml = @"
+<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include=""Example"" Version=""1.0.0"" Condition=""'$(TargetFramework)' == 'net8.0' Or '$(TargetFramework)' == 'net9.0'"" />
+  </ItemGroup>
+</Project>
+".TrimStart();
+
+        var file = ProjectFileParser.ParseProjectFile(xml, "test");
+
+        file.PackageReferences.Should().ContainSingle();
+
+        var package = file.PackageReferences[0];
+
+        package.TargetFrameworkConditions.Should().HaveCount(2);
+        package
+            .GetApplicableFrameworks(file.TargetFrameworks)
+            .Select(it => it.GetShortFolderName())
+            .Should()
+            .Equal("net8.0", "net9.0");
+    }
+
+    [Fact]
+    public void CombinesItemGroupAndItemOrConditionsUsingAndSemantics()
+    {
+        var xml = @"
+<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+  </PropertyGroup>
+  <ItemGroup Condition=""'$(TargetFramework)' == 'net8.0' Or '$(TargetFramework)' == 'net9.0'"">
+    <PackageReference Include=""Example"" Version=""1.0.0"" Condition=""'$(TargetFramework)' != 'net9.0' Or '$(TargetFramework)' == 'net10.0'"" />
+  </ItemGroup>
+</Project>
+".TrimStart();
+
+        var file = ProjectFileParser.ParseProjectFile(xml, "test");
+
+        file.PackageReferences.Should().ContainSingle();
+
+        var package = file.PackageReferences[0];
+
+        package.TargetFrameworkConditions.Should().HaveCount(8);
+        package
+            .GetApplicableFrameworks(file.TargetFrameworks)
+            .Select(it => it.GetShortFolderName())
+            .Should()
+            .Equal("net8.0");
+    }
+
+    [Fact]
+    public void IgnoresUnsupportedItemGroupCondition()
+    {
+        var xml = @"
+<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup Condition=""'$(Configuration)' == 'Release'"">
+    <PackageReference Include=""Example"" Version=""1.0.0"" />
+  </ItemGroup>
+</Project>
+".TrimStart();
+
+        var file = ProjectFileParser.ParseProjectFile(xml, "test");
+
+        file.PackageReferences.Should().ContainSingle();
+        file.PackageReferences[0].TargetFrameworkConditions.Should().BeEmpty();
+    }
+
     private static string TestProjectFile(IEnumerable<PackageReference>? packages = default) =>
         $@"
 <Project Sdk=""Microsoft.NET.Sdk"">

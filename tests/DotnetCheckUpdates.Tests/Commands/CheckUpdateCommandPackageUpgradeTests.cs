@@ -305,6 +305,79 @@ public class CheckUpdateCommandPackageUpgradeTests
     }
 
     [Fact]
+    public async Task MixedFiltersKeepConditionalDuplicateEntriesWhenPackageNameMatches()
+    {
+        var (cwd, _, fileSystem, command) = SetupCommand(
+            new Dictionary<string, string>
+            {
+                ["project.csproj"] = """
+                <Project Sdk="Microsoft.NET.Sdk">
+                  <PropertyGroup>
+                    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageReference Include="Example" />
+                    <PackageReference Include="SkipMe" />
+                  </ItemGroup>
+                </Project>
+                """,
+                [CliConstants.DirectoryPackagesPropsFileName] = """
+                <Project>
+                  <PropertyGroup>
+                    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageVersion Include="Example" Version="1.0.0" Condition="'$(TargetFramework)' == 'net8.0'" />
+                    <PackageVersion Include="Example" Version="1.5.0" Condition="'$(TargetFramework)' == 'net9.0'" />
+                    <PackageVersion Include="SkipMe" Version="4.0.0" Condition="'$(TargetFramework)' == 'net8.0'" />
+                  </ItemGroup>
+                </Project>
+                """,
+            },
+            new PackageDictionary
+            {
+                ["Example"] = ["2.0.0".ToNuGetVersion()],
+                ["SkipMe"] = ["5.0.0".ToNuGetVersion()],
+            }
+        );
+
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                TestCommandContext,
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = true,
+                    Target = UpgradeTarget.Latest,
+                    Include = ["Example SkipMe"],
+                    Exclude = ["SkipMe"],
+                },
+                CancellationToken.None
+            );
+
+        result.Should().Be(0);
+
+        var props = await cwd.ReadProjectFile(
+            fileSystem,
+            CliConstants.DirectoryPackagesPropsFileName
+        );
+
+        using var scope = new AssertionScope();
+        props.PackageReferences.Should().HaveCount(3);
+
+        var xml = props.ProjectFileToXml();
+        xml.Should().Contain("Version=\"2.0.0\" Condition=\"'$(TargetFramework)' == 'net8.0'\"");
+        xml.Should().Contain("Version=\"2.0.0\" Condition=\"'$(TargetFramework)' == 'net9.0'\"");
+        xml.Should()
+            .Contain(
+                "<PackageVersion Include=\"SkipMe\" Version=\"4.0.0\" Condition=\"'$(TargetFramework)' == 'net8.0'\" />"
+            );
+    }
+
+    [Fact]
     public async Task UpgradesOnlyPackagesMatchingIncludeFilters()
     {
         // Arrange

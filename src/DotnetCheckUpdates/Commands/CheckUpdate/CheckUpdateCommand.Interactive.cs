@@ -37,12 +37,14 @@ internal partial class CheckUpdateCommand
 
     private sealed class InteractiveTreePackage(
         string projectName,
+        string packageUpgradeKey,
         string packageName,
         VersionRange newVersion,
         string text
     ) : InteractiveTreeItem
     {
         public string ProjectName { get; } = projectName;
+        public string PackageUpgradeKey { get; } = packageUpgradeKey;
         public string PackageName { get; } = packageName;
         public VersionRange NewVersion { get; } = newVersion;
         public override string Text { get; } = text;
@@ -75,7 +77,10 @@ internal partial class CheckUpdateCommand
 
             foreach (var pkg in project.PackageReferences)
             {
-                longestPackageNameLength = Math.Max(longestPackageNameLength, pkg.Name.Length);
+                longestPackageNameLength = Math.Max(
+                    longestPackageNameLength,
+                    pkg.DisplayName.Length
+                );
                 longestVersionLength = Math.Max(
                     longestVersionLength,
                     pkg.GetVersionString().Length
@@ -151,8 +156,8 @@ internal partial class CheckUpdateCommand
                 InteractiveTreePackage FormatUpgrade(PackageUpgrade it)
                 {
                     sb.Clear();
-                    var nameLengthToPad = longestPackageNameLength - it.Name.Length;
-                    sb.Append(it.Name);
+                    var nameLengthToPad = longestPackageNameLength - it.DisplayName.Length;
+                    sb.Append(it.DisplayName);
                     sb.Append(' ', nameLengthToPad + 1);
 
                     var originalVersionString = it.From.VersionString();
@@ -162,7 +167,13 @@ internal partial class CheckUpdateCommand
                     sb.Append(" → ");
                     sb.Append(CheckUpdateCommandHelpers.GetUpgradedVersionString(it.From, it.To));
 
-                    return new(project.FilePath, it.Name, it.To, sb.ToString());
+                    return new(
+                        project.FilePath,
+                        it.UpgradeKey,
+                        it.PackageName,
+                        it.To,
+                        sb.ToString()
+                    );
                 }
             }
         }
@@ -233,9 +244,9 @@ internal partial class CheckUpdateCommand
 
             foreach (var choice in allProjectChoices)
             {
-                if (packages.TryGetValue(choice.PackageName, out var version))
+                if (packages.TryGetValue(choice.PackageUpgradeKey, out var version))
                 {
-                    selectedUpgrades[choice.PackageName] = version;
+                    selectedUpgrades[choice.PackageUpgradeKey] = version;
                 }
             }
 

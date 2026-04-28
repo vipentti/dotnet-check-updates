@@ -39,7 +39,10 @@ internal partial class CheckUpdateCommand
         {
             foreach (var pkg in project.PackageReferences)
             {
-                longestPackageNameLength = Math.Max(longestPackageNameLength, pkg.Name.Length);
+                longestPackageNameLength = Math.Max(
+                    longestPackageNameLength,
+                    pkg.DisplayName.Length
+                );
                 longestVersionLength = Math.Max(
                     longestVersionLength,
                     pkg.GetVersionString().Length

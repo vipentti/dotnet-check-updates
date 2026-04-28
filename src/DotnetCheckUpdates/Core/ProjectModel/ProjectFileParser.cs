@@ -2,6 +2,7 @@
 // Distributed under the MIT License.
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using CommunityToolkit.Diagnostics;
@@ -38,8 +39,25 @@ internal static class Errors
 }
 #pragma warning restore S125 // Sections of code should not be commented out
 
-internal static class ProjectFileParser
+internal static partial class ProjectFileParser
 {
+    [GeneratedRegex(
+        "'\\s*\\$\\(\\s*TargetFramework\\s*\\)\\s*'\\s*(==|!=)\\s*'\\s*([^']+?)\\s*'",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.CultureInvariant,
+        matchTimeoutMilliseconds: 100
+    )]
+    private static partial Regex TargetFrameworkCondition();
+
+    [GeneratedRegex(
+        "\\bOr\\b",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.CultureInvariant,
+        matchTimeoutMilliseconds: 100
+    )]
+    private static partial Regex TargetFrameworkConditionOr();
+
+    private static readonly Regex s_targetFrameworkConditionRegex = TargetFrameworkCondition();
+    private static readonly Regex s_targetFrameworkConditionOrRegex = TargetFrameworkConditionOr();
+
     // https://learn.microsoft.com/en-us/dotnet/core/project-sdk/overview#available-sdks
     private static readonly HashSet<string> s_supportedSdks =
     [
@@ -197,14 +215,148 @@ internal static class ProjectFileParser
         this IEnumerable<XElement> elements
     ) =>
         elements
-            .Select(item =>
-                (
-                    include: (string?)item.Attribute("Include"),
-                    version: (string?)item.Attribute("Version")
-                )
+            .Select(
+                (item, index) =>
+                    (
+                        index,
+                        include: (string?)item.Attribute("Include"),
+                        version: (string?)item.Attribute("Version"),
+                        itemConditionGroups: ParseTargetFrameworkConditionGroups(
+                            (string?)item.Attribute("Condition")
+                        ),
+                        itemGroupConditionGroups: ParseTargetFrameworkConditionGroups(
+                            (string?)item.Parent?.Attribute("Condition")
+                        )
+                    )
             )
             .Where(item => !string.IsNullOrWhiteSpace(item.include))
-            .Select(item => new PackageReference(item.include!, item.version.ToVersionRange()));
+            .Select(item => new PackageReference(item.include!, item.version.ToVersionRange())
+            {
+                ReferenceId = item.index,
+                TargetFrameworkConditions = BuildConditions(
+                    item.itemGroupConditionGroups,
+                    item.itemConditionGroups
+                ),
+            });
+
+    private static ImmutableArray<
+        ImmutableArray<TargetFrameworkCondition>
+    > ParseTargetFrameworkConditionGroups(string? condition)
+    {
+        if (string.IsNullOrWhiteSpace(condition))
+        {
+            return [];
+        }
+
+        var segments = s_targetFrameworkConditionOrRegex.Split(condition);
+        var groupBuilder = ImmutableArray.CreateBuilder<ImmutableArray<TargetFrameworkCondition>>();
+
+        for (var groupIndex = 0; groupIndex < segments.Length; groupIndex++)
+        {
+            var matches = s_targetFrameworkConditionRegex.Matches(segments[groupIndex]);
+
+            if (matches.Count == 0)
+            {
+                continue;
+            }
+
+            var conditionBuilder = ImmutableArray.CreateBuilder<TargetFrameworkCondition>(
+                matches.Count
+            );
+
+            foreach (Match match in matches)
+            {
+                var op = match.Groups[1].Value;
+                var framework = match.Groups[2].Value.Trim();
+
+                conditionBuilder.Add(
+                    new(
+                        op == "=="
+                            ? TargetFrameworkConditionOperator.Equals
+                            : TargetFrameworkConditionOperator.NotEquals,
+                        framework,
+                        match.Value,
+                        groupBuilder.Count
+                    )
+                );
+            }
+
+            groupBuilder.Add(conditionBuilder.ToImmutable());
+        }
+
+        return groupBuilder.ToImmutable();
+    }
+
+    private static ImmutableArray<TargetFrameworkCondition> BuildConditions(
+        ImmutableArray<ImmutableArray<TargetFrameworkCondition>> itemGroupConditionGroups,
+        ImmutableArray<ImmutableArray<TargetFrameworkCondition>> itemConditionGroups
+    )
+    {
+        if (itemGroupConditionGroups.IsDefaultOrEmpty && itemConditionGroups.IsDefaultOrEmpty)
+        {
+            return [];
+        }
+
+        if (itemGroupConditionGroups.IsDefaultOrEmpty)
+        {
+            return FlattenConditionGroups(itemConditionGroups);
+        }
+
+        if (itemConditionGroups.IsDefaultOrEmpty)
+        {
+            return FlattenConditionGroups(itemGroupConditionGroups);
+        }
+
+        var totalConditions =
+            itemGroupConditionGroups.Sum(it => it.Length) * itemConditionGroups.Length
+            + itemConditionGroups.Sum(it => it.Length) * itemGroupConditionGroups.Length;
+        var builder = ImmutableArray.CreateBuilder<TargetFrameworkCondition>(totalConditions);
+        var groupId = 0;
+
+        foreach (var itemGroupConditions in itemGroupConditionGroups)
+        {
+            foreach (var itemConditions in itemConditionGroups)
+            {
+                foreach (var condition in itemGroupConditions)
+                {
+                    builder.Add(condition with { GroupId = groupId });
+                }
+
+                foreach (var condition in itemConditions)
+                {
+                    builder.Add(condition with { GroupId = groupId });
+                }
+
+                groupId++;
+            }
+        }
+
+        return builder.ToImmutable();
+    }
+
+    private static ImmutableArray<TargetFrameworkCondition> FlattenConditionGroups(
+        ImmutableArray<ImmutableArray<TargetFrameworkCondition>> groups
+    )
+    {
+        if (groups.IsDefaultOrEmpty)
+        {
+            return [];
+        }
+
+        var builder = ImmutableArray.CreateBuilder<TargetFrameworkCondition>(
+            groups.Sum(it => it.Length)
+        );
+
+        for (var groupId = 0; groupId < groups.Length; groupId++)
+        {
+            foreach (var condition in groups[groupId])
+            {
+                builder.Add(condition with { GroupId = groupId });
+            }
+        }
+
+        return builder.ToImmutable();
+    }
 
     public static ProjectFile ParseProjectFile(string xmlContent, string filePath)
     {

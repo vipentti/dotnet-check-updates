@@ -5,7 +5,9 @@
 using DotnetCheckUpdates.Commands.CheckUpdate;
 using DotnetCheckUpdates.Core;
 using DotnetCheckUpdates.Core.Extensions;
+using DotnetCheckUpdates.Core.NuGetUtils;
 using DotnetCheckUpdates.Core.ProjectModel;
+using NuGet.Frameworks;
 using Spectre.Console.Cli;
 using Spectre.Console.Testing;
 using static DotnetCheckUpdates.Tests.CheckUpdateCommandUtils;
@@ -539,6 +541,276 @@ Projects
 
 Run dotnet-check-updates --cwd {cwd} -u to upgrade
 ";
+        AssertOutput(console, expected);
+    }
+
+    [Fact]
+    public async Task OutputIncludesConditionContextForDuplicatePackageNames()
+    {
+        var cwd = RootedTestPath("some/path");
+
+        var fileSystem = SetupFileSystem(
+            currentDirectory: cwd,
+            fileContents: new()
+            {
+                [cwd.PathCombine("project.csproj")] = """
+                <Project Sdk="Microsoft.NET.Sdk">
+                  <PropertyGroup>
+                    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageReference Include="Example" />
+                  </ItemGroup>
+                </Project>
+                """,
+                [cwd.PathCombine(CliConstants.DirectoryPackagesPropsFileName)] = """
+                <Project>
+                  <PropertyGroup>
+                    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageVersion Include="Example" Version="1.0.0" Condition="'$(TargetFramework)' == 'net8.0'" />
+                    <PackageVersion Include="Example" Version="1.5.0" Condition="'$(TargetFramework)' == 'net9.0'" />
+                  </ItemGroup>
+                </Project>
+                """,
+            }
+        );
+
+        var service = Substitute.For<INuGetService>();
+
+        service
+            .GetPackageVersionsAsync("Example", Arg.Any<CancellationToken>())
+            .Returns(
+                Task.FromResult(
+                    new[] { "2.0.0".ToNuGetVersion(), "3.0.0".ToNuGetVersion() }.AsEnumerable()
+                )
+            );
+
+        service
+            .GetSupportedFrameworksAsync("Example", "2.0.0", Arg.Any<CancellationToken>())
+            .Returns(
+                Task.FromResult(ImmutableHashSet.Create(FrameworkConstants.CommonFrameworks.Net80))
+            );
+
+        service
+            .GetSupportedFrameworksAsync("Example", "3.0.0", Arg.Any<CancellationToken>())
+            .Returns(
+                Task.FromResult(ImmutableHashSet.Create(FrameworkConstants.CommonFrameworks.Net90))
+            );
+
+        var console = new TestConsole();
+
+        var command = CreateCommand(
+            console: console,
+            fileSystem,
+            service,
+            finder: default,
+            solutionFileFormat: SolutionFileFormat.Sln
+        );
+
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = false,
+                    AsciiTree = true,
+                    ShowAbsolute = true,
+                },
+                CancellationToken.None
+            );
+
+        result.Should().Be(0);
+
+        using var scope = new AssertionScope();
+        console.Output.Should().Contain("Example (net8.0)");
+        console.Output.Should().Contain("Example (net9.0)");
+        console.Output.Should().Contain("1.0.0  →  2.0.0");
+        console.Output.Should().Contain("1.5.0  →  3.0.0");
+
+        var expected =
+            $@"
+Projects
+|-- {cwd.PathCombine("Directory.Packages.props")}
+`-- {cwd.PathCombine("project.csproj")}
+Projects
+|-- {cwd.PathCombine("Directory.Packages.props")}
+|   `-- Example (net8.0)  1.0.0  →  2.0.0
+|       Example (net9.0)  1.5.0  →  3.0.0
+|
+`-- {cwd.PathCombine("project.csproj")}
+    `-- All packages match their latest versions.
+
+
+Run dotnet-check-updates --cwd {cwd} -u to upgrade
+";
+        AssertOutput(console, expected);
+    }
+
+    [Fact]
+    public async Task OutputIncludesTargetFrameworkAndConditionContext()
+    {
+        var cwd = RootedTestPath("some/path");
+
+        var fileSystem = SetupFileSystem(
+            currentDirectory: cwd,
+            fileContents: new()
+            {
+                [cwd.PathCombine("project.csproj")] = """
+                <Project Sdk="Microsoft.NET.Sdk">
+                    <PropertyGroup>
+                        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+                    </PropertyGroup>
+
+                    <ItemGroup>
+                        <PackageReference Include="Example" />
+                    </ItemGroup>
+                </Project>
+                """,
+                [cwd.PathCombine(CliConstants.DirectoryPackagesPropsFileName)] = """
+                <Project>
+                    <PropertyGroup>
+                        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+                    </PropertyGroup>
+
+                    <ItemGroup>
+                        <PackageVersion Include="Example" Version="1.0.0" Condition="'$(TargetFramework)' == 'net8.0' And '$(TargetFramework)' != 'net9.0'" />
+                    </ItemGroup>
+                </Project>
+                """,
+            }
+        );
+
+        var service = SetupMockNuGetService(BasicMockPackage("Example", "2.0.0"));
+        var console = new TestConsole();
+
+        var command = CreateCommand(
+            console: console,
+            fileSystem,
+            service,
+            finder: default,
+            solutionFileFormat: SolutionFileFormat.Sln
+        );
+
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = false,
+                    List = true,
+                    AsciiTree = true,
+                    ShowAbsolute = true,
+                },
+                CancellationToken.None
+            );
+
+        result.Should().Be(0);
+
+        var expected =
+            $@"
+Projects
+|-- {cwd.PathCombine("Directory.Packages.props")}
+`-- {cwd.PathCombine("project.csproj")}
+Projects
+|-- {cwd.PathCombine("Directory.Packages.props")}
+|   `-- Example (net8.0 And != net9.0)  1.0.0  →  2.0.0
+|
+`-- {cwd.PathCombine("project.csproj")}
+    `-- Example
+
+
+Run dotnet-check-updates --cwd {cwd} -u to upgrade
+";
+
+        AssertOutput(console, expected);
+    }
+
+    [Fact]
+    public async Task OutputIncludesTargetFrameworkOrConditionContext()
+    {
+        var cwd = RootedTestPath("some/path");
+
+        var fileSystem = SetupFileSystem(
+            currentDirectory: cwd,
+            fileContents: new()
+            {
+                [cwd.PathCombine("project.csproj")] = """
+                <Project Sdk="Microsoft.NET.Sdk">
+                    <PropertyGroup>
+                        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+                    </PropertyGroup>
+
+                    <ItemGroup>
+                        <PackageReference Include="Example" />
+                    </ItemGroup>
+                </Project>
+                """,
+                [cwd.PathCombine(CliConstants.DirectoryPackagesPropsFileName)] = """
+                <Project>
+                    <PropertyGroup>
+                        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+                    </PropertyGroup>
+
+                    <ItemGroup>
+                        <PackageVersion Include="Example" Version="1.0.0" Condition="'$(TargetFramework)' == 'net8.0' Or '$(TargetFramework)' == 'net9.0'" />
+                    </ItemGroup>
+                </Project>
+                """,
+            }
+        );
+
+        var service = SetupMockNuGetService(BasicMockPackage("Example", "2.0.0"));
+        var console = new TestConsole();
+
+        var command = CreateCommand(
+            console: console,
+            fileSystem,
+            service,
+            finder: default,
+            solutionFileFormat: SolutionFileFormat.Sln
+        );
+
+        var result = await command
+            .AsICommand()
+            .ExecuteAsync(
+                new CommandContext([], Substitute.For<IRemainingArguments>(), "test", null),
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = cwd,
+                    Upgrade = false,
+                    List = true,
+                    AsciiTree = true,
+                    ShowAbsolute = true,
+                },
+                CancellationToken.None
+            );
+
+        result.Should().Be(0);
+
+        var expected =
+            $@"
+Projects
+|-- {cwd.PathCombine("Directory.Packages.props")}
+`-- {cwd.PathCombine("project.csproj")}
+Projects
+|-- {cwd.PathCombine("Directory.Packages.props")}
+|   `-- Example (net8.0 Or net9.0)  1.0.0  →  2.0.0
+|
+`-- {cwd.PathCombine("project.csproj")}
+    `-- Example
+
+
+Run dotnet-check-updates --cwd {cwd} -u to upgrade
+";
+
         AssertOutput(console, expected);
     }
 
