@@ -5,4 +5,4 @@
 - [x] T3 Integrate upgrade and restore workflows while preserving JSON-only stdout, stderr diagnostics, and documented mutation semantics.
 - [x] T4 Add automated coverage for schema behavior, option interactions, mutations, failures, and text-mode compatibility.
 - [x] T5 Document JSON invocation and version 1 contract for automated consumers.
-- [ ] T6 Run completion verification defined in `plan.md`.
+- [x] T6 Run completion verification defined in `plan.md`.
