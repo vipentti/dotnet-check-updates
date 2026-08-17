@@ -6,7 +6,7 @@ Add `--json` output for non-interactive package checks and upgrades. JSON mode p
 
 ## Scope
 
-- Add `--json` to non-interactive check and upgrade workflows.
+- Add bare `--json` to non-interactive check and upgrade workflows; reject explicit boolean-value forms.
 - Report discovered solutions, checked files, package versions, available upgrades, applicable frameworks, and applied mutations.
 - Distinguish project files from `Directory.Build.props` and `Directory.Packages.props`.
 - Preserve existing non-JSON discovery occurrences, path values, rendering, progress, mutation, filtering, targeting, listing, upgrade, and restore behavior.
@@ -148,15 +148,16 @@ Arrays use these deterministic orders:
 
 ### Output and failure behavior
 
-Use one pre-parse argument classifier matching Spectre.Console.Cli global-token behavior:
+Use one narrow pre-parse classifier for process routing, without reproducing Spectre option, grouping, help, or parse-order semantics:
 
 1. If first argument is `--help-dump-opencli`, select OpenCLI mode immediately. Preserve framework OpenCLI output and status; ignore later `--json` for routing because Spectre replaces the argument list for this shortcut.
-2. Otherwise, inspect only arguments before the first exact `--` end-of-options marker.
-3. If that option slice contains `-?`, `-h`, or `--help`, select help mode. Help takes precedence over `--json`, emits normal human-readable help to stdout with status 0, and does not enter JSON mode.
-4. Otherwise, if that option slice contains exact `--json`, select JSON mode.
-5. Otherwise, select default mode. Tokens at or after `--` never select help or JSON routing and remain for Spectre to handle.
+2. Otherwise, inspect only arguments before the first exact `--` end-of-options marker. Tokens at or after `--` never establish JSON intent.
+3. Reject any pre-boundary argument using `--json=<value>` or `--json:<value>`. Also reject bare `--json` when its immediately following pre-boundary argument is a case-insensitive `true` or `false`. These unsupported value-assigned forms produce empty stdout, a diagnostic on stderr, and nonzero status before Spectre runs.
+4. If the pre-boundary slice contains exact bare `--json`, select JSON-intent mode. Otherwise select default mode.
 
-JSON mode is therefore known before command parsing, so process-level routing also covers parse failures. JSON mode suppresses progress rendering, trees, upgrade guidance, and logging from stdout. In JSON mode, both restore subprocess stdout and stderr are forwarded to process stderr, preserving normal restore chatter and failure diagnostics without contaminating stdout. Successful stdout contains only the JSON document. Other diagnostics and failures also use stderr with existing nonzero failure behavior. Failed execution emits no partial JSON document.
+Default mode delegates all help aliases, grouped short options, option values, and parse order to Spectre without changing existing streams or behavior. JSON-intent mode reserves stdout before Spectre runs, but Spectre still solely determines whether arguments request help, contain a missing value, or fail parsing. Any framework help or diagnostic produced after JSON intent is routed to stderr. If Spectre short-circuits to help, preserve its status and emit no JSON document. If command execution succeeds, stdout contains the JSON document. This covers grouped help such as `-uh` and `-u?` without a second parser and preserves Spectre behavior for a missing-value option followed by help.
+
+JSON intent is therefore known before command parsing, so process-level routing also covers parse failures. JSON mode suppresses progress rendering, trees, upgrade guidance, and logging from stdout. In JSON mode, both restore subprocess stdout and stderr are forwarded to process stderr, preserving normal restore chatter and failure diagnostics without contaminating stdout. Successful stdout contains only the JSON document. Other diagnostics and failures also use stderr with existing nonzero failure behavior. Failed execution emits no partial JSON document.
 
 Upgrade and restore execution remains non-atomic. Files are saved sequentially before restore. A later save or restore failure can leave earlier file mutations applied while returning nonzero and emitting no JSON document. Absence of successful JSON therefore does not guarantee absence of filesystem changes.
 
@@ -173,7 +174,7 @@ Text output remains unchanged when `--json` is absent.
 - `--list`, filters, target selection, `--upgrade`, and `--restore` retain existing semantics; JSON-mode processing and paths follow the canonicalization rules above.
 - Relative explicit project and solution selectors retain process-working-directory semantics even when `--cwd` differs, and emitted JSON identifies the file actually read or mutated.
 - Without `--json`, original discovery occurrences, path values, processing, progress, saves, and rendered output remain unchanged.
-- Pre-parse classification handles `-?`, `-h`, `--help`, `--`, `--json`, and first-argument `--help-dump-opencli` exactly as defined above.
+- Process routing recognizes only bare pre-boundary `--json`, rejects its explicit boolean-value forms, preserves first-argument OpenCLI behavior, and leaves help, grouped options, option values, and parse order to Spectre.
 - Successful JSON-mode stdout contains no ANSI markup, progress output, guidance, logs, or subprocess output; restore output and diagnostics remain available on stderr.
 - Invalid combinations with `--interactive` or `--version` fail validation.
 - Errors produce no partial JSON stdout, retain nonzero exit status, and preserve documented non-atomic mutation behavior.
@@ -184,7 +185,7 @@ Text output remains unchanged when `--json` is absent.
 
 Add focused command and serialization tests covering canonical schema output, exact enum tokens, project and solution discovery, supported versus unsupported solution member types, overlapping solution membership with unique JSON identities and unchanged text-mode duplicate occurrences, Windows case-variant membership using exact representative checked-file paths, checked-file kinds and filtered package counts, `--show-package-count`, available and unchanged packages, conditioned duplicates, unsupported non-framework conditions, version ranges, inferred frameworks, filters, relative explicit project and solution selectors with a different `--cwd`, absolute and relative JSON paths including outside-cwd paths and paths containing cwd text, unchanged text display paths, deterministic ordering, empty arrays and nulls, upgrades with and without mutations, restore and save failures including restore diagnostics on stderr, incompatible options, and stdout isolation.
 
-Run repository test suite and lint or formatting checks used by pull-request CI. Packaged CLI verification must cover all three help aliases with `--json`, both relevant argument orderings, help and JSON tokens after `--`, first-argument `--help-dump-opencli` followed by `--json`, successful JSON execution, JSON command parse failure such as `--json --unknown-option`, JSON validation failure, JSON runtime failure, and successful JSON execution with `DCU_ENABLE_LOGGING=1`. Help cases must produce human-readable stdout and status 0; OpenCLI precedence must preserve framework output without JSON routing. JSON execution success cases must parse exact JSON-only stdout. Every JSON-mode failure case must produce empty stdout, diagnostics on stderr, and nonzero status; default-mode boundary cases preserve existing framework stream behavior. Confirm text mode remains unchanged.
+Run repository test suite and lint or formatting checks used by pull-request CI. Packaged CLI verification must cover bare `--json`; rejected `--json=true`, `--json:true`, `--json true`, and `--json false`; grouped help such as `--json -uh` and `--json -u?`; a missing-value option followed by help and `--json`; help and JSON tokens after `--`; first-argument `--help-dump-opencli` followed by `--json`; successful JSON execution; JSON command parse failure such as `--json --unknown-option`; JSON validation failure; JSON runtime failure; and successful JSON execution with `DCU_ENABLE_LOGGING=1`. Assert unsupported JSON forms fail before Spectre with empty stdout and diagnostic stderr. For recognized JSON intent, assert framework help and failures leave stdout empty and preserve framework status while routing output to stderr. OpenCLI and default-mode boundary cases preserve existing framework output and streams. JSON execution success cases must parse exact JSON-only stdout. Confirm text mode remains unchanged.
 
 ## Risks and Considerations
 
