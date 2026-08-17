@@ -1,4 +1,4 @@
-// Copyright 2023-2026 Ville Penttinen
+﻿// Copyright 2023-2026 Ville Penttinen
 // Distributed under the MIT License.
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
@@ -44,13 +44,13 @@ internal static class JsonPathHelper
 
     public static string GetKind(string filePath)
     {
-        if (filePath.EndsWith(CliConstants.DirectoryBuildPropsFileName, StringComparison.Ordinal))
+        if (filePath.EndsWith(CliConstants.DirectoryBuildPropsFileName, StringComparison.OrdinalIgnoreCase))
         {
             return JsonOutputKind.DirectoryBuildProps;
         }
 
         if (
-            filePath.EndsWith(CliConstants.DirectoryPackagesPropsFileName, StringComparison.Ordinal)
+            filePath.EndsWith(CliConstants.DirectoryPackagesPropsFileName, StringComparison.OrdinalIgnoreCase)
         )
         {
             return JsonOutputKind.DirectoryPackagesProps;

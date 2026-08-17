@@ -37,21 +37,16 @@ internal partial class CheckUpdateCommand
             settings
         );
 
-        var canonicalGroups = BuildCanonicalGroups(projectFiles, _fileSystem);
+        var canonicalSet = projectFiles
+            .Select(it => _fileSystem.Path.GetFullPath(it))
+            .Distinct(StringComparer.Ordinal)
+            .ToImmutableHashSet(StringComparer.Ordinal);
 
-        var representativeByCanonical = canonicalGroups.ToDictionary(
-            kvp => kvp.Key,
-            kvp => kvp.Value[0],
-            StringComparer.Ordinal
-        );
+        var uniqueCanonicalPaths = canonicalSet.OrderBy(it => it, StringComparer.Ordinal).ToArray();
 
-        var uniqueCanonicalPaths = canonicalGroups.Keys
-            .OrderBy(it => it, StringComparer.Ordinal)
-            .ToArray();
-
-        var solutionsCanonical = BuildSolutionsCanonical(
+        var solutionsCanonical = BuildSolutionsCanonicalFiltered(
             solutionProjectMap,
-            representativeByCanonical
+            canonicalSet
         );
 
         var includeFilters = CheckUpdateCommandHelpers.SplitFilters(settings.Include);
@@ -185,28 +180,9 @@ internal partial class CheckUpdateCommand
         return (canonicalSolutionMap, canonicalProjectFiles);
     }
 
-    private static Dictionary<string, List<string>> BuildCanonicalGroups(
-        ImmutableArray<string> projectFiles,
-        System.IO.Abstractions.IFileSystem fileSystem
-    )
-    {
-        var groups = new Dictionary<string, List<string>>(StringComparer.Ordinal);
-        foreach (var file in projectFiles)
-        {
-            var canonical = fileSystem.Path.GetFullPath(file);
-            if (!groups.TryGetValue(canonical, out var list))
-            {
-                list = [];
-                groups[canonical] = list;
-            }
-            list.Add(canonical);
-        }
-        return groups;
-    }
-
-    private static ImmutableDictionary<string, string[]> BuildSolutionsCanonical(
+    private static ImmutableDictionary<string, string[]> BuildSolutionsCanonicalFiltered(
         ImmutableDictionary<string, string[]> solutionProjectMap,
-        Dictionary<string, string> representativeByCanonical
+        ImmutableHashSet<string> canonicalSet
     )
     {
         var builder = ImmutableDictionary.CreateBuilder<string, string[]>(
@@ -216,13 +192,16 @@ internal partial class CheckUpdateCommand
         foreach (var kvp in solutionProjectMap)
         {
             var canonicalSolution = kvp.Key;
-            var mapped = kvp.Value.Select(it =>
-                    representativeByCanonical.TryGetValue(it, out var rep) ? rep : it
+            var filtered = kvp
+                .Value.Where(it =>
+                    it.EndsWith(CliConstants.CsProjExtensionWithDot, StringComparison.OrdinalIgnoreCase)
+                    || it.EndsWith(CliConstants.FsProjExtensionWithDot, StringComparison.OrdinalIgnoreCase)
                 )
+                .Where(it => canonicalSet.Contains(it))
                 .Distinct(StringComparer.Ordinal)
                 .OrderBy(it => it, StringComparer.Ordinal)
                 .ToArray();
-            builder[canonicalSolution] = mapped;
+            builder[canonicalSolution] = filtered;
         }
 
         return builder.ToImmutable();
@@ -416,10 +395,7 @@ internal partial class CheckUpdateCommand
                     kind,
                     packageCount,
                     effectiveFrameworks,
-                    original.PackageReferences,
-                    packageResults.ToImmutable(),
-                    original,
-                    upgraded
+                    packageResults.ToImmutable()
                 )
             );
         }

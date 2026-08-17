@@ -1,4 +1,4 @@
-// Copyright 2023-2026 Ville Penttinen
+﻿// Copyright 2023-2026 Ville Penttinen
 // Distributed under the MIT License.
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
@@ -15,10 +15,7 @@ internal sealed record JsonProjectCheckResult(
     string Kind,
     int PackageCount,
     ImmutableArray<NuGetFramework> EffectiveFrameworks,
-    ImmutableArray<PackageReference> OriginalReferences,
-    ImmutableArray<(PackageReference Original, VersionRange? TargetVersion, UpgradeType UpgradeType, ImmutableArray<NuGetFramework> ApplicableFrameworks)> PackageResults,
-    ProjectFile OriginalProject,
-    ProjectFile UpdatedProject
+    ImmutableArray<(PackageReference Original, VersionRange? TargetVersion, UpgradeType UpgradeType, ImmutableArray<NuGetFramework> ApplicableFrameworks)> PackageResults
 );
 
 internal static class JsonResultBuilder
@@ -37,8 +34,8 @@ internal static class JsonResultBuilder
             {
                 var projects = kvp
                     .Value.Distinct(StringComparer.Ordinal)
-                    .OrderBy(it => it, StringComparer.Ordinal)
                     .Select(it => JsonPathHelper.ToJsonDisplayPath(it, canonicalCwd, showAbsolute))
+                    .OrderBy(it => it, StringComparer.Ordinal)
                     .ToList();
 
                 return new JsonSolution
@@ -51,7 +48,9 @@ internal static class JsonResultBuilder
             .ToList();
 
         var checkedFiles = results
-            .OrderBy(it => it.CanonicalPath, StringComparer.Ordinal)
+            .Select(r => (Result: r, JsonPath: JsonPathHelper.ToJsonDisplayPath(r.CanonicalPath, canonicalCwd, showAbsolute)))
+            .OrderBy(it => it.JsonPath, StringComparer.Ordinal)
+            .Select(it => it.Result)
             .Select(r =>
             {
                 var targetFrameworks = r

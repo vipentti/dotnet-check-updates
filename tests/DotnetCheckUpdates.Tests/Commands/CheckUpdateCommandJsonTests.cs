@@ -1,4 +1,4 @@
-// Copyright 2023-2026 Ville Penttinen
+﻿// Copyright 2023-2026 Ville Penttinen
 // Distributed under the MIT License.
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
@@ -376,6 +376,77 @@ public class CheckUpdateCommandJsonTests
         var service = SetupMockPackages(upgrades);
         var cmd = CheckUpdateCommandUtils.CreateCommand(new TestConsole(), fs, service, finder: null, SolutionFileFormat.Sln);
         return await RunJsonAsync(cmd, cwd.ToString(), settings);
+    }
+
+    [Fact]
+    public async Task Json_SolutionExcludesPropsFromProjects()
+    {
+        var cwd = RootedTestPath("withprops");
+        var sln = cwd.PathCombine("a.sln");
+        var proj = cwd.PathCombine("src/app/app.csproj");
+        var propsBuild = cwd.PathCombine("Directory.Build.props");
+        var propsPackages = cwd.PathCombine("Directory.Packages.props");
+        var slnContent = ProjectFileUtils.SolutionFile([("app", "src/app/app.csproj")]);
+        var fs = SetupFileSystem(cwd.ToString(), new()
+        {
+            [sln] = slnContent,
+            [proj] = ProjectFileUtils.ProjectFileXml([("Flurl", "3.0.0")]),
+            [propsBuild] = ProjectFileUtils.ProjectFileXml([("BuildPkg", "1.0.0")]),
+            [propsPackages] = ProjectFileUtils.ProjectFileXml([("Central", "1.0.0")], referenceType: ReferenceType.PackageVersion),
+        });
+        var service = SetupMockPackages([new MockUpgrade("Flurl") { Versions = { "4.0.0" }, SupportedFrameworks = MockUpgrade.DefaultSupportedFrameworks }, new MockUpgrade("BuildPkg") { Versions = { "2.0.0" }, SupportedFrameworks = MockUpgrade.DefaultSupportedFrameworks }, new MockUpgrade("Central") { Versions = { "2.0.0" }, SupportedFrameworks = MockUpgrade.DefaultSupportedFrameworks }]);
+        var cmd = CreateCommand(new TestConsole(), fs, service, finder: null, SolutionFileFormat.Sln);
+        var rawJson = await RunJsonAsync(cmd, cwd.ToString(), new CheckUpdateCommand.Settings { Cwd = cwd.ToString(), Json = true, List = true });
+        var doc = JsonDocument.Parse(rawJson);
+        var solProjects = doc.RootElement.GetProperty("solutions")[0].GetProperty("projects");
+        solProjects.EnumerateArray().Any(p => p.GetString()!.Contains("Directory.")).Should().BeFalse();
+        var byPath = doc.RootElement.GetProperty("checkedFiles").EnumerateArray().ToDictionary(e => e.GetProperty("path").GetString()!, e => e.GetProperty("kind").GetString());
+        byPath["Directory.Build.props"].Should().Be("directoryBuildProps");
+        byPath["Directory.Packages.props"].Should().Be("directoryPackagesProps");
+    }
+
+    [Fact]
+    public async Task Json_OutsideCwdOrderingByEmittedPath()
+    {
+        var cwd = RootedTestPath("cwd");
+        var outer1 = RootedTestPath("d/x.csproj").ToString();
+        var outer2 = RootedTestPath("x.csproj").ToString();
+        var fs = SetupFileSystem(cwd.ToString(), new()
+        {
+            [outer1] = ProjectFileUtils.ProjectFileXml([("Flurl", "3.0.0")]),
+            [outer2] = ProjectFileUtils.ProjectFileXml([("Other", "1.0.0")]),
+            [cwd.PathCombine("inner/a.csproj")] = ProjectFileUtils.ProjectFileXml([("Inner", "1.0.0")]),
+        });
+        var service = SetupMockPackages([]);
+        var cmd = CreateCommand(new TestConsole(), fs, service, finder: null, SolutionFileFormat.Sln);
+        var rawJson = await RunJsonAsync(cmd, cwd.ToString(), new CheckUpdateCommand.Settings { Cwd = cwd.ToString(), Json = true, List = true });
+        var doc = JsonDocument.Parse(rawJson);
+        var paths = doc.RootElement.GetProperty("checkedFiles").EnumerateArray().Select(e => e.GetProperty("path").GetString()!).ToArray();
+        paths.Should().BeInAscendingOrder(StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public async Task Json_CaseVariantPropsKindIsCaseInsensitive()
+    {
+        var cwd = RootedTestPath("caseprops");
+        var lower = cwd.PathCombine("directory.build.props");
+        var upper = cwd.PathCombine("DIRECTORY.PACKAGES.PROPS");
+        var fs = SetupFileSystem(cwd.ToString(), new()
+        {
+            [cwd.PathCombine("a.csproj")] = ProjectFileUtils.ProjectFileXml([("Flurl", "3.0.0")]),
+            [lower] = ProjectFileUtils.ProjectFileXml([("BuildPkg", "1.0.0")]),
+            [upper] = ProjectFileUtils.ProjectFileXml([("Central", "1.0.0")], referenceType: ReferenceType.PackageVersion),
+        });
+        var service = SetupMockPackages([]);
+        var cmd = CreateCommand(new TestConsole(), fs, service, finder: null, SolutionFileFormat.Sln);
+        var rawJson = await RunJsonAsync(cmd, cwd.ToString(), new CheckUpdateCommand.Settings { Cwd = cwd.ToString(), Json = true, List = true });
+        var doc = JsonDocument.Parse(rawJson);
+        var paths = doc.RootElement.GetProperty("checkedFiles").EnumerateArray().Select(e => e.GetProperty("path").GetString()!).ToArray();
+        // Discovery on MockFileSystem is case-sensitive for filenames, so we just verify GetKind itself handles case variants
+        JsonPathHelper.GetKind("directory.build.props").Should().Be("directoryBuildProps");
+        JsonPathHelper.GetKind("DIRECTORY.PACKAGES.PROPS").Should().Be("directoryPackagesProps");
+        JsonPathHelper.GetKind("DIRECTORY.BUILD.PROPS").Should().Be("directoryBuildProps");
+        JsonPathHelper.GetKind("directory.packages.props").Should().Be("directoryPackagesProps");
     }
 
     private static async Task<string> RunJsonAsync(CheckUpdateCommand cmd, string cwd, CheckUpdateCommand.Settings settings)
