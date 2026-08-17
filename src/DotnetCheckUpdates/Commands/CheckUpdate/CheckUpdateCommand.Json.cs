@@ -43,28 +43,6 @@ internal partial class CheckUpdateCommand
             .ToImmutableHashSet(StringComparer.Ordinal);
 
         // Also consider explicit conventional props files (e.g., explicit --project Directory.Build.props) as props provenance
-        var effectivePropsFiles = propsFiles.ToBuilder();
-        foreach (var c in canonicalSet.Where(c => !propsFiles.Contains(c)))
-        {
-            var fn = Path.GetFileName(c);
-            if (
-                string.Equals(
-                    fn,
-                    CliConstants.DirectoryBuildPropsFileName,
-                    StringComparison.Ordinal
-                )
-                || string.Equals(
-                    fn,
-                    CliConstants.DirectoryPackagesPropsFileName,
-                    StringComparison.Ordinal
-                )
-            )
-            {
-                effectivePropsFiles.Add(c);
-            }
-        }
-        var effectivePropsSet = effectivePropsFiles.ToImmutable();
-
         var uniqueCanonicalPaths = canonicalSet.OrderBy(it => it, StringComparer.Ordinal).ToArray();
 
         var solutionsCanonical = BuildSolutionsCanonicalFiltered(solutionProjectMap, canonicalSet);
@@ -149,7 +127,7 @@ internal partial class CheckUpdateCommand
             effectiveFrameworksByCanonical,
             packageCountsByCanonical,
             upgradedByCanonical,
-            effectivePropsSet,
+            propsFiles,
             settings
         );
 

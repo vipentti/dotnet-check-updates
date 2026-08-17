@@ -92,7 +92,7 @@ internal sealed partial class ProjectDiscovery(
 #pragma warning restore S2583 // Conditionally executed code should be reachable
         }
 
-        LogFoundProjectFiles(logger, projectFiles.Count, solutionProjectMap.Keys);
+        var propsProvenance = ImmutableHashSet.CreateBuilder<string>(StringComparer.Ordinal);
 
         // Discovering solutions
         if (solutionProjectMap.Count > 0)
@@ -113,6 +113,10 @@ internal sealed partial class ProjectDiscovery(
                         .OrderBy(it => it, StringComparer.Ordinal),
                 ];
                 projectFiles.AddRange(propsFiles);
+                foreach (var pf in propsFiles)
+                {
+                    propsProvenance.Add(pf);
+                }
             }
 
             foreach (
@@ -131,6 +135,10 @@ internal sealed partial class ProjectDiscovery(
                         .OrderBy(it => it, StringComparer.Ordinal),
                 ];
                 projectFiles.AddRange(propsFiles);
+                foreach (var pf in propsFiles)
+                {
+                    propsProvenance.Add(pf);
+                }
             }
         }
         else
@@ -162,22 +170,26 @@ internal sealed partial class ProjectDiscovery(
             }
 
             projectFiles.AddRange(propsFiles);
-        }
-
-        var propsSet = ImmutableHashSet.CreateBuilder<string>(StringComparer.Ordinal);
-        foreach (var f in projectFiles)
-        {
-            if (
-                !f.EndsWith(CliConstants.CsProjExtensionWithDot, StringComparison.OrdinalIgnoreCase)
-                && !f.EndsWith(
-                    CliConstants.FsProjExtensionWithDot,
-                    StringComparison.OrdinalIgnoreCase
-                )
-            )
+            foreach (var pf in propsFiles)
             {
-                propsSet.Add(f);
+                propsProvenance.Add(pf);
             }
         }
+
+        // Explicit selector that is conventional props should also be provenance (e.g., --project Directory.Build.props)
+        if (!string.IsNullOrWhiteSpace(request.Project))
+        {
+            var fn = Path.GetFileName(request.Project);
+            if (
+                fn == CliConstants.DirectoryBuildPropsFileName
+                || fn == CliConstants.DirectoryPackagesPropsFileName
+            )
+            {
+                propsProvenance.Add(request.Project);
+            }
+        }
+
+        var propsSet = propsProvenance;
         // This can be simplified once we drop support for older frameworks
 #pragma warning disable IDE0305 // Simplify collection initialization
         return new(

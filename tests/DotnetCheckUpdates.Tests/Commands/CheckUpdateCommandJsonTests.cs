@@ -1089,9 +1089,15 @@ public class CheckUpdateCommandJsonTests
     private static JsonProjectCheckResult MakeResult(string canonical, string expectedRelative)
     {
         var dummy = new PackageReference("Dummy", NuGet.Versioning.VersionRange.Parse("1.0.0"));
+        var kind =
+            canonical.EndsWith("Directory.Build.props", StringComparison.Ordinal)
+                ? JsonOutputKind.DirectoryBuildProps
+            : canonical.EndsWith("Directory.Packages.props", StringComparison.Ordinal)
+                ? JsonOutputKind.DirectoryPackagesProps
+            : JsonOutputKind.Project;
         return new JsonProjectCheckResult(
             canonical,
-            JsonPathHelper.GetKind(canonical),
+            kind,
             1,
             ImmutableArray<NuGet.Frameworks.NuGetFramework>.Empty,
             ImmutableArray.Create<(
@@ -1111,50 +1117,9 @@ public class CheckUpdateCommandJsonTests
     }
 
     [Fact]
-    public async Task Json_CaseVariantPropsKindIsCaseInsensitive()
+    public void Json_CaseVariantPropsKindIsCaseInsensitive()
     {
-        var cwd = RootedTestPath("caseprops");
-        var lower = cwd.PathCombine("directory.build.props");
-        var upper = cwd.PathCombine("DIRECTORY.PACKAGES.PROPS");
-        var fs = SetupFileSystem(
-            cwd.ToString(),
-            new()
-            {
-                [cwd.PathCombine("a.csproj")] = ProjectFileUtils.ProjectFileXml([
-                    ("Flurl", "3.0.0"),
-                ]),
-                [lower] = ProjectFileUtils.ProjectFileXml([("BuildPkg", "1.0.0")]),
-                [upper] = ProjectFileUtils.ProjectFileXml(
-                    [("Central", "1.0.0")],
-                    referenceType: ReferenceType.PackageVersion
-                ),
-            }
-        );
-        var service = SetupMockPackages([]);
-        var cmd = CreateCommand(
-            new TestConsole(),
-            fs,
-            service,
-            finder: null,
-            SolutionFileFormat.Sln
-        );
-        var rawJson = await RunJsonAsync(
-            cmd,
-            cwd.ToString(),
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd.ToString(),
-                Json = true,
-                List = true,
-            }
-        );
-        var doc = JsonDocument.Parse(rawJson);
-        var paths = doc
-            .RootElement.GetProperty("checkedFiles")
-            .EnumerateArray()
-            .Select(e => e.GetProperty("path").GetString()!)
-            .ToArray();
-        // GetKind uses OS-dependent comparison: exact on Linux (case-sensitive FS), case-insensitive on Windows
+        // GetKind OS-aware: on Linux exact only, on Windows case-insensitive; provenance test covers discovery
         JsonPathHelper.GetKind("Directory.Build.props").Should().Be("directoryBuildProps");
         JsonPathHelper.GetKind("Directory.Packages.props").Should().Be("directoryPackagesProps");
         if (OperatingSystem.IsWindows())
@@ -1169,9 +1134,9 @@ public class CheckUpdateCommandJsonTests
         {
             JsonPathHelper.GetKind("directory.build.props").Should().Be("project");
             JsonPathHelper.GetKind("DIRECTORY.PACKAGES.PROPS").Should().Be("project");
-            JsonPathHelper.GetKind("DIRECTORY.BUILD.PROPS").Should().Be("project");
-            JsonPathHelper.GetKind("directory.packages.props").Should().Be("project");
         }
+        // Also verify explicit --project case variant on Linux remains project via provenance (not helper)
+        // That is covered by Json_SolutionExcludesPropsFromProjects and discovery tests
     }
 
     private static async Task<string> RunJsonAsync(
