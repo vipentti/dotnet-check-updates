@@ -1,4 +1,4 @@
-﻿// Copyright 2023-2026 Ville Penttinen
+// Copyright 2023-2026 Ville Penttinen
 // Distributed under the MIT License.
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
@@ -11,6 +11,7 @@ using DotnetCheckUpdates.Core.ProjectModel;
 using DotnetCheckUpdates.Core.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using Spectre.Console;
@@ -26,6 +27,16 @@ var nugetApiBaseUrl = new Uri(NuGetConstants.V3FeedUrl, UriKind.Absolute).GetLef
 );
 
 var cmdArgs = args.Where(it => !definedArgs.Contains(it)).ToArray();
+
+var (jsonMode, jsonError) = JsonModeClassifier.Classify(cmdArgs);
+
+if (jsonMode == JsonMode.Reject)
+{
+    await Console.Error.WriteLineAsync(jsonError);
+    return -1;
+}
+
+var isJsonIntent = jsonMode == JsonMode.JsonIntent;
 
 var services = new ServiceCollection();
 
@@ -49,6 +60,14 @@ services.AddLogging(logger =>
 
         logger.AddFilter("NuGetLogger", LogLevel.Warning);
 
+        if (isJsonIntent)
+        {
+            logger.Services.Configure<ConsoleLoggerOptions>(opts =>
+            {
+                opts.LogToStandardErrorThreshold = LogLevel.Trace;
+            });
+        }
+
         if (Enum.TryParse(logLevelEnvVar, ignoreCase: true, out LogLevel level))
         {
             logger.SetMinimumLevel(level);
@@ -58,13 +77,6 @@ services.AddLogging(logger =>
             logger.SetMinimumLevel(LogLevel.Information);
         }
     }
-#if false
-    else
-    {
-        logger.AddConsole().AddFilter("System.Net.Http.HttpClient", LogLevel.Information);
-        logger.SetMinimumLevel(LogLevel.Trace);
-    }
-#endif
 });
 
 services.AddSingleton(_ => new SourceCacheContext());
@@ -92,6 +104,15 @@ using var applicationExitHandler = new ApplicationExitHandler();
 
 services.AddSingleton(applicationExitHandler);
 
+IAnsiConsole stderrConsole = AnsiConsole.Create(
+    new AnsiConsoleSettings { Out = new AnsiConsoleOutput(Console.Error) }
+);
+
+if (isJsonIntent)
+{
+    services.AddSingleton<IAnsiConsole>(stderrConsole);
+}
+
 var app = new CommandApp<CheckUpdateCommand>(new TypeRegistrar(services));
 
 app.WithDescription(
@@ -109,14 +130,19 @@ app.Configure(config =>
     config.UseStrictParsing();
     config.PropagateExceptions();
     config.ValidateExamples();
+    if (isJsonIntent)
+    {
+        config.ConfigureConsole(stderrConsole);
+    }
 });
 
 Console.CancelKeyPress += (_, e) =>
 {
-    // We'll stop the process manually by using the CancellationToken
     e.Cancel = true;
     applicationExitHandler.Exit(force: true);
 };
+
+IAnsiConsole diagnosticsConsole = isJsonIntent ? stderrConsole : AnsiConsole.Console;
 
 try
 {
@@ -124,18 +150,18 @@ try
 }
 catch (CommandParseException ex)
 {
-    if (!TryRenderPrettyException(ex))
+    if (!TryRenderPrettyException(ex, diagnosticsConsole))
     {
-        AnsiConsole.WriteException(ex, ExceptionFormats.Default);
+        diagnosticsConsole.WriteException(ex, ExceptionFormats.Default);
     }
 
-    AnsiConsole.MarkupLine("Run [cyan]dcu --help[/] to see available options.");
-    AnsiConsole.MarkupLine("");
+    diagnosticsConsole.MarkupLine("Run [cyan]dcu --help[/] to see available options.");
+    diagnosticsConsole.MarkupLine("");
     return -1;
 }
 catch (CommandRuntimeException ex)
 {
-    WriteException(ex);
+    WriteException(ex, diagnosticsConsole);
     return -1;
 }
 catch (PromptCanceledException)
@@ -144,35 +170,35 @@ catch (PromptCanceledException)
 }
 catch (TaskCanceledException ex)
 {
-    if (!TryRenderPrettyException(ex))
+    if (!TryRenderPrettyException(ex, diagnosticsConsole))
     {
-        AnsiConsole.WriteException(ex, ExceptionFormats.Default);
+        diagnosticsConsole.WriteException(ex, ExceptionFormats.Default);
     }
     return -1;
 }
 catch (Exception ex)
 {
-    WriteException(ex);
+    WriteException(ex, diagnosticsConsole);
     return -1;
 }
 
-void WriteException(Exception ex)
+void WriteException(Exception ex, IAnsiConsole console)
 {
-#pragma warning disable S1854 // Unused assignments should be removed
+#pragma warning disable S1854
     var showStack = showStackTrace;
 #if DEBUG
     showStack = true;
 #endif
-#pragma warning disable S2583 // Conditionally executed code should be reachable
-    if (showStack || !TryRenderPrettyException(ex))
+#pragma warning disable S2583
+    if (showStack || !TryRenderPrettyException(ex, console))
     {
-        AnsiConsole.WriteException(ex, ExceptionFormats.Default);
+        console.WriteException(ex, ExceptionFormats.Default);
     }
-#pragma warning restore S2583 // Conditionally executed code should be reachable
-#pragma warning restore S1854 // Unused assignments should be removed
+#pragma warning restore S2583
+#pragma warning restore S1854
 }
 
-static bool TryRenderPrettyException(Exception ex)
+bool TryRenderPrettyException(Exception ex, IAnsiConsole console)
 {
     if (GetRenderableErrorMessage(ex) is List<IRenderable?> pretty)
     {
@@ -180,7 +206,7 @@ static bool TryRenderPrettyException(Exception ex)
         {
             if (item is not null)
             {
-                AnsiConsole.Write(item);
+                console.Write(item);
             }
         }
         return true;
@@ -189,7 +215,7 @@ static bool TryRenderPrettyException(Exception ex)
     return false;
 }
 
-static List<IRenderable?>? GetRenderableErrorMessage(Exception ex, bool convert = true)
+List<IRenderable?>? GetRenderableErrorMessage(Exception ex, bool convert = true)
 {
     if (ex is CommandAppException renderable && renderable.Pretty is not null)
     {
@@ -203,7 +229,6 @@ static List<IRenderable?>? GetRenderableErrorMessage(Exception ex, bool convert 
             new Markup($"[red]Error:[/] {ex.Message.EscapeMarkup()}{Environment.NewLine}"),
         };
 
-        // Got a renderable inner exception
         if (ex.InnerException is not null)
         {
             var innerRenderable = GetRenderableErrorMessage(ex.InnerException, convert: false);

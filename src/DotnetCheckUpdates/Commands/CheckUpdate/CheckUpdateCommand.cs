@@ -56,23 +56,58 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
 
     protected override ValidationResult Validate(CommandContext context, Settings settings)
     {
+        string? solutionToCheck = settings.Solution;
+        string? projectToCheck = settings.Project;
+        string? cwdToCheck = settings.Cwd;
+
+        if (settings.Json)
+        {
+            var processWd = _fileSystem.Path.GetFullPath(
+                _fileSystem.Directory.GetCurrentDirectory()
+            );
+            if (!string.IsNullOrWhiteSpace(settings.Solution))
+            {
+                solutionToCheck = JsonPathHelper.CanonicalizeAgainstProcessWd(
+                    settings.Solution,
+                    processWd,
+                    _fileSystem
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(settings.Project))
+            {
+                projectToCheck = JsonPathHelper.CanonicalizeAgainstProcessWd(
+                    settings.Project,
+                    processWd,
+                    _fileSystem
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(settings.Cwd))
+            {
+                cwdToCheck = _fileSystem.Path.GetFullPath(
+                    _fileSystem.Path.Combine(processWd, settings.Cwd)
+                );
+            }
+        }
+
         if (
-            !string.IsNullOrWhiteSpace(settings.Solution)
-            && !_fileSystem.File.Exists(settings.Solution)
+            !string.IsNullOrWhiteSpace(solutionToCheck)
+            && !_fileSystem.File.Exists(solutionToCheck)
         )
         {
             return ValidationResult.Error($"Solution {settings.Solution} does not exist.");
         }
 
         if (
-            !string.IsNullOrWhiteSpace(settings.Project)
-            && !_fileSystem.File.Exists(settings.Project)
+            !string.IsNullOrWhiteSpace(projectToCheck)
+            && !_fileSystem.File.Exists(projectToCheck)
         )
         {
             return ValidationResult.Error($"Project {settings.Project} does not exist.");
         }
 
-        if (!string.IsNullOrWhiteSpace(settings.Cwd) && !_fileSystem.Directory.Exists(settings.Cwd))
+        if (!string.IsNullOrWhiteSpace(cwdToCheck) && !_fileSystem.Directory.Exists(cwdToCheck))
         {
             return ValidationResult.Error($"Directory {settings.Cwd} does not exist.");
         }
@@ -147,12 +182,35 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
 
         var ct = _exitHandler?.GracefulToken ?? cancellationToken;
 
-        var cwd = _fileSystem.Path.GetFullPath(
-            _fileSystem.Path.Combine(
-                _fileSystem.Directory.GetCurrentDirectory(),
-                settings.Cwd ?? _fileSystem.Directory.GetCurrentDirectory()
-            )
+        var processWd = _fileSystem.Path.GetFullPath(
+            _fileSystem.Directory.GetCurrentDirectory()
         );
+        var cwd = _fileSystem.Path.GetFullPath(
+            _fileSystem.Path.Combine(processWd, settings.Cwd ?? processWd)
+        );
+
+        string? canonicalProject = null;
+        string? canonicalSolution = null;
+        if (settings.Json)
+        {
+            if (!string.IsNullOrWhiteSpace(settings.Project))
+            {
+                canonicalProject = JsonPathHelper.CanonicalizeAgainstProcessWd(
+                    settings.Project,
+                    processWd,
+                    _fileSystem
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(settings.Solution))
+            {
+                canonicalSolution = JsonPathHelper.CanonicalizeAgainstProcessWd(
+                    settings.Solution,
+                    processWd,
+                    _fileSystem
+                );
+            }
+        }
 
         if (_currentDirectoryProvider is not null)
         {
@@ -177,6 +235,16 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
         if (settings.Interactive)
         {
             await ExecuteInteractiveUpgrade(cwd, settings, ct);
+        }
+        else if (settings.Json)
+        {
+            await ExecuteJsonAsync(
+                cwd,
+                canonicalProject,
+                canonicalSolution,
+                settings,
+                ct
+            );
         }
         else
         {
