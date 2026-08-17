@@ -49,7 +49,7 @@ internal static class JsonPathHelper
             string.Equals(
                 fileName,
                 CliConstants.DirectoryBuildPropsFileName,
-                StringComparison.OrdinalIgnoreCase
+                StringComparison.Ordinal
             )
         )
         {
@@ -60,7 +60,7 @@ internal static class JsonPathHelper
             string.Equals(
                 fileName,
                 CliConstants.DirectoryPackagesPropsFileName,
-                StringComparison.OrdinalIgnoreCase
+                StringComparison.Ordinal
             )
         )
         {

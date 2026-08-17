@@ -266,15 +266,27 @@ internal partial class CheckUpdateCommand
             (ProjectFile Original, ProjectFile Upgraded)
         >(StringComparer.Ordinal);
 
-        InitializePackageService();
+        var serviceInitialized = false;
 
         foreach (var canonical in uniqueCanonicalPaths)
         {
             var project = originalByCanonical[canonical];
 
+            if (project.PackageReferences.Length == 0)
+            {
+                upgradedByCanonical[canonical] = (project, project);
+                continue;
+            }
+
+            if (!serviceInitialized)
+            {
+                InitializePackageService();
+                serviceInitialized = true;
+            }
+
             var (_, packages) = await CheckUpdateCommandHelpers.GetProjectPackageVersions(
                 project,
-                _packageService,
+                _packageService!,
                 progress: null,
                 settings.Concurrency,
                 settings.Target,

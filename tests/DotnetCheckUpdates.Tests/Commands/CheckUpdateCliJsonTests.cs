@@ -70,7 +70,7 @@ public class CheckUpdateCliJsonTests
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
-            WorkingDirectory = cwd ?? Path.GetTempPath(),
+            WorkingDirectory = cwd ?? EmptyTempDir.Value,
         };
         if (env is not null)
         {
@@ -180,13 +180,7 @@ public class CheckUpdateCliJsonTests
             Path.Combine(dir.Path, "a.csproj"),
             ProjectFileUtils.ProjectFileXml([("Flurl", "3.0.0")])
         );
-        var (code, stdout, stderr) = await RunCliAsync([
-            "--json",
-            "--",
-            "--help",
-            "--cwd",
-            dir.Path,
-        ]);
+        var (code, stdout, stderr) = await RunCliAsync(["--json", "--", "--help"], cwd: dir.Path);
         code.Should().Be(0);
         JsonDocument
             .Parse(stdout)
@@ -204,7 +198,7 @@ public class CheckUpdateCliJsonTests
             Path.Combine(dir.Path, "a.csproj"),
             ProjectFileUtils.ProjectFileXml([("Flurl", "3.0.0")])
         );
-        var (code, stdout, stderr) = await RunCliAsync(["--", "--json", "--cwd", dir.Path]);
+        var (code, stdout, stderr) = await RunCliAsync(["--", "--json"], cwd: dir.Path);
         code.Should().Be(0);
         stdout.Should().Contain("Projects");
         stdout.Should().NotContain("schemaVersion");
@@ -284,6 +278,19 @@ public class CheckUpdateCliJsonTests
             .Be(1);
         stdout.Should().NotContain("CACHE");
         stdout.Should().NotContain("info:");
+        // Logging should appear on stderr when enabled, not on stdout
+        stderr.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task Cli_RuntimeFailure_MalformedProject_EmptyStdout()
+    {
+        using var dir = TempDir.Create();
+        File.WriteAllText(Path.Combine(dir.Path, "a.csproj"), "<Project><Invalid></Project>");
+        var (code, stdout, stderr) = await RunCliAsync(["--json", "--cwd", dir.Path]);
+        code.Should().NotBe(0);
+        stdout.Should().BeEmpty();
+        stderr.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -356,7 +363,6 @@ public class CheckUpdateCliJsonTests
     {
         using var dir = TempDir.Create();
         var projPath = Path.Combine(dir.Path, "a.csproj");
-        // Create a project that will fail restore due to invalid SDK or missing target
         File.WriteAllText(
             projPath,
             """
@@ -366,28 +372,54 @@ public class CheckUpdateCliJsonTests
             </Project>
             """.Trim()
         );
+        // Use invalid nuget source to force restore failure deterministically
+        File.WriteAllText(
+            Path.Combine(dir.Path, "nuget.config"),
+            """
+            <?xml version="1.0" encoding="utf-8"?>
+            <configuration>
+              <packageSources>
+                <clear />
+                <add key="invalid" value="http://localhost:9/invalid" />
+              </packageSources>
+            </configuration>
+            """.Trim()
+        );
         var (code, stdout, stderr) = await RunCliAsync([
             "--json",
             "--upgrade",
             "--restore",
             "--cwd",
             dir.Path,
+            "--nuget-source",
+            "http://localhost:9/invalid",
         ]);
-        // Restore may succeed or fail depending on network; if it fails, verify contract
+        // With invalid source, upgrade lookup fails or succeeds depending on cache, but restore (if reached) is forced to invalid source.
+        // Contract: on failure stdout empty, stderr has diagnostics; on success stdout is valid JSON.
         if (code != 0)
         {
             stdout.Should().BeEmpty();
-            // Restore chatter goes to stderr, not stdout
-            stdout.Should().NotContain("restore");
+            stderr.Should().NotBeEmpty();
         }
         else
         {
-            JsonDocument
-                .Parse(stdout)
-                .RootElement.GetProperty("schemaVersion")
-                .GetInt32()
-                .Should()
-                .Be(1);
+            var doc = System.Text.Json.JsonDocument.Parse(stdout);
+            doc.RootElement.GetProperty("schemaVersion").GetInt32().Should().Be(1);
+        }
+    }
+
+    private static class EmptyTempDir
+    {
+        public static readonly string Value = CreateEmpty();
+
+        private static string CreateEmpty()
+        {
+            var path = Path.Combine(
+                Path.GetTempPath(),
+                "dcu-empty-" + Guid.NewGuid().ToString("N")
+            );
+            Directory.CreateDirectory(path);
+            return path;
         }
     }
 

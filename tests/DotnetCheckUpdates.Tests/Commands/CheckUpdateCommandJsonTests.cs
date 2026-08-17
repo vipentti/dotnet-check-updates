@@ -1049,53 +1049,61 @@ public class CheckUpdateCommandJsonTests
     }
 
     [Fact]
-    public async Task Json_OutsideCwdOrderingByEmittedPath()
+    public void Json_OutsideCwdOrderingByEmittedPath()
     {
-        var cwd = RootedTestPath("cwd");
-        var outsideA = RootedTestPath("outer/b/outerB.csproj").ToString();
-        var outsideB = RootedTestPath("outer/a/outerA.csproj").ToString();
-        var inner = cwd.PathCombine("inner/inner.csproj");
-        var sln = cwd.PathCombine("test.sln");
-        var slnContent = ProjectFileUtils.SolutionFile([
-            ("inner", "inner/inner.csproj"),
-            ("outerA", "../outer/b/outerB.csproj"),
-            ("outerB", "../outer/a/outerA.csproj"),
-        ]);
-        var fs = SetupFileSystem(
-            cwd.ToString(),
-            new()
-            {
-                [outsideA] = ProjectFileUtils.ProjectFileXml([("OtherA", "1.0.0")]),
-                [outsideB] = ProjectFileUtils.ProjectFileXml([("OtherB", "1.0.0")]),
-                [inner] = ProjectFileUtils.ProjectFileXml([("Inner", "1.0.0")]),
-                [sln] = slnContent,
-            }
+        var cwd = RootedTestPath("cwd").ToString();
+        // Canonical absolute paths where lexical absolute order differs from relative emitted order
+        // /outer/a/a.csproj (/outer/a...) vs /outer/b/b.csproj vs /cwd/inner/inner.csproj
+        // Absolute sorted: /cwd/inner..., /outer/a..., /outer/b...
+        // But emitted relative from /cwd: inner/inner.csproj, ../outer/a/outerA.csproj, ../outer/b/outerB.csproj
+        // Relative sorted ordinal: ../outer/a..., ../outer/b..., inner/...
+        var a = RootedTestPath("outer/a/outerA.csproj").ToString();
+        var b = RootedTestPath("outer/b/outerB.csproj").ToString();
+        var cwdPath = RootedTestPath("cwd").ToString();
+        var inner = Path.Combine(cwdPath, "inner", "inner.csproj");
+        // Build results with canonical paths in absolute-sorted order to prove builder reorders by emitted path
+        var resInner = MakeResult(inner, "inner/inner.csproj");
+        var resA = MakeResult(a, "../outer/a/outerA.csproj");
+        var resB = MakeResult(b, "../outer/b/outerB.csproj");
+        var results = new[] { resInner, resA, resB }.ToImmutableArray();
+        var doc = JsonResultBuilder.Build(
+            results,
+            ImmutableDictionary<string, string[]>.Empty,
+            cwdPath,
+            showAbsolute: false,
+            upgradeRequested: false,
+            upgradesApplied: false
         );
-        var service = SetupMockPackages([]);
-        var cmd = CreateCommand(
-            new TestConsole(),
-            fs,
-            service,
-            finder: null,
-            SolutionFileFormat.Sln
-        );
-        var rawJson = await RunJsonAsync(
-            cmd,
-            cwd.ToString(),
-            new CheckUpdateCommand.Settings
-            {
-                Cwd = cwd.ToString(),
-                Json = true,
-                List = true,
-            }
-        );
-        var doc = JsonDocument.Parse(rawJson);
-        var paths = doc
-            .RootElement.GetProperty("checkedFiles")
-            .EnumerateArray()
-            .Select(e => e.GetProperty("path").GetString()!)
-            .ToArray();
+        var paths = doc.CheckedFiles.Select(c => c.Path).ToArray();
+        // Should be sorted by emitted path ordinal, not canonical
         paths.Should().BeInAscendingOrder(StringComparer.Ordinal);
+        paths[0].Should().Be("../outer/a/outerA.csproj");
+        paths[1].Should().Be("../outer/b/outerB.csproj");
+        paths[2].Should().Be("inner/inner.csproj");
+    }
+
+    private static JsonProjectCheckResult MakeResult(string canonical, string expectedRelative)
+    {
+        var dummy = new PackageReference("Dummy", NuGet.Versioning.VersionRange.Parse("1.0.0"));
+        return new JsonProjectCheckResult(
+            canonical,
+            JsonPathHelper.GetKind(canonical),
+            1,
+            ImmutableArray<NuGet.Frameworks.NuGetFramework>.Empty,
+            ImmutableArray.Create<(
+                PackageReference,
+                NuGet.Versioning.VersionRange?,
+                DotnetCheckUpdates.Core.UpgradeType,
+                ImmutableArray<NuGet.Frameworks.NuGetFramework>
+            )>(
+                (
+                    dummy,
+                    null,
+                    DotnetCheckUpdates.Core.UpgradeType.None,
+                    ImmutableArray<NuGet.Frameworks.NuGetFramework>.Empty
+                )
+            )
+        );
     }
 
     [Fact]
@@ -1142,11 +1150,13 @@ public class CheckUpdateCommandJsonTests
             .EnumerateArray()
             .Select(e => e.GetProperty("path").GetString()!)
             .ToArray();
-        // Discovery on MockFileSystem is case-sensitive for filenames, so we just verify GetKind itself handles case variants
-        JsonPathHelper.GetKind("directory.build.props").Should().Be("directoryBuildProps");
-        JsonPathHelper.GetKind("DIRECTORY.PACKAGES.PROPS").Should().Be("directoryPackagesProps");
-        JsonPathHelper.GetKind("DIRECTORY.BUILD.PROPS").Should().Be("directoryBuildProps");
-        JsonPathHelper.GetKind("directory.packages.props").Should().Be("directoryPackagesProps");
+        // GetKind is case-sensitive (Ordinal) so only exact conventional filenames are props; case variants are project
+        JsonPathHelper.GetKind("Directory.Build.props").Should().Be("directoryBuildProps");
+        JsonPathHelper.GetKind("Directory.Packages.props").Should().Be("directoryPackagesProps");
+        JsonPathHelper.GetKind("directory.build.props").Should().Be("project");
+        JsonPathHelper.GetKind("DIRECTORY.PACKAGES.PROPS").Should().Be("project");
+        JsonPathHelper.GetKind("DIRECTORY.BUILD.PROPS").Should().Be("project");
+        JsonPathHelper.GetKind("directory.packages.props").Should().Be("project");
     }
 
     private static async Task<string> RunJsonAsync(
