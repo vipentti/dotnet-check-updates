@@ -1119,24 +1119,12 @@ public class CheckUpdateCommandJsonTests
     [Fact]
     public void Json_CaseVariantPropsKindIsCaseInsensitive()
     {
-        // GetKind OS-aware: on Linux exact only, on Windows case-insensitive; provenance test covers discovery
         JsonPathHelper.GetKind("Directory.Build.props").Should().Be("directoryBuildProps");
         JsonPathHelper.GetKind("Directory.Packages.props").Should().Be("directoryPackagesProps");
-        if (OperatingSystem.IsWindows())
-        {
-            JsonPathHelper.GetKind("directory.build.props").Should().Be("directoryBuildProps");
-            JsonPathHelper
-                .GetKind("DIRECTORY.PACKAGES.PROPS")
-                .Should()
-                .Be("directoryPackagesProps");
-        }
-        else
-        {
-            JsonPathHelper.GetKind("directory.build.props").Should().Be("project");
-            JsonPathHelper.GetKind("DIRECTORY.PACKAGES.PROPS").Should().Be("project");
-        }
-        // Also verify explicit --project case variant on Linux remains project via provenance (not helper)
-        // That is covered by Json_SolutionExcludesPropsFromProjects and discovery tests
+        JsonPathHelper.GetKind("directory.build.props").Should().Be("project");
+        JsonPathHelper.GetKind("DIRECTORY.PACKAGES.PROPS").Should().Be("project");
+        JsonPathHelper.GetKind("DIRECTORY.BUILD.PROPS").Should().Be("project");
+        JsonPathHelper.GetKind("directory.packages.props").Should().Be("project");
     }
 
     private static async Task<string> RunJsonAsync(
