@@ -28,3 +28,5 @@ This repository uses Planlet for focused implementation plans. A planlet is
   naming the missing executable. Do not reimplement CLI operations by editing
   planlet files.
 <!-- END PLANLET AGENTS -->
+
+When implementing a Planlet, use the repository-installed `planlet-workflow` skill.
