@@ -141,6 +141,10 @@ internal partial class CheckUpdateCommand
         [TypeConverter(typeof(UpgradeTargetConverter))]
         public UpgradeTarget Target { get; init; } = UpgradeTarget.Latest;
 
+        [CommandOption("--json")]
+        [Description("Output results as JSON. Cannot be used with --interactive or --version. (default: false)")]
+        public bool Json { get; init; }
+
         public bool AsciiTree { get; init; }
 
         /// <summary>
@@ -166,6 +170,16 @@ internal partial class CheckUpdateCommand
             if (!string.IsNullOrWhiteSpace(Project) && !string.IsNullOrWhiteSpace(Solution))
             {
                 errors.Add("Only one of --project, --solution may be specified.");
+            }
+
+            if (Json && Interactive)
+            {
+                errors.Add("--json cannot be used with --interactive.");
+            }
+
+            if (Json && ShowVersion)
+            {
+                errors.Add("--json cannot be used with --version.");
             }
 
             if (!isValid)
