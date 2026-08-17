@@ -1,0 +1,4 @@
+interface:
+  display_name: "Planlet Implement"
+  short_description: "Implement and verify one persisted planlet"
+  default_prompt: "Use $planlet-implement to implement and verify the selected repository-local planlet."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Planlet Complete"
+  short_description: "Validate and safely archive one planlet"
+  default_prompt: "Use $planlet-complete to validate and safely archive the selected repository-local planlet."
