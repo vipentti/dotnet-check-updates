@@ -329,23 +329,11 @@ internal partial class CheckUpdateCommand
             if (propsFiles.Contains(canonical))
             {
                 var fn = Path.GetFileName(canonical);
-                if (
-                    string.Equals(
-                        fn,
-                        CliConstants.DirectoryBuildPropsFileName,
-                        StringComparison.OrdinalIgnoreCase
-                    )
-                )
+                if (fn == CliConstants.DirectoryBuildPropsFileName)
                 {
                     kind = JsonOutputKind.DirectoryBuildProps;
                 }
-                else if (
-                    string.Equals(
-                        fn,
-                        CliConstants.DirectoryPackagesPropsFileName,
-                        StringComparison.OrdinalIgnoreCase
-                    )
-                )
+                else if (fn == CliConstants.DirectoryPackagesPropsFileName)
                 {
                     kind = JsonOutputKind.DirectoryPackagesProps;
                 }

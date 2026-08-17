@@ -68,18 +68,136 @@ public class CheckUpdateCommandJsonTests
     }
 
     [Fact]
-    public void JsonPathHelper_GetKind()
+    public async Task Json_ExplicitExactProps_IsClassifiedAsProps()
     {
-        JsonPathHelper
-            .GetKind("/some/Directory.Build.props")
+        var cwd = RootedTestPath("explicit-exact");
+        var props = cwd.PathCombine("Directory.Build.props");
+        var fs = SetupFileSystem(
+            cwd.ToString(),
+            new()
+            {
+                [props] = ProjectFileUtils.ProjectFileXml(
+                    [("Pkg", "1.0.0")],
+                    referenceType: ReferenceType.PackageVersion
+                ),
+            }
+        );
+        var service = SetupMockPackages(
+            [
+                new MockUpgrade("Pkg")
+                {
+                    Versions = { "2.0.0" },
+                    SupportedFrameworks = MockUpgrade.DefaultSupportedFrameworks,
+                },
+            ]
+        );
+        var cmd = CreateCommand(new TestConsole(), fs, service, finder: null, SolutionFileFormat.Sln);
+        var json = await RunJsonAsync(
+            cmd,
+            cwd.ToString(),
+            new CheckUpdateCommand.Settings
+            {
+                Cwd = cwd.ToString(),
+                Json = true,
+                Project = props,
+                List = true,
+            }
+        );
+        var doc = JsonDocument.Parse(json);
+        var file = doc.RootElement.GetProperty("checkedFiles").EnumerateArray().First();
+        file.GetProperty("kind").GetString().Should().Be("directoryBuildProps");
+        file.GetProperty("path").GetString().Should().Be("Directory.Build.props");
+    }
+
+    [Fact]
+    public async Task Json_ExplicitCaseVariant_IsClassifiedAsProject()
+    {
+        var cwd = RootedTestPath("explicit-casevar");
+        var lower = cwd.PathCombine("directory.build.props");
+        var fs = SetupFileSystem(
+            cwd.ToString(),
+            new()
+            {
+                [lower] = ProjectFileUtils.ProjectFileXml(
+                    [("Pkg", "1.0.0")],
+                    referenceType: ReferenceType.PackageVersion
+                ),
+            }
+        );
+        var service = SetupMockPackages(
+            [
+                new MockUpgrade("Pkg")
+                {
+                    Versions = { "2.0.0" },
+                    SupportedFrameworks = MockUpgrade.DefaultSupportedFrameworks,
+                },
+            ]
+        );
+        var cmd = CreateCommand(new TestConsole(), fs, service, finder: null, SolutionFileFormat.Sln);
+        var json = await RunJsonAsync(
+            cmd,
+            cwd.ToString(),
+            new CheckUpdateCommand.Settings
+            {
+                Cwd = cwd.ToString(),
+                Json = true,
+                Project = lower,
+                List = true,
+            }
+        );
+        var doc = JsonDocument.Parse(json);
+        var file = doc.RootElement.GetProperty("checkedFiles").EnumerateArray().First();
+        file.GetProperty("kind").GetString().Should().Be("project");
+    }
+
+    [Fact]
+    public async Task Json_DiscoveredExactProps_IsClassifiedAsProps()
+    {
+        var cwd = RootedTestPath("discovered");
+        var proj = cwd.PathCombine("app.csproj");
+        var props = cwd.PathCombine("Directory.Packages.props");
+        var fs = SetupFileSystem(
+            cwd.ToString(),
+            new()
+            {
+                [proj] = ProjectFileUtils.ProjectFileXml([("Flurl", "3.0.0")]),
+                [props] = ProjectFileUtils.ProjectFileXml(
+                    [("Central", "1.0.0")],
+                    referenceType: ReferenceType.PackageVersion
+                ),
+            }
+        );
+        var service = SetupMockPackages(
+            [
+                new MockUpgrade("Flurl")
+                {
+                    Versions = { "4.0.0" },
+                    SupportedFrameworks = MockUpgrade.DefaultSupportedFrameworks,
+                },
+                new MockUpgrade("Central")
+                {
+                    Versions = { "2.0.0" },
+                    SupportedFrameworks = MockUpgrade.DefaultSupportedFrameworks,
+                },
+            ]
+        );
+        var cmd = CreateCommand(new TestConsole(), fs, service, finder: null, SolutionFileFormat.Sln);
+        var json = await RunJsonAsync(
+            cmd,
+            cwd.ToString(),
+            new CheckUpdateCommand.Settings { Cwd = cwd.ToString(), Json = true, List = true }
+        );
+        var doc = JsonDocument.Parse(json);
+        var byPath = doc
+            .RootElement.GetProperty("checkedFiles")
+            .EnumerateArray()
+            .ToDictionary(e => e.GetProperty("path").GetString()!, e => e);
+        byPath["Directory.Packages.props"]
+            .GetProperty("kind")
+            .GetString()
             .Should()
-            .Be(JsonOutputKind.DirectoryBuildProps);
-        JsonPathHelper
-            .GetKind("/some/Directory.Packages.props")
-            .Should()
-            .Be(JsonOutputKind.DirectoryPackagesProps);
-        JsonPathHelper.GetKind("/some/app.csproj").Should().Be(JsonOutputKind.Project);
-        JsonPathHelper.GetKind("/some/app.fsproj").Should().Be(JsonOutputKind.Project);
+            .Be("directoryPackagesProps");
+        byPath["app.csproj"].GetProperty("kind").GetString().Should().Be("project");
     }
 
     [Fact]
@@ -1117,14 +1235,82 @@ public class CheckUpdateCommandJsonTests
     }
 
     [Fact]
-    public void Json_CaseVariantPropsKindIsCaseInsensitive()
+    public async Task Json_CaseVariantDistinctFiles_ClassifiedSeparately_WhenSupported()
     {
-        JsonPathHelper.GetKind("Directory.Build.props").Should().Be("directoryBuildProps");
-        JsonPathHelper.GetKind("Directory.Packages.props").Should().Be("directoryPackagesProps");
-        JsonPathHelper.GetKind("directory.build.props").Should().Be("project");
-        JsonPathHelper.GetKind("DIRECTORY.PACKAGES.PROPS").Should().Be("project");
-        JsonPathHelper.GetKind("DIRECTORY.BUILD.PROPS").Should().Be("project");
-        JsonPathHelper.GetKind("directory.packages.props").Should().Be("project");
+        if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+        {
+            return;
+        }
+        var cwd = RootedTestPath("case-distinct");
+        var exact = cwd.PathCombine("Directory.Build.props");
+        var lower = cwd.PathCombine("directory.build.props");
+        var fs = SetupFileSystem(
+            cwd.ToString(),
+            new()
+            {
+                [exact] = ProjectFileUtils.ProjectFileXml(
+                    [("PkgExact", "1.0.0")],
+                    referenceType: ReferenceType.PackageVersion
+                ),
+                [lower] = ProjectFileUtils.ProjectFileXml(
+                    [("PkgLower", "1.0.0")],
+                    referenceType: ReferenceType.PackageVersion
+                ),
+            }
+        );
+        var service = SetupMockPackages(
+            [
+                new MockUpgrade("PkgExact")
+                {
+                    Versions = { "2.0.0" },
+                    SupportedFrameworks = MockUpgrade.DefaultSupportedFrameworks,
+                },
+                new MockUpgrade("PkgLower")
+                {
+                    Versions = { "2.0.0" },
+                    SupportedFrameworks = MockUpgrade.DefaultSupportedFrameworks,
+                },
+            ]
+        );
+        var cmd = CreateCommand(new TestConsole(), fs, service, finder: null, SolutionFileFormat.Sln);
+        var exactJson = await RunJsonAsync(
+            cmd,
+            cwd.ToString(),
+            new CheckUpdateCommand.Settings
+            {
+                Cwd = cwd.ToString(),
+                Json = true,
+                Project = exact,
+                List = true,
+            }
+        );
+        var exactDoc = JsonDocument.Parse(exactJson);
+        exactDoc.RootElement.GetProperty("checkedFiles")
+            .EnumerateArray()
+            .First(e => e.GetProperty("path").GetString() == "Directory.Build.props")
+            .GetProperty("kind")
+            .GetString()
+            .Should()
+            .Be("directoryBuildProps");
+        var lowerJson = await RunJsonAsync(
+            cmd,
+            cwd.ToString(),
+            new CheckUpdateCommand.Settings
+            {
+                Cwd = cwd.ToString(),
+                Json = true,
+                Project = lower,
+                List = true,
+            }
+        );
+        var lowerDoc = JsonDocument.Parse(lowerJson);
+        lowerDoc.RootElement.GetProperty("checkedFiles")
+            .EnumerateArray()
+            .First(e => e.GetProperty("path").GetString() == "directory.build.props")
+            .GetProperty("kind")
+            .GetString()
+            .Should()
+            .Be("project");
     }
 
     private static async Task<string> RunJsonAsync(

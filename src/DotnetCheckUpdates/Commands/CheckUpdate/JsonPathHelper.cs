@@ -41,20 +41,4 @@ internal static class JsonPathHelper
         var relative = Path.GetRelativePath(canonicalCwd, canonicalFullPath);
         return relative;
     }
-
-    public static string GetKind(string filePath)
-    {
-        var fileName = Path.GetFileName(filePath);
-        if (fileName == CliConstants.DirectoryBuildPropsFileName)
-        {
-            return JsonOutputKind.DirectoryBuildProps;
-        }
-
-        if (fileName == CliConstants.DirectoryPackagesPropsFileName)
-        {
-            return JsonOutputKind.DirectoryPackagesProps;
-        }
-
-        return JsonOutputKind.Project;
-    }
 }

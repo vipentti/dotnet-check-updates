@@ -14,46 +14,24 @@ public class CheckUpdateCliJsonTests
         get
         {
             var baseDir = AppContext.BaseDirectory;
-            // Derive active TFM and configuration from test assembly location, e.g. .../bin/Release/net10.0/ or .../bin/Debug/net8.0/
-            var tfm = Path.GetFileName(Path.GetDirectoryName(baseDir) ?? "net10.0");
-            var config = Path.GetFileName(
-                Path.GetDirectoryName(Path.GetDirectoryName(baseDir) ?? "") ?? "Release"
-            );
+            // Derive exact TFM and configuration from test assembly location, e.g. .../bin/Release/net10.0/
+            var trimmed = baseDir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            var dirInfo = new DirectoryInfo(trimmed);
+            var tfm = dirInfo.Name;
+            var config = dirInfo.Parent?.Name ?? "";
+            if (string.IsNullOrWhiteSpace(tfm) || string.IsNullOrWhiteSpace(config))
+            {
+                throw new InvalidOperationException(
+                    $"Unable to derive TFM/config from test assembly location: {baseDir}"
+                );
+            }
             if (config is not ("Release" or "Debug"))
             {
-                config = "Release";
+                throw new InvalidOperationException(
+                    $"Unexpected configuration '{config}' derived from {baseDir}; expected Release or Debug"
+                );
             }
-            foreach (var c in new[] { config, "Release", "Debug" }.Distinct(StringComparer.Ordinal))
-            {
-                foreach (
-                    var t in new[] { tfm, "net10.0", "net9.0", "net8.0" }.Distinct(
-                        StringComparer.Ordinal
-                    )
-                )
-                {
-                    var candidate = Path.GetFullPath(
-                        Path.Combine(
-                            baseDir,
-                            "..",
-                            "..",
-                            "..",
-                            "..",
-                            "..",
-                            "src",
-                            "DotnetCheckUpdates",
-                            "bin",
-                            c,
-                            t,
-                            "dotnet-check-updates.dll"
-                        )
-                    );
-                    if (File.Exists(candidate))
-                    {
-                        return candidate;
-                    }
-                }
-            }
-            return Path.GetFullPath(
+            var candidate = Path.GetFullPath(
                 Path.Combine(
                     baseDir,
                     "..",
@@ -69,6 +47,14 @@ public class CheckUpdateCliJsonTests
                     "dotnet-check-updates.dll"
                 )
             );
+            if (!File.Exists(candidate))
+            {
+                throw new FileNotFoundException(
+                    $"Expected product artifact not found at {candidate}. Build {config}/{tfm} first (dotnet build -c {config}).",
+                    candidate
+                );
+            }
+            return candidate;
         }
     }
 
@@ -360,23 +346,28 @@ public class CheckUpdateCliJsonTests
     [Fact]
     public async Task Cli_SaveFailure_EmptyStdout()
     {
+        using var localSource = LocalNuGetSource.CreateWithFlurl("4.0.0");
         using var dir = TempDir.Create();
         var projPath = Path.Combine(dir.Path, "a.csproj");
         File.WriteAllText(projPath, ProjectFileUtils.ProjectFileXml([("Flurl", "3.0.0")]));
-        // Make file read-only to force save failure on --upgrade
         var originalAttrs = File.GetAttributes(projPath);
         File.SetAttributes(projPath, originalAttrs | FileAttributes.ReadOnly);
         try
         {
-            var (code, stdout, stderr) = await RunCliAsync([
-                "--json",
-                "--upgrade",
-                "--cwd",
-                dir.Path,
-            ]);
+            var (code, stdout, stderr) = await RunCliAsync(
+                [
+                    "--json",
+                    "--upgrade",
+                    "--nuget-source",
+                    localSource.Path,
+                    "--cwd",
+                    dir.Path,
+                ]
+            );
             code.Should().NotBe(0);
             stdout.Should().BeEmpty();
             stderr.Should().NotBeEmpty();
+            stderr.Should().Contain("a.csproj");
         }
         finally
         {
@@ -387,9 +378,10 @@ public class CheckUpdateCliJsonTests
     [Fact]
     public async Task Cli_RestoreFailure_StderrWithEmptyStdout()
     {
+        using var localSource = LocalNuGetSource.CreateWithFlurl("4.0.0");
         using var dir = TempDir.Create();
         var projPath = Path.Combine(dir.Path, "a.csproj");
-        // Use Invalid SDK so dotnet restore always fails, while our tool still upgrades PackageReference
+        // Use Invalid SDK so dotnet restore always fails, while our tool still upgrades PackageReference via local source
         File.WriteAllText(
             projPath,
             """
@@ -399,16 +391,22 @@ public class CheckUpdateCliJsonTests
             </Project>
             """.Trim()
         );
-        var (code, stdout, stderr) = await RunCliAsync([
-            "--json",
-            "--upgrade",
-            "--restore",
-            "--cwd",
-            dir.Path,
-        ]);
+        var (code, stdout, stderr) = await RunCliAsync(
+            [
+                "--json",
+                "--upgrade",
+                "--restore",
+                "--nuget-source",
+                localSource.Path,
+                "--cwd",
+                dir.Path,
+            ]
+        );
         code.Should().NotBe(0);
         stdout.Should().BeEmpty();
         stderr.Should().NotBeEmpty();
+        stderr.Should().Contain("Invalid.Sdk");
+        stderr.ToLowerInvariant().Should().Contain("restore");
     }
 
     private static class EmptyTempDir
