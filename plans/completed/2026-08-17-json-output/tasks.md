@@ -6,3 +6,8 @@
 - [x] T4 Add automated coverage for schema behavior, option interactions, mutations, failures, and text-mode compatibility.
 - [x] T5 Document JSON invocation and version 1 contract for automated consumers.
 - [x] T6 Run completion verification defined in `plan.md`.
+
+## Completion
+
+- Completed at: 2026-08-17T13:40:35.338Z
+- Mode: normal
