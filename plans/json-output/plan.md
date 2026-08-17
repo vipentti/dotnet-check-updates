@@ -9,7 +9,7 @@ Add `--json` output for non-interactive package checks and upgrades. JSON mode p
 - Add `--json` to non-interactive check and upgrade workflows.
 - Report discovered solutions, checked files, package versions, available upgrades, applicable frameworks, and applied mutations.
 - Distinguish project files from `Directory.Build.props` and `Directory.Packages.props`.
-- Preserve existing filtering, targeting, listing, upgrade, and restore behavior while canonicalizing processing paths and leaving text rendering rules unchanged.
+- Preserve existing non-JSON discovery occurrences, path values, rendering, progress, mutation, filtering, targeting, listing, upgrade, and restore behavior.
 - Document JSON usage and version 1 contract.
 - Reject `--json` with `--interactive` or `--version`.
 - Exclude new exit-code semantics for available updates and additional output formats.
@@ -17,6 +17,8 @@ Add `--json` output for non-interactive package checks and upgrades. JSON mode p
 ## Approach
 
 Use dedicated JSON output types rather than serializing internal project models. Emit one UTF-8 JSON document through `System.Text.Json` after non-interactive processing completes successfully. Property names and string tokens use exact casing shown below. Whitespace is not contractual.
+
+Separate upgrade detection from rendering through an internal check result built with existing upgrade comparison helpers. Retain original discovery occurrence and display-path values alongside canonical JSON identity and pre-upgrade and target package state. Text rendering and mutation consume original ordered occurrences exactly as before. JSON projection and JSON-mode mutation consume one result per canonical identity. This avoids renderer-owned upgrade state without changing text-mode duplicate processing, progress, saves, or output.
 
 ### Version 1 shape
 
@@ -100,7 +102,7 @@ All properties shown above are required. Arrays are always present and use `[]` 
 
 `packageCount` is independent of `packages` array length because default JSON output omits unchanged references. `--show-package-count` remains accepted in JSON mode but has no additional effect because `packageCount` is always present.
 
-Each canonical full-path identity appears once in `checkedFiles`. Use ordinal-ignore-case comparison on Windows and ordinal comparison on other platforms, and process each resulting unique identity once. This identity does not resolve symlinks, junctions, hard links, or filesystem-specific case behavior beyond that comparison rule. A project shared by multiple solutions remains listed in each applicable `solutions[].projects` array while appearing only once in `checkedFiles`.
+In JSON mode, each canonical full-path identity appears once in `checkedFiles`. Use ordinal-ignore-case comparison on Windows and ordinal comparison on other platforms, and process each resulting unique identity once. This identity does not resolve symlinks, junctions, hard links, or filesystem-specific case behavior beyond that comparison rule. A project shared by multiple solutions remains listed in each applicable `solutions[].projects` array while appearing only once in `checkedFiles`.
 
 ### Package fields
 
@@ -122,15 +124,17 @@ Default JSON output includes package references with a non-null `targetVersion`.
 
 ### Paths and ordering
 
-Establish canonical full paths before validation, discovery, or file processing:
+In JSON mode, establish canonical full paths before validation, discovery, or file processing:
 
 1. Normalize process working directory with `Path.GetFullPath`.
 2. Resolve effective `--cwd` against process working directory, matching current command semantics.
 3. Resolve explicit relative `--project` and `--solution` selectors against process working directory, also matching current semantics, regardless of effective `--cwd`.
 4. Pass canonical selector paths into validation and discovery. Discovery must return canonical full paths for automatically found solutions, solution members, checked projects, and props files, resolving paths against the discovery root or containing solution as appropriate.
-5. Carry those same canonical values through reads, identity comparison, package checking, saves, restore, solution membership, and JSON projection. JSON projection must not reinterpret discovered relative paths.
+5. Carry those same canonical values through JSON-mode reads, identity comparison, package checking, saves, restore, solution membership, and JSON projection. JSON projection must not reinterpret discovered relative paths.
 
-With `--show-absolute`, emit each canonical full path. Without it, emit `Path.GetRelativePath(canonicalCwd, canonicalFullPath)`. JSON paths use platform-native directory separators. Existing text rendering rules remain unchanged, but operate on canonical processing paths.
+With `--show-absolute`, emit each canonical full path. Without it, emit `Path.GetRelativePath(canonicalCwd, canonicalFullPath)`. JSON paths use platform-native directory separators.
+
+Without `--json`, preserve original discovered path values and processing occurrences through validation, reads, package checking, rendering, saves, and restore. Text mode continues using its existing formatter and must not receive canonical JSON display paths.
 
 Arrays use these deterministic orders:
 
@@ -143,7 +147,9 @@ Arrays use these deterministic orders:
 
 ### Output and failure behavior
 
-JSON intent is detected from raw arguments before command parsing so process-level routing also covers parse failures. JSON mode suppresses progress rendering, trees, upgrade guidance, and logging from stdout. In JSON mode, both restore subprocess stdout and stderr are forwarded to process stderr, preserving normal restore chatter and failure diagnostics without contaminating stdout. Successful stdout contains only the JSON document. Other diagnostics and failures also use stderr with existing nonzero failure behavior. Failed execution emits no partial JSON document.
+Help takes precedence over JSON mode. When raw arguments contain either supported help spelling, `-h` or `--help`, normal human-readable help is written to stdout with success status, `--json` is ignored, and JSON mode is not entered. Packaged tests cover both combinations.
+
+Otherwise, JSON intent is detected from raw arguments before command parsing so process-level routing also covers parse failures. JSON mode suppresses progress rendering, trees, upgrade guidance, and logging from stdout. In JSON mode, both restore subprocess stdout and stderr are forwarded to process stderr, preserving normal restore chatter and failure diagnostics without contaminating stdout. Successful stdout contains only the JSON document. Other diagnostics and failures also use stderr with existing nonzero failure behavior. Failed execution emits no partial JSON document.
 
 Upgrade and restore execution remains non-atomic. Files are saved sequentially before restore. A later save or restore failure can leave earlier file mutations applied while returning nonzero and emitting no JSON document. Absence of successful JSON therefore does not guarantee absence of filesystem changes.
 
@@ -153,12 +159,14 @@ Text output remains unchanged when `--json` is absent.
 
 - `--json` produces the exact schema version 1 shape and representations defined above.
 - Solutions contain only real project members; every unique canonical full-path identity for a checked project or supported props file appears once in `checkedFiles` with correct `kind`.
-- Shared project path identities retain membership in every discovered solution without duplicate checked-file results or processing.
+- In JSON mode, shared project path identities retain membership in every discovered solution without duplicate checked-file results or processing.
 - Every checked file reports filtered `packageCount`; `--show-package-count` is accepted and inert in JSON mode.
 - Results preserve pre-upgrade versions and identify target versions, upgrade types, effective frameworks, and whether mutation was requested or applied.
 - `--upgrade` with no applicable upgrades reports `upgradeRequested: true` and `upgradesApplied: false`.
-- `--list`, filters, target selection, `--upgrade`, and `--restore` retain existing semantics; processing and JSON paths follow the canonicalization rules above.
+- `--list`, filters, target selection, `--upgrade`, and `--restore` retain existing semantics; JSON-mode processing and paths follow the canonicalization rules above.
 - Relative explicit project and solution selectors retain process-working-directory semantics even when `--cwd` differs, and emitted JSON identifies the file actually read or mutated.
+- Without `--json`, original discovery occurrences, path values, processing, progress, saves, and rendered output remain unchanged.
+- `--json -h`, `--json --help`, and equivalent argument orderings return normal human-readable help with status 0 and do not enter JSON mode.
 - Successful JSON-mode stdout contains no ANSI markup, progress output, guidance, logs, or subprocess output; restore output and diagnostics remain available on stderr.
 - Invalid combinations with `--interactive` or `--version` fail validation.
 - Errors produce no partial JSON stdout, retain nonzero exit status, and preserve documented non-atomic mutation behavior.
@@ -167,9 +175,9 @@ Text output remains unchanged when `--json` is absent.
 
 ## Verification
 
-Add focused command and serialization tests covering canonical schema output, exact enum tokens, project and solution discovery, overlapping solution membership with unique canonical full-path identities, checked-file kinds and filtered package counts, `--show-package-count`, available and unchanged packages, conditioned duplicates, unsupported non-framework conditions, version ranges, inferred frameworks, filters, relative explicit project and solution selectors with a different `--cwd`, absolute and relative JSON paths including outside-cwd paths and paths containing cwd text, deterministic ordering, empty arrays and nulls, upgrades with and without mutations, restore and save failures including restore diagnostics on stderr, incompatible options, and stdout isolation.
+Add focused command and serialization tests covering canonical schema output, exact enum tokens, project and solution discovery, overlapping solution membership with unique JSON identities and unchanged text-mode duplicate occurrences, checked-file kinds and filtered package counts, `--show-package-count`, available and unchanged packages, conditioned duplicates, unsupported non-framework conditions, version ranges, inferred frameworks, filters, relative explicit project and solution selectors with a different `--cwd`, absolute and relative JSON paths including outside-cwd paths and paths containing cwd text, unchanged text display paths, deterministic ordering, empty arrays and nulls, upgrades with and without mutations, restore and save failures including restore diagnostics on stderr, incompatible options, and stdout isolation.
 
-Run repository test suite and lint or formatting checks used by pull-request CI. Packaged CLI verification must cover successful JSON execution, JSON command parse failure such as `--json --unknown-option`, JSON validation failure, JSON runtime failure, and successful JSON execution with `DCU_ENABLE_LOGGING=1`. Success cases must parse exact JSON-only stdout. Every failure case must produce empty stdout, diagnostics on stderr, and nonzero status. Confirm text mode remains unchanged.
+Run repository test suite and lint or formatting checks used by pull-request CI. Packaged CLI verification must cover both `--json -h` and `--json --help`, successful JSON execution, JSON command parse failure such as `--json --unknown-option`, JSON validation failure, JSON runtime failure, and successful JSON execution with `DCU_ENABLE_LOGGING=1`. Help cases must produce human-readable stdout and status 0. JSON execution success cases must parse exact JSON-only stdout. Every failure case must produce empty stdout, diagnostics on stderr, and nonzero status. Confirm text mode remains unchanged.
 
 ## Risks and Considerations
 
