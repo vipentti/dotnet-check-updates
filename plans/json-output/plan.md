@@ -37,6 +37,7 @@ Use dedicated JSON output types rather than serializing internal project models.
     {
       "path": "Directory.Packages.props",
       "kind": "directoryPackagesProps",
+      "packageCount": 1,
       "targetFrameworks": [
         "net8.0",
         "net9.0"
@@ -56,6 +57,7 @@ Use dedicated JSON output types rather than serializing internal project models.
     {
       "path": "src/App/App.csproj",
       "kind": "project",
+      "packageCount": 0,
       "targetFrameworks": [
         "net8.0"
       ],
@@ -90,10 +92,15 @@ All properties shown above are required. Arrays are always present and use `[]` 
 | --- | --- | --- |
 | `path` | string | Formatted checked-file path. |
 | `kind` | string | One of `project`, `directoryBuildProps`, or `directoryPackagesProps`. |
+| `packageCount` | integer | Count of all parsed package references remaining after include and exclude filtering. |
 | `targetFrameworks` | string array | Effective frameworks used by the checker, including inferred frameworks for files without declarations. |
 | `packages` | array | Selected package-reference results owned by this file. |
 
 `kind` is `directoryBuildProps` for `Directory.Build.props`, `directoryPackagesProps` for `Directory.Packages.props`, and `project` for other checked project files.
+
+`packageCount` is independent of `packages` array length because default JSON output omits unchanged references. `--show-package-count` remains accepted in JSON mode but has no additional effect because `packageCount` is always present.
+
+Each physical checked file appears once. Normalize discovered paths with `Path.GetFullPath` before identity comparison, use ordinal-ignore-case comparison on Windows and ordinal comparison on other platforms, and process each resulting unique path once. A project shared by multiple solutions remains listed in each applicable `solutions[].projects` array while appearing only once in `checkedFiles`.
 
 ### Package fields
 
@@ -115,7 +122,7 @@ Default JSON output includes package references with a non-null `targetVersion`.
 
 ### Paths and ordering
 
-Existing `--show-absolute` behavior controls every emitted path. Without it, paths are relative to effective `--cwd`; with it, paths are absolute. Paths use platform-native directory separators.
+JSON paths use the shared text-mode path formatter and platform-native directory separators. With `--show-absolute`, emitted paths are full paths. Without it, paths use existing best-effort cwd string stripping; paths outside effective `--cwd` are not guaranteed to be relative. Correcting or replacing current text-mode path formatting is outside this scope.
 
 Arrays use these deterministic orders:
 
@@ -128,7 +135,7 @@ Arrays use these deterministic orders:
 
 ### Output and failure behavior
 
-JSON mode suppresses progress rendering, trees, upgrade guidance, restore subprocess output, and logging from stdout. Successful stdout contains only the JSON document. Diagnostics and failures use stderr with existing nonzero failure behavior. Failed execution emits no partial JSON document.
+JSON mode suppresses progress rendering, trees, upgrade guidance, and logging from stdout. In JSON mode, both restore subprocess stdout and stderr are forwarded to process stderr, preserving normal restore chatter and failure diagnostics without contaminating stdout. Successful stdout contains only the JSON document. Other diagnostics and failures also use stderr with existing nonzero failure behavior. Failed execution emits no partial JSON document.
 
 Upgrade and restore execution remains non-atomic. Files are saved sequentially before restore. A later save or restore failure can leave earlier file mutations applied while returning nonzero and emitting no JSON document. Absence of successful JSON therefore does not guarantee absence of filesystem changes.
 
@@ -137,11 +144,13 @@ Text output remains unchanged when `--json` is absent.
 ## Acceptance Criteria
 
 - `--json` produces the exact schema version 1 shape and representations defined above.
-- Solutions contain only real project members; every checked project or supported props file appears in `checkedFiles` with correct `kind`.
+- Solutions contain only real project members; every unique checked project or supported props file appears once in `checkedFiles` with correct `kind`.
+- Shared projects retain membership in every discovered solution without duplicate checked-file results or processing.
+- Every checked file reports filtered `packageCount`; `--show-package-count` is accepted and inert in JSON mode.
 - Results preserve pre-upgrade versions and identify target versions, upgrade types, effective frameworks, and whether mutation was requested or applied.
 - `--upgrade` with no applicable upgrades reports `upgradeRequested: true` and `upgradesApplied: false`.
 - `--list`, filters, target selection, path modes, `--upgrade`, and `--restore` retain existing semantics.
-- Successful JSON-mode stdout contains no ANSI markup, progress output, guidance, logs, or subprocess output.
+- Successful JSON-mode stdout contains no ANSI markup, progress output, guidance, logs, or subprocess output; restore output and diagnostics remain available on stderr.
 - Invalid combinations with `--interactive` or `--version` fail validation.
 - Errors produce no partial JSON stdout, retain nonzero exit status, and preserve documented non-atomic mutation behavior.
 - Existing non-JSON output and behavior remain compatible.
@@ -149,7 +158,7 @@ Text output remains unchanged when `--json` is absent.
 
 ## Verification
 
-Add focused command and serialization tests covering canonical schema output, exact enum tokens, project and solution discovery, checked-file kinds, available and unchanged packages, conditioned duplicates, unsupported non-framework conditions, version ranges, inferred frameworks, filters, path modes, deterministic ordering, empty arrays and nulls, upgrades with and without mutations, restore and save failures, incompatible options, and stdout isolation.
+Add focused command and serialization tests covering canonical schema output, exact enum tokens, project and solution discovery, overlapping solution membership with unique checked files, checked-file kinds and filtered package counts, `--show-package-count`, available and unchanged packages, conditioned duplicates, unsupported non-framework conditions, version ranges, inferred frameworks, filters, existing path formatting modes including paths outside cwd, deterministic ordering, empty arrays and nulls, upgrades with and without mutations, restore and save failures including restore diagnostics on stderr, incompatible options, and stdout isolation.
 
 Run repository test suite and lint or formatting checks used by pull-request CI. Exercise packaged CLI output to parse stdout as JSON and confirm text mode remains unchanged.
 
@@ -157,4 +166,4 @@ Run repository test suite and lint or formatting checks used by pull-request CI.
 
 Schema version 1 becomes a public automation contract. Dedicated output types and contract tests prevent internal model or serializer defaults from changing it accidentally.
 
-Restore subprocesses and optional logging can corrupt stdout unless explicitly redirected or suppressed in JSON mode. Upgrade failures can leave mutations without a success document because existing writes are non-atomic.
+Restore subprocesses and optional logging can corrupt stdout unless explicitly redirected in JSON mode. Upgrade failures can leave mutations without a success document because existing writes are non-atomic.
