@@ -142,7 +142,15 @@ internal partial class CheckUpdateCommand
         public UpgradeTarget Target { get; init; } = UpgradeTarget.Latest;
 
         [CommandOption("--json")]
-        [Description("Output results as JSON. Cannot be used with --interactive or --version. (default: false)")]
+        [Description("""
+                Output results as JSON. Cannot be used with --interactive or --version.
+                Emits a single UTF-8 JSON document to stdout; progress, trees,
+                and restore output go to stderr. --show-absolute controls
+                whether JSON paths are absolute or relative to the effective
+                working directory. Bare --json only; --json=<value>,
+                --json:<value>, --json true, and --json false are rejected.
+                (default: false)
+                """)]
         public bool Json { get; init; }
 
         public bool AsciiTree { get; init; }
