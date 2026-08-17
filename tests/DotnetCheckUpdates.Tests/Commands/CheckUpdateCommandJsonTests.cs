@@ -1077,9 +1077,13 @@ public class CheckUpdateCommandJsonTests
         var paths = doc.CheckedFiles.Select(c => c.Path).ToArray();
         // Should be sorted by emitted path ordinal, not canonical
         paths.Should().BeInAscendingOrder(StringComparer.Ordinal);
-        paths[0].Should().Be("../outer/a/outerA.csproj");
-        paths[1].Should().Be("../outer/b/outerB.csproj");
-        paths[2].Should().Be("inner/inner.csproj");
+        var expectedA = Path.GetRelativePath(cwdPath, a);
+        var expectedB = Path.GetRelativePath(cwdPath, b);
+        var expectedInner = Path.GetRelativePath(cwdPath, inner);
+        var expectedSorted = new[] { expectedA, expectedB, expectedInner }
+            .OrderBy(x => x, StringComparer.Ordinal)
+            .ToArray();
+        paths.Should().Equal(expectedSorted);
     }
 
     private static JsonProjectCheckResult MakeResult(string canonical, string expectedRelative)
@@ -1150,13 +1154,24 @@ public class CheckUpdateCommandJsonTests
             .EnumerateArray()
             .Select(e => e.GetProperty("path").GetString()!)
             .ToArray();
-        // GetKind is case-sensitive (Ordinal) so only exact conventional filenames are props; case variants are project
+        // GetKind uses OS-dependent comparison: exact on Linux (case-sensitive FS), case-insensitive on Windows
         JsonPathHelper.GetKind("Directory.Build.props").Should().Be("directoryBuildProps");
         JsonPathHelper.GetKind("Directory.Packages.props").Should().Be("directoryPackagesProps");
-        JsonPathHelper.GetKind("directory.build.props").Should().Be("project");
-        JsonPathHelper.GetKind("DIRECTORY.PACKAGES.PROPS").Should().Be("project");
-        JsonPathHelper.GetKind("DIRECTORY.BUILD.PROPS").Should().Be("project");
-        JsonPathHelper.GetKind("directory.packages.props").Should().Be("project");
+        if (OperatingSystem.IsWindows())
+        {
+            JsonPathHelper.GetKind("directory.build.props").Should().Be("directoryBuildProps");
+            JsonPathHelper
+                .GetKind("DIRECTORY.PACKAGES.PROPS")
+                .Should()
+                .Be("directoryPackagesProps");
+        }
+        else
+        {
+            JsonPathHelper.GetKind("directory.build.props").Should().Be("project");
+            JsonPathHelper.GetKind("DIRECTORY.PACKAGES.PROPS").Should().Be("project");
+            JsonPathHelper.GetKind("DIRECTORY.BUILD.PROPS").Should().Be("project");
+            JsonPathHelper.GetKind("directory.packages.props").Should().Be("project");
+        }
     }
 
     private static async Task<string> RunJsonAsync(

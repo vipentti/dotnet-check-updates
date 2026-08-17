@@ -45,24 +45,18 @@ internal static class JsonPathHelper
     public static string GetKind(string filePath)
     {
         var fileName = Path.GetFileName(filePath);
-        if (
-            string.Equals(
-                fileName,
-                CliConstants.DirectoryBuildPropsFileName,
-                StringComparison.Ordinal
-            )
-        )
+        // Conventional props filenames are case-sensitive on case-sensitive filesystems (Linux)
+        // and case-insensitive on Windows. Use OS-dependent comparison to preserve distinct
+        // case variants on Linux while still recognizing conventional discovery on Windows.
+        var comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        if (string.Equals(fileName, CliConstants.DirectoryBuildPropsFileName, comparison))
         {
             return JsonOutputKind.DirectoryBuildProps;
         }
 
-        if (
-            string.Equals(
-                fileName,
-                CliConstants.DirectoryPackagesPropsFileName,
-                StringComparison.Ordinal
-            )
-        )
+        if (string.Equals(fileName, CliConstants.DirectoryPackagesPropsFileName, comparison))
         {
             return JsonOutputKind.DirectoryPackagesProps;
         }
