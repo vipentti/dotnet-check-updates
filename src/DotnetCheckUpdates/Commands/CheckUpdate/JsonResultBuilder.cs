@@ -72,7 +72,7 @@ internal static class JsonResultBuilder
                         : null;
 
                     string? targetVersion = pr.TargetVersion is not null
-                        ? new PackageReference(pr.Original.Name, pr.TargetVersion).GetVersionString()
+                        ? pr.TargetVersion.VersionString(pr.Original.Version.OriginalString)
                         : null;
 
                     string? upgradeType = pr.TargetVersion is null
