@@ -18,8 +18,19 @@ internal sealed partial class ProjectDiscovery(
 
     internal record ProjectDiscoveryResult(
         ImmutableArray<string> ProjectFiles,
-        ImmutableDictionary<string, string[]> SolutionProjectMap
-    );
+        ImmutableDictionary<string, string[]> SolutionProjectMap,
+        ImmutableHashSet<string> PropsFiles
+    )
+    {
+        public void Deconstruct(
+            out ImmutableArray<string> projectFiles,
+            out ImmutableDictionary<string, string[]> solutionProjectMap
+        )
+        {
+            projectFiles = ProjectFiles;
+            solutionProjectMap = SolutionProjectMap;
+        }
+    }
 
     internal record ProjectDiscoveryRequest
     {
@@ -153,11 +164,26 @@ internal sealed partial class ProjectDiscovery(
             projectFiles.AddRange(propsFiles);
         }
 
+        var propsSet = ImmutableHashSet.CreateBuilder<string>(StringComparer.Ordinal);
+        foreach (var f in projectFiles)
+        {
+            if (
+                !f.EndsWith(CliConstants.CsProjExtensionWithDot, StringComparison.OrdinalIgnoreCase)
+                && !f.EndsWith(
+                    CliConstants.FsProjExtensionWithDot,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+            {
+                propsSet.Add(f);
+            }
+        }
         // This can be simplified once we drop support for older frameworks
 #pragma warning disable IDE0305 // Simplify collection initialization
         return new(
             projectFiles.OrderBy(it => it, StringComparer.Ordinal).ToImmutableArray(),
-            solutionProjectMap.ToImmutable()
+            solutionProjectMap.ToImmutable(),
+            propsSet.ToImmutable()
         );
 #pragma warning restore IDE0305 // Simplify collection initialization
     }

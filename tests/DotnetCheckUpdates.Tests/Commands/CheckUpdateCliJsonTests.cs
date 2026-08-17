@@ -290,28 +290,21 @@ public class CheckUpdateCliJsonTests
         using var dir = TempDir.Create();
         File.WriteAllText(
             Path.Combine(dir.Path, "a.csproj"),
-            """
-            <Project Sdk="Microsoft.NET.Sdk">
-              <PropertyGroup><TargetFramework>net8.0</TargetFramework></PropertyGroup>
-            </Project>
-            """.Trim()
+            ProjectFileUtils.ProjectFileXml([("Flurl", "3.0.0")])
         );
         var (code, stdout, stderr) = await RunCliAsync(
             ["--json", "--cwd", dir.Path],
-            env: new() { ["DCU_ENABLE_LOGGING"] = "1" }
+            env: new() { ["DCU_ENABLE_LOGGING"] = "1", ["DCU_LOGLEVEL"] = "Debug" }
         );
         code.Should().Be(0);
-        JsonDocument
-            .Parse(stdout)
-            .RootElement.GetProperty("schemaVersion")
-            .GetInt32()
-            .Should()
-            .Be(1);
+        var doc = JsonDocument.Parse(stdout);
+        doc.RootElement.GetProperty("schemaVersion").GetInt32().Should().Be(1);
         stdout.Should().NotContain("CACHE");
         stdout.Should().NotContain("info:");
-        // Logging should appear on stderr when enabled, not on stdout - even with no packages, logger still initializes
-        // At minimum stdout must remain valid JSON and not contain log markers
-        stderr.Should().NotContain("\"schemaVersion\"");
+        // With packages and Debug level, settings log should be on stderr, not stdout
+        stderr.Should().NotBeEmpty();
+        stderr.Should().Contain("Settings");
+        stdout.Should().NotContain("Settings");
     }
 
     [Fact]
@@ -383,6 +376,7 @@ public class CheckUpdateCliJsonTests
             ]);
             code.Should().NotBe(0);
             stdout.Should().BeEmpty();
+            stderr.Should().NotBeEmpty();
         }
         finally
         {

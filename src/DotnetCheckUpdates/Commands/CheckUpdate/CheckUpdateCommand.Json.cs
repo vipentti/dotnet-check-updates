@@ -30,7 +30,7 @@ internal partial class CheckUpdateCommand
         CancellationToken cancellationToken
     )
     {
-        var (solutionProjectMap, projectFiles) = await DiscoverForJson(
+        var (solutionProjectMap, projectFiles, propsFiles) = await DiscoverForJson(
             canonicalCwd,
             canonicalProject,
             canonicalSolution,
@@ -41,6 +41,29 @@ internal partial class CheckUpdateCommand
             .Select(it => _fileSystem.Path.GetFullPath(it))
             .Distinct(StringComparer.Ordinal)
             .ToImmutableHashSet(StringComparer.Ordinal);
+
+        // Also consider explicit conventional props files (e.g., explicit --project Directory.Build.props) as props provenance
+        var effectivePropsFiles = propsFiles.ToBuilder();
+        foreach (var c in canonicalSet.Where(c => !propsFiles.Contains(c)))
+        {
+            var fn = Path.GetFileName(c);
+            if (
+                string.Equals(
+                    fn,
+                    CliConstants.DirectoryBuildPropsFileName,
+                    StringComparison.Ordinal
+                )
+                || string.Equals(
+                    fn,
+                    CliConstants.DirectoryPackagesPropsFileName,
+                    StringComparison.Ordinal
+                )
+            )
+            {
+                effectivePropsFiles.Add(c);
+            }
+        }
+        var effectivePropsSet = effectivePropsFiles.ToImmutable();
 
         var uniqueCanonicalPaths = canonicalSet.OrderBy(it => it, StringComparer.Ordinal).ToArray();
 
@@ -74,8 +97,15 @@ internal partial class CheckUpdateCommand
             var proj = projects[i];
             var canonical = uniqueCanonicalPaths[i];
 
-            var filtered = ApplyFilters(proj, includeFilters, excludeFilters);
-            var effective = GetEffectiveFrameworks(filtered, allSpecifiedTargetFrameworks);
+            var filtered = CheckUpdateCommandHelpers.ApplyFilters(
+                proj,
+                includeFilters,
+                excludeFilters
+            );
+            var effective = CheckUpdateCommandHelpers.GetEffectiveFrameworks(
+                filtered,
+                allSpecifiedTargetFrameworks
+            );
 
             if (filtered.TargetFrameworks.Length == 0 && effective.Length > 0)
             {
@@ -119,6 +149,7 @@ internal partial class CheckUpdateCommand
             effectiveFrameworksByCanonical,
             packageCountsByCanonical,
             upgradedByCanonical,
+            effectivePropsSet,
             settings
         );
 
@@ -136,7 +167,8 @@ internal partial class CheckUpdateCommand
 
     private async Task<(
         ImmutableDictionary<string, string[]> SolutionMap,
-        ImmutableArray<string> ProjectFiles
+        ImmutableArray<string> ProjectFiles,
+        ImmutableHashSet<string> PropsFiles
     )> DiscoverForJson(
         string canonicalCwd,
         string? canonicalProject,
@@ -144,29 +176,34 @@ internal partial class CheckUpdateCommand
         Settings settings
     )
     {
-        var (projectFiles, solutionProjectMap) =
-            await _projectDiscovery.DiscoverProjectsAndSolutions(
-                new()
-                {
-                    Cwd = canonicalCwd,
-                    Recurse = settings.Recurse,
-                    Depth = settings.Depth,
-                    Project = canonicalProject,
-                    Solution = canonicalSolution,
-                }
-            );
+        var result = await _projectDiscovery.DiscoverProjectsAndSolutions(
+            new()
+            {
+                Cwd = canonicalCwd,
+                Recurse = settings.Recurse,
+                Depth = settings.Depth,
+                Project = canonicalProject,
+                Solution = canonicalSolution,
+            }
+        );
 
-        var canonicalProjectFiles = projectFiles
-            .Select(it => _fileSystem.Path.GetFullPath(it))
+        var canonicalProjectFiles = result
+            .ProjectFiles.Select(it => _fileSystem.Path.GetFullPath(it))
             .ToImmutableArray();
 
-        var canonicalSolutionMap = solutionProjectMap.ToImmutableDictionary(
+        var canonicalSolutionMap = result.SolutionProjectMap.ToImmutableDictionary(
             kvp => _fileSystem.Path.GetFullPath(kvp.Key),
             kvp => kvp.Value.Select(it => _fileSystem.Path.GetFullPath(it)).ToArray(),
             StringComparer.Ordinal
         );
 
-        return (canonicalSolutionMap, canonicalProjectFiles);
+        var propsFiles =
+            result
+                .PropsFiles?.Select(it => _fileSystem.Path.GetFullPath(it))
+                .ToImmutableHashSet(StringComparer.Ordinal)
+            ?? ImmutableHashSet<string>.Empty.WithComparer(StringComparer.Ordinal);
+
+        return (canonicalSolutionMap, canonicalProjectFiles, propsFiles);
     }
 
     private static ImmutableDictionary<string, string[]> BuildSolutionsCanonicalFiltered(
@@ -198,58 +235,6 @@ internal partial class CheckUpdateCommand
         }
 
         return builder.ToImmutable();
-    }
-
-    private static ProjectFile ApplyFilters(
-        ProjectFile project,
-        ImmutableArray<Core.Filter> includeFilters,
-        ImmutableArray<Core.Filter> excludeFilters
-    )
-    {
-        var packages = ImmutableArray.CreateBuilder<PackageReference>(project.PackageCount);
-        packages.AddRange(project.PackageReferences);
-
-        if (includeFilters.Length > 0)
-        {
-            for (var i = packages.Count - 1; i >= 0; --i)
-            {
-                var pkgName = packages[i].Name;
-                if (!includeFilters.Any(it => it.IsMatch(pkgName)))
-                {
-                    packages.RemoveAt(i);
-                }
-            }
-        }
-
-        if (excludeFilters.Length > 0)
-        {
-            for (var i = packages.Count - 1; i >= 0; --i)
-            {
-                var pkgName = packages[i].Name;
-                if (excludeFilters.Any(it => it.IsMatch(pkgName)))
-                {
-                    packages.RemoveAt(i);
-                }
-            }
-        }
-
-        return project with
-        {
-            PackageReferences = packages.ToImmutable(),
-        };
-    }
-
-    private static ImmutableArray<NuGetFramework> GetEffectiveFrameworks(
-        ProjectFile project,
-        ImmutableArray<NuGetFramework> allFrameworks
-    )
-    {
-        if (project.TargetFrameworks.Length == 0)
-        {
-            return allFrameworks;
-        }
-
-        return project.TargetFrameworks;
     }
 
     private async Task<
@@ -348,6 +333,7 @@ internal partial class CheckUpdateCommand
         Dictionary<string, ImmutableArray<NuGetFramework>> effectiveFrameworksByCanonical,
         Dictionary<string, int> packageCountsByCanonical,
         Dictionary<string, (ProjectFile Original, ProjectFile Upgraded)> upgradedByCanonical,
+        ImmutableHashSet<string> propsFiles,
         Settings settings
     )
     {
@@ -361,7 +347,39 @@ internal partial class CheckUpdateCommand
             var upgraded = upgradedByCanonical[canonical].Upgraded;
             var effectiveFrameworks = effectiveFrameworksByCanonical[canonical];
             var packageCount = packageCountsByCanonical[canonical];
-            var kind = JsonPathHelper.GetKind(canonical);
+            string kind;
+            if (propsFiles.Contains(canonical))
+            {
+                var fn = Path.GetFileName(canonical);
+                if (
+                    string.Equals(
+                        fn,
+                        CliConstants.DirectoryBuildPropsFileName,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
+                {
+                    kind = JsonOutputKind.DirectoryBuildProps;
+                }
+                else if (
+                    string.Equals(
+                        fn,
+                        CliConstants.DirectoryPackagesPropsFileName,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
+                {
+                    kind = JsonOutputKind.DirectoryPackagesProps;
+                }
+                else
+                {
+                    kind = JsonOutputKind.Project;
+                }
+            }
+            else
+            {
+                kind = JsonOutputKind.Project;
+            }
 
             var packageResults = ImmutableArray.CreateBuilder<(
                 PackageReference Original,
