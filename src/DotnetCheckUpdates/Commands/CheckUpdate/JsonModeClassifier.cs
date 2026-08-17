@@ -35,33 +35,19 @@ internal static class JsonModeClassifier
                 || arg.StartsWith("--json:", StringComparison.Ordinal)
             )
             {
-                return (
-                    JsonMode.Reject,
-                    "Error: --json does not accept a value. Use bare --json."
-                );
+                return (JsonMode.Reject, "Error: --json does not accept a value. Use bare --json.");
             }
 
             if (
                 string.Equals(arg, "--json", StringComparison.Ordinal)
                 && i + 1 < preBoundaryEnd
                 && (
-                    string.Equals(
-                        cmdArgs[i + 1],
-                        "true",
-                        StringComparison.OrdinalIgnoreCase
-                    )
-                    || string.Equals(
-                        cmdArgs[i + 1],
-                        "false",
-                        StringComparison.OrdinalIgnoreCase
-                    )
+                    string.Equals(cmdArgs[i + 1], "true", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(cmdArgs[i + 1], "false", StringComparison.OrdinalIgnoreCase)
                 )
             )
             {
-                return (
-                    JsonMode.Reject,
-                    "Error: --json does not accept a value. Use bare --json."
-                );
+                return (JsonMode.Reject, "Error: --json does not accept a value. Use bare --json.");
             }
         }
 

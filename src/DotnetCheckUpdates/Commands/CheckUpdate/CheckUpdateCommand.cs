@@ -92,17 +92,13 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
         }
 
         if (
-            !string.IsNullOrWhiteSpace(solutionToCheck)
-            && !_fileSystem.File.Exists(solutionToCheck)
+            !string.IsNullOrWhiteSpace(solutionToCheck) && !_fileSystem.File.Exists(solutionToCheck)
         )
         {
             return ValidationResult.Error($"Solution {settings.Solution} does not exist.");
         }
 
-        if (
-            !string.IsNullOrWhiteSpace(projectToCheck)
-            && !_fileSystem.File.Exists(projectToCheck)
-        )
+        if (!string.IsNullOrWhiteSpace(projectToCheck) && !_fileSystem.File.Exists(projectToCheck))
         {
             return ValidationResult.Error($"Project {settings.Project} does not exist.");
         }
@@ -182,9 +178,7 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
 
         var ct = _exitHandler?.GracefulToken ?? cancellationToken;
 
-        var processWd = _fileSystem.Path.GetFullPath(
-            _fileSystem.Directory.GetCurrentDirectory()
-        );
+        var processWd = _fileSystem.Path.GetFullPath(_fileSystem.Directory.GetCurrentDirectory());
         var cwd = _fileSystem.Path.GetFullPath(
             _fileSystem.Path.Combine(processWd, settings.Cwd ?? processWd)
         );
@@ -238,13 +232,7 @@ internal partial class CheckUpdateCommand : AsyncCommand<CheckUpdateCommand.Sett
         }
         else if (settings.Json)
         {
-            await ExecuteJsonAsync(
-                cwd,
-                canonicalProject,
-                canonicalSolution,
-                settings,
-                ct
-            );
+            await ExecuteJsonAsync(cwd, canonicalProject, canonicalSolution, settings, ct);
         }
         else
         {

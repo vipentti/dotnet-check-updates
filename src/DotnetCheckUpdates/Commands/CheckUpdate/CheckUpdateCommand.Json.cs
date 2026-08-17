@@ -44,19 +44,15 @@ internal partial class CheckUpdateCommand
 
         var uniqueCanonicalPaths = canonicalSet.OrderBy(it => it, StringComparer.Ordinal).ToArray();
 
-        var solutionsCanonical = BuildSolutionsCanonicalFiltered(
-            solutionProjectMap,
-            canonicalSet
-        );
+        var solutionsCanonical = BuildSolutionsCanonicalFiltered(solutionProjectMap, canonicalSet);
 
         var includeFilters = CheckUpdateCommandHelpers.SplitFilters(settings.Include);
         var excludeFilters = CheckUpdateCommandHelpers.SplitFilters(settings.Exclude);
 
         var originalByCanonical = new Dictionary<string, ProjectFile>(StringComparer.Ordinal);
-        var effectiveFrameworksByCanonical = new Dictionary<
-            string,
-            ImmutableArray<NuGetFramework>
-        >(StringComparer.Ordinal);
+        var effectiveFrameworksByCanonical = new Dictionary<string, ImmutableArray<NuGetFramework>>(
+            StringComparer.Ordinal
+        );
         var packageCountsByCanonical = new Dictionary<string, int>(StringComparer.Ordinal);
 
         var projects = new List<ProjectFile>(uniqueCanonicalPaths.Length);
@@ -100,28 +96,21 @@ internal partial class CheckUpdateCommand
             cancellationToken
         );
 
-        var appliedByCanonical = new Dictionary<string, bool>(StringComparer.Ordinal);
-
+        IReadOnlyList<ProjectFile> savedFiles;
         bool upgradesApplied;
         if (settings.Upgrade)
         {
-            upgradesApplied = await ApplyUpgradesForJson(
-                upgradedByCanonical,
-                appliedByCanonical
-            );
+            savedFiles = await ApplyUpgradesForJson(upgradedByCanonical);
+            upgradesApplied = savedFiles.Count > 0;
 
             if (settings.Restore && upgradesApplied)
             {
-                await RestoreForJson(solutionsCanonical, upgradedByCanonical, appliedByCanonical);
+                await RestoreForJson(solutionsCanonical, savedFiles);
             }
         }
         else
         {
             upgradesApplied = false;
-            foreach (var kvp in upgradedByCanonical)
-            {
-                appliedByCanonical[kvp.Key] = false;
-            }
         }
 
         var results = BuildJsonResults(
@@ -185,17 +174,21 @@ internal partial class CheckUpdateCommand
         ImmutableHashSet<string> canonicalSet
     )
     {
-        var builder = ImmutableDictionary.CreateBuilder<string, string[]>(
-            StringComparer.Ordinal
-        );
+        var builder = ImmutableDictionary.CreateBuilder<string, string[]>(StringComparer.Ordinal);
 
         foreach (var kvp in solutionProjectMap)
         {
             var canonicalSolution = kvp.Key;
             var filtered = kvp
                 .Value.Where(it =>
-                    it.EndsWith(CliConstants.CsProjExtensionWithDot, StringComparison.OrdinalIgnoreCase)
-                    || it.EndsWith(CliConstants.FsProjExtensionWithDot, StringComparison.OrdinalIgnoreCase)
+                    it.EndsWith(
+                        CliConstants.CsProjExtensionWithDot,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                    || it.EndsWith(
+                        CliConstants.FsProjExtensionWithDot,
+                        StringComparison.OrdinalIgnoreCase
+                    )
                 )
                 .Where(it => canonicalSet.Contains(it))
                 .Distinct(StringComparer.Ordinal)
@@ -240,7 +233,10 @@ internal partial class CheckUpdateCommand
             }
         }
 
-        return project with { PackageReferences = packages.ToImmutable() };
+        return project with
+        {
+            PackageReferences = packages.ToImmutable(),
+        };
     }
 
     private static ImmutableArray<NuGetFramework> GetEffectiveFrameworks(
@@ -256,7 +252,9 @@ internal partial class CheckUpdateCommand
         return project.TargetFrameworks;
     }
 
-    private async Task<Dictionary<string, (ProjectFile Original, ProjectFile Upgraded)>> GetUpgradedByCanonical(
+    private async Task<
+        Dictionary<string, (ProjectFile Original, ProjectFile Upgraded)>
+    > GetUpgradedByCanonical(
         Settings settings,
         string[] uniqueCanonicalPaths,
         Dictionary<string, ProjectFile> originalByCanonical,
@@ -291,30 +289,25 @@ internal partial class CheckUpdateCommand
         return upgradedByCanonical;
     }
 
-    private async Task<bool> ApplyUpgradesForJson(
-        Dictionary<string, (ProjectFile Original, ProjectFile Upgraded)> upgradedByCanonical,
-        Dictionary<string, bool> appliedByCanonical
+    private async Task<IReadOnlyList<ProjectFile>> ApplyUpgradesForJson(
+        Dictionary<string, (ProjectFile Original, ProjectFile Upgraded)> upgradedByCanonical
     )
     {
-        var anyApplied = false;
+        var saved = new List<ProjectFile>();
 
         foreach (var kvp in upgradedByCanonical.OrderBy(it => it.Key, StringComparer.Ordinal))
         {
-            var canonical = kvp.Key;
             var (original, upgraded) = kvp.Value;
-            var didUpdate = !AreProjectsEqual(original, upgraded);
-            if (!didUpdate)
+            if (AreProjectsEqual(original, upgraded))
             {
-                appliedByCanonical[canonical] = false;
                 continue;
             }
 
             upgraded.Save(_fileSystem);
-            appliedByCanonical[canonical] = true;
-            anyApplied = true;
+            saved.Add(upgraded);
         }
 
-        return anyApplied;
+        return saved;
     }
 
     private static bool AreProjectsEqual(ProjectFile original, ProjectFile upgraded)
@@ -326,7 +319,9 @@ internal partial class CheckUpdateCommand
 
         for (var i = 0; i < original.PackageReferences.Length; i++)
         {
-            if (!original.PackageReferences[i].Version.Equals(upgraded.PackageReferences[i].Version))
+            if (
+                !original.PackageReferences[i].Version.Equals(upgraded.PackageReferences[i].Version)
+            )
             {
                 return false;
             }
@@ -376,17 +371,13 @@ internal partial class CheckUpdateCommand
                     continue;
                 }
 
-                var applicableFrameworks = originalRef.GetApplicableFrameworks(
-                    effectiveFrameworks
-                );
+                var applicableFrameworks = originalRef.GetApplicableFrameworks(effectiveFrameworks);
 
                 var upgradeType = targetVersion is null
                     ? UpgradeType.None
                     : originalRef.Version.GetUpgradeTypeTo(targetVersion);
 
-                packageResults.Add(
-                    (originalRef, targetVersion, upgradeType, applicableFrameworks)
-                );
+                packageResults.Add((originalRef, targetVersion, upgradeType, applicableFrameworks));
             }
 
             builder.Add(
@@ -405,20 +396,15 @@ internal partial class CheckUpdateCommand
 
     private static async Task RestoreForJson(
         ImmutableDictionary<string, string[]> solutionsCanonical,
-        Dictionary<string, (ProjectFile Original, ProjectFile Upgraded)> upgradedByCanonical,
-        Dictionary<string, bool> appliedByCanonical
+        IReadOnlyList<ProjectFile> savedFiles
     )
     {
-        var hasSolutions = solutionsCanonical.Count > 0;
-        var upgradedFiles = upgradedByCanonical
-            .Where(kvp => appliedByCanonical.TryGetValue(kvp.Key, out var applied) && applied)
-            .Select(kvp => kvp.Value.Upgraded)
-            .ToList();
-
-        if (upgradedFiles.Count == 0)
+        if (savedFiles.Count == 0)
         {
             return;
         }
+
+        var hasSolutions = solutionsCanonical.Count > 0;
 
         var dotnet = Cli.Wrap("dotnet")
             .WithStandardOutputPipe(PipeTarget.ToDelegate(line => Console.Error.WriteLine(line)))
@@ -428,15 +414,13 @@ internal partial class CheckUpdateCommand
 
         if (hasSolutions)
         {
-            cmds = solutionsCanonical.Keys
-                .Select(it => dotnet.WithArguments(["restore", it]))
+            cmds = solutionsCanonical
+                .Keys.Select(it => dotnet.WithArguments(["restore", it]))
                 .ToList();
         }
         else
         {
-            cmds = upgradedFiles
-                .Select(it => dotnet.WithArguments(["restore", it.FilePath]))
-                .ToList();
+            cmds = savedFiles.Select(it => dotnet.WithArguments(["restore", it.FilePath])).ToList();
         }
 
         foreach (var restoreCmd in cmds)

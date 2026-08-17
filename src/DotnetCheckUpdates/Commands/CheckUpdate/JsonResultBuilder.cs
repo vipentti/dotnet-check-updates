@@ -15,7 +15,12 @@ internal sealed record JsonProjectCheckResult(
     string Kind,
     int PackageCount,
     ImmutableArray<NuGetFramework> EffectiveFrameworks,
-    ImmutableArray<(PackageReference Original, VersionRange? TargetVersion, UpgradeType UpgradeType, ImmutableArray<NuGetFramework> ApplicableFrameworks)> PackageResults
+    ImmutableArray<(
+        PackageReference Original,
+        VersionRange? TargetVersion,
+        UpgradeType UpgradeType,
+        ImmutableArray<NuGetFramework> ApplicableFrameworks
+    )> PackageResults
 );
 
 internal static class JsonResultBuilder
@@ -48,7 +53,16 @@ internal static class JsonResultBuilder
             .ToList();
 
         var checkedFiles = results
-            .Select(r => (Result: r, JsonPath: JsonPathHelper.ToJsonDisplayPath(r.CanonicalPath, canonicalCwd, showAbsolute)))
+            .Select(r =>
+                (
+                    Result: r,
+                    JsonPath: JsonPathHelper.ToJsonDisplayPath(
+                        r.CanonicalPath,
+                        canonicalCwd,
+                        showAbsolute
+                    )
+                )
+            )
             .OrderBy(it => it.JsonPath, StringComparer.Ordinal)
             .Select(it => it.Result)
             .Select(r =>
@@ -92,10 +106,7 @@ internal static class JsonResultBuilder
 
                 var sortedPackages = packages
                     .Select((pkg, idx) => (pkg, idx))
-                    .OrderBy(
-                        it => it.pkg.Name,
-                        StringComparer.OrdinalIgnoreCase
-                    )
+                    .OrderBy(it => it.pkg.Name, StringComparer.OrdinalIgnoreCase)
                     .ThenBy(it => it.pkg.Name, StringComparer.Ordinal)
                     .ThenBy(it => it.pkg.CurrentVersion, StringComparer.Ordinal)
                     .ThenBy(it => it.pkg.TargetVersion, StringComparer.Ordinal)

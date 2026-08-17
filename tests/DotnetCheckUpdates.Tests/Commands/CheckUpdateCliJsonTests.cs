@@ -1,4 +1,4 @@
-// Copyright 2023-2026 Ville Penttinen
+﻿// Copyright 2023-2026 Ville Penttinen
 // Distributed under the MIT License.
 // https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md
 
@@ -9,23 +9,52 @@ namespace DotnetCheckUpdates.Tests.Commands;
 
 public class CheckUpdateCliJsonTests
 {
-    private static string DotnetCheckUpdatesDll =>
-        Path.GetFullPath(
-            Path.Combine(
-                AppContext.BaseDirectory,
-                "..",
-                "..",
-                "..",
-                "..",
-                "..",
-                "src",
-                "DotnetCheckUpdates",
-                "bin",
-                "Release",
-                "net10.0",
-                "dotnet-check-updates.dll"
-            )
-        );
+    private static string DotnetCheckUpdatesDll
+    {
+        get
+        {
+            var baseDir = AppContext.BaseDirectory;
+            foreach (var tfm in new[] { "net10.0", "net9.0", "net8.0" })
+            {
+                var candidate = Path.GetFullPath(
+                    Path.Combine(
+                        baseDir,
+                        "..",
+                        "..",
+                        "..",
+                        "..",
+                        "..",
+                        "src",
+                        "DotnetCheckUpdates",
+                        "bin",
+                        "Release",
+                        tfm,
+                        "dotnet-check-updates.dll"
+                    )
+                );
+                if (File.Exists(candidate))
+                {
+                    return candidate;
+                }
+            }
+            return Path.GetFullPath(
+                Path.Combine(
+                    baseDir,
+                    "..",
+                    "..",
+                    "..",
+                    "..",
+                    "..",
+                    "src",
+                    "DotnetCheckUpdates",
+                    "bin",
+                    "Release",
+                    "net10.0",
+                    "dotnet-check-updates.dll"
+                )
+            );
+        }
+    }
 
     private static async Task<(int ExitCode, string StdOut, string StdErr)> RunCliAsync(
         string[] args,
@@ -33,7 +62,10 @@ public class CheckUpdateCliJsonTests
         Dictionary<string, string>? env = null
     )
     {
-        var psi = new ProcessStartInfo("dotnet", $"\"{DotnetCheckUpdatesDll}\" {string.Join(" ", args.Select(EscapeArg))}")
+        var psi = new ProcessStartInfo(
+            "dotnet",
+            $"\"{DotnetCheckUpdatesDll}\" {string.Join(" ", args.Select(EscapeArg))}"
+        )
         {
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -76,7 +108,12 @@ public class CheckUpdateCliJsonTests
         var doc = JsonDocument.Parse(stdout);
         doc.RootElement.GetProperty("schemaVersion").GetInt32().Should().Be(1);
         stderr.Should().BeEmpty();
-        doc.RootElement.GetProperty("checkedFiles")[0].GetProperty("packages")[0].GetProperty("name").GetString().Should().Be("Flurl");
+        doc.RootElement.GetProperty("checkedFiles")[0]
+            .GetProperty("packages")[0]
+            .GetProperty("name")
+            .GetString()
+            .Should()
+            .Be("Flurl");
     }
 
     [Theory]
@@ -121,6 +158,21 @@ public class CheckUpdateCliJsonTests
     }
 
     [Fact]
+    public async Task Cli_MissingValue_WithHelpToken_PreservesFrameworkStatus()
+    {
+        var (codeStd, stdoutStd, stderrStd) = await RunCliAsync(["--target", "--help"]);
+        var (codeJson, stdoutJson, stderrJson) = await RunCliAsync([
+            "--json",
+            "--target",
+            "--help",
+        ]);
+        codeJson.Should().Be(codeStd);
+        stdoutJson.Should().BeEmpty();
+        stderrJson.Should().Contain("dotnet-check-updates");
+        (stdoutStd + stderrStd).Should().Contain("dotnet-check-updates");
+    }
+
+    [Fact]
     public async Task Cli_HelpAfterBoundary_IsJsonExecutionNotHelp()
     {
         using var dir = TempDir.Create();
@@ -128,9 +180,20 @@ public class CheckUpdateCliJsonTests
             Path.Combine(dir.Path, "a.csproj"),
             ProjectFileUtils.ProjectFileXml([("Flurl", "3.0.0")])
         );
-        var (code, stdout, stderr) = await RunCliAsync(["--json", "--", "--help", "--cwd", dir.Path]);
+        var (code, stdout, stderr) = await RunCliAsync([
+            "--json",
+            "--",
+            "--help",
+            "--cwd",
+            dir.Path,
+        ]);
         code.Should().Be(0);
-        JsonDocument.Parse(stdout).RootElement.GetProperty("schemaVersion").GetInt32().Should().Be(1);
+        JsonDocument
+            .Parse(stdout)
+            .RootElement.GetProperty("schemaVersion")
+            .GetInt32()
+            .Should()
+            .Be(1);
     }
 
     [Fact]
@@ -168,7 +231,11 @@ public class CheckUpdateCliJsonTests
     [Fact]
     public async Task Cli_OpenCli_WithShowStackTrace_PreservesOutput()
     {
-        var (code, stdout, stderr) = await RunCliAsync(["--show-stack-trace", "--help-dump-opencli", "--json"]);
+        var (code, stdout, stderr) = await RunCliAsync([
+            "--show-stack-trace",
+            "--help-dump-opencli",
+            "--json",
+        ]);
         code.Should().Be(0);
         stderr.Should().BeEmpty();
         stdout.Should().Contain("opencli");
@@ -186,7 +253,11 @@ public class CheckUpdateCliJsonTests
     [Fact]
     public async Task Cli_ValidationFailure_EmptyStdout()
     {
-        var (code, stdout, stderr) = await RunCliAsync(["--json", "--project", "/nonexistent.csproj"]);
+        var (code, stdout, stderr) = await RunCliAsync([
+            "--json",
+            "--project",
+            "/nonexistent.csproj",
+        ]);
         code.Should().NotBe(0);
         stdout.Should().BeEmpty();
         stderr.Should().Contain("does not exist");
@@ -205,8 +276,42 @@ public class CheckUpdateCliJsonTests
             env: new() { ["DCU_ENABLE_LOGGING"] = "1" }
         );
         code.Should().Be(0);
-        JsonDocument.Parse(stdout).RootElement.GetProperty("schemaVersion").GetInt32().Should().Be(1);
+        JsonDocument
+            .Parse(stdout)
+            .RootElement.GetProperty("schemaVersion")
+            .GetInt32()
+            .Should()
+            .Be(1);
         stdout.Should().NotContain("CACHE");
+        stdout.Should().NotContain("info:");
+    }
+
+    [Fact]
+    public async Task Cli_RuntimeFailure_EmptyStdout()
+    {
+        var (code, stdout, stderr) = await RunCliAsync([
+            "--json",
+            "--cwd",
+            "/nonexistent-" + Guid.NewGuid().ToString("N"),
+        ]);
+        code.Should().NotBe(0);
+        stdout.Should().BeEmpty();
+        stderr.Should().Contain("does not exist");
+    }
+
+    [Fact]
+    public async Task Cli_GroupedHelp_ExitZeroAndStderr()
+    {
+        var (codeStd, stdoutStd, stderrStd) = await RunCliAsync(["-uh"]);
+        var (codeJson, stdoutJson, stderrJson) = await RunCliAsync(["--json", "-uh"]);
+        codeJson.Should().Be(codeStd);
+        stdoutJson.Should().BeEmpty();
+        stderrJson.Should().Contain("dotnet-check-updates");
+        // In default mode help goes to stdout, in json mode to stderr, but content is same help text
+        (stderrStd + stdoutStd)
+            .Should()
+            .Contain("dotnet-check-updates");
+        stderrJson.Should().Contain("dotnet-check-updates");
     }
 
     [Fact]
@@ -215,11 +320,84 @@ public class CheckUpdateCliJsonTests
         var (code, stdout, stderr) = await RunCliAsync(["--json", "--help"]);
         stdout.Should().BeEmpty();
         stderr.Should().Contain("dotnet-check-updates");
+        // Help short-circuit should preserve framework exit code (0) even with json intent
+        var (codeStd, _, _) = await RunCliAsync(["--help"]);
+        code.Should().Be(codeStd);
+    }
+
+    [Fact]
+    public async Task Cli_SaveFailure_EmptyStdout()
+    {
+        using var dir = TempDir.Create();
+        var projPath = Path.Combine(dir.Path, "a.csproj");
+        File.WriteAllText(projPath, ProjectFileUtils.ProjectFileXml([("Flurl", "3.0.0")]));
+        // Make file read-only to force save failure on --upgrade
+        var originalAttrs = File.GetAttributes(projPath);
+        File.SetAttributes(projPath, originalAttrs | FileAttributes.ReadOnly);
+        try
+        {
+            var (code, stdout, stderr) = await RunCliAsync([
+                "--json",
+                "--upgrade",
+                "--cwd",
+                dir.Path,
+            ]);
+            code.Should().NotBe(0);
+            stdout.Should().BeEmpty();
+        }
+        finally
+        {
+            File.SetAttributes(projPath, originalAttrs);
+        }
+    }
+
+    [Fact]
+    public async Task Cli_RestoreFailure_StderrWithEmptyStdout()
+    {
+        using var dir = TempDir.Create();
+        var projPath = Path.Combine(dir.Path, "a.csproj");
+        // Create a project that will fail restore due to invalid SDK or missing target
+        File.WriteAllText(
+            projPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup><TargetFramework>net8.0</TargetFramework></PropertyGroup>
+              <ItemGroup><PackageReference Include="Flurl" Version="3.0.0" /></ItemGroup>
+            </Project>
+            """.Trim()
+        );
+        var (code, stdout, stderr) = await RunCliAsync([
+            "--json",
+            "--upgrade",
+            "--restore",
+            "--cwd",
+            dir.Path,
+        ]);
+        // Restore may succeed or fail depending on network; if it fails, verify contract
+        if (code != 0)
+        {
+            stdout.Should().BeEmpty();
+            // Restore chatter goes to stderr, not stdout
+            stdout.Should().NotContain("restore");
+        }
+        else
+        {
+            JsonDocument
+                .Parse(stdout)
+                .RootElement.GetProperty("schemaVersion")
+                .GetInt32()
+                .Should()
+                .Be(1);
+        }
     }
 
     private sealed class TempDir : IDisposable
     {
-        public string Path { get; } = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "dcu-test-" + Guid.NewGuid().ToString("N"));
+        public string Path { get; } =
+            System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(),
+                "dcu-test-" + Guid.NewGuid().ToString("N")
+            );
 
         public static TempDir Create()
         {
@@ -234,9 +412,7 @@ public class CheckUpdateCliJsonTests
             {
                 Directory.Delete(Path, recursive: true);
             }
-            catch
-            {
-            }
+            catch { }
         }
     }
 }

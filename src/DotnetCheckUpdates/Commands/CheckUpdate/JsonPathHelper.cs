@@ -44,13 +44,24 @@ internal static class JsonPathHelper
 
     public static string GetKind(string filePath)
     {
-        if (filePath.EndsWith(CliConstants.DirectoryBuildPropsFileName, StringComparison.OrdinalIgnoreCase))
+        var fileName = Path.GetFileName(filePath);
+        if (
+            string.Equals(
+                fileName,
+                CliConstants.DirectoryBuildPropsFileName,
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
         {
             return JsonOutputKind.DirectoryBuildProps;
         }
 
         if (
-            filePath.EndsWith(CliConstants.DirectoryPackagesPropsFileName, StringComparison.OrdinalIgnoreCase)
+            string.Equals(
+                fileName,
+                CliConstants.DirectoryPackagesPropsFileName,
+                StringComparison.OrdinalIgnoreCase
+            )
         )
         {
             return JsonOutputKind.DirectoryPackagesProps;
