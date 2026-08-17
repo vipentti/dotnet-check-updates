@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "planlet-workflow": {
+      "source": "vipentti/skills",
+      "sourceType": "github",
+      "skillPath": "skills/planlet-workflow/SKILL.md",
+      "computedHash": "27586d1f1c7b2b82cfb09cd46c06ac6847c6472ab74a4c7ef840ef59a09e6d7f"
+    }
+  }
+}

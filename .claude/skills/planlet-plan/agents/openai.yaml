@@ -1,0 +1,4 @@
+interface:
+  display_name: "Planlet Plan"
+  short_description: "Explore and persist a focused implementation plan"
+  default_prompt: "Use $planlet-plan to investigate this request and prepare a reviewable repository-local planlet."

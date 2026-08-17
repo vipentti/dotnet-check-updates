@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 2,
+  "files": {
+    "planlet-complete/SKILL.md": "4d24af4b7603349deaacc8ece7c1c6b84ba07f9eed33b8bb26b01a7ff7c054e5",
+    "planlet-complete/agents/openai.yaml": "f4df999b41feddee85f906ceddf84ced3a5ef60daf7467e7a37bec158cb8451e",
+    "planlet-complete/references/completion-guidance.md": "0a14fb567098df8bf77e14769df4e994e1d653459b8a870962152af133af34cf",
+    "planlet-implement/SKILL.md": "3cc25f867bb818dcc8aafaf4f6476ae564ec98b8763288533e81713999af9479",
+    "planlet-implement/agents/openai.yaml": "1c7b5ff9f8b87f34c4395a3cf72d26e1d3878577dae0701488312910260be1c2",
+    "planlet-implement/references/implementation-guidance.md": "e4c216d7ba532b5fe02f511927f0df859d68fea922ee29a2087d27fd3bcc86e5",
+    "planlet-plan/SKILL.md": "cdcc45a3fa55a785ccfe17ab69ca534635b00e20aad758f3725f9a1ce02b8e75",
+    "planlet-plan/agents/openai.yaml": "44d12699d652017b382f38bfba32820f1f47cf4766e99b978d8949186e697fc3",
+    "planlet-plan/assets/plan-template.md": "c189d525d10af154eb1b42792892701e5cdb3b2c9561544e9040f04a666896ae",
+    "planlet-plan/assets/tasks-template.md": "097d12898abef784e7405d7ca675433296030b33ac4c692707384368b81e3892",
+    "planlet-plan/references/planning-guidance.md": "120b1b19650f374d43ddff5323aa3bb4caa67e982b30d5cad5264c0251cf2def"
+  }
+}
