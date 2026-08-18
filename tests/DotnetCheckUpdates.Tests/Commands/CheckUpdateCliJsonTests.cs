@@ -15,7 +15,10 @@ public class CheckUpdateCliJsonTests
         {
             var baseDir = AppContext.BaseDirectory;
             // Derive exact TFM and configuration from test assembly location, e.g. .../bin/Release/net10.0/
-            var trimmed = baseDir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            var trimmed = baseDir.TrimEnd(
+                Path.DirectorySeparatorChar,
+                Path.AltDirectorySeparatorChar
+            );
             var dirInfo = new DirectoryInfo(trimmed);
             var tfm = dirInfo.Name;
             var config = dirInfo.Parent?.Name ?? "";
@@ -354,16 +357,14 @@ public class CheckUpdateCliJsonTests
         File.SetAttributes(projPath, originalAttrs | FileAttributes.ReadOnly);
         try
         {
-            var (code, stdout, stderr) = await RunCliAsync(
-                [
-                    "--json",
-                    "--upgrade",
-                    "--nuget-source",
-                    localSource.Path,
-                    "--cwd",
-                    dir.Path,
-                ]
-            );
+            var (code, stdout, stderr) = await RunCliAsync([
+                "--json",
+                "--upgrade",
+                "--nuget-source",
+                localSource.Path,
+                "--cwd",
+                dir.Path,
+            ]);
             code.Should().NotBe(0);
             stdout.Should().BeEmpty();
             stderr.Should().NotBeEmpty();
@@ -391,17 +392,15 @@ public class CheckUpdateCliJsonTests
             </Project>
             """.Trim()
         );
-        var (code, stdout, stderr) = await RunCliAsync(
-            [
-                "--json",
-                "--upgrade",
-                "--restore",
-                "--nuget-source",
-                localSource.Path,
-                "--cwd",
-                dir.Path,
-            ]
-        );
+        var (code, stdout, stderr) = await RunCliAsync([
+            "--json",
+            "--upgrade",
+            "--restore",
+            "--nuget-source",
+            localSource.Path,
+            "--cwd",
+            dir.Path,
+        ]);
         code.Should().NotBe(0);
         stdout.Should().BeEmpty();
         stderr.Should().NotBeEmpty();
