@@ -100,6 +100,11 @@ public class CheckUpdateCliJsonTests
         return arg;
     }
 
+    // Spectre wraps exception/message text at the console width when no terminal is
+    // attached (falling back to 80 columns), which can split an asserted substring
+    // across lines. Remove line breaks so Contains works regardless of wrap width.
+    private static string UnwrapLines(string value) => value.Replace("\r", "").Replace("\n", "");
+
     [Fact]
     public async Task Cli_BareJson_EmitsValidJsonOnStdout()
     {
@@ -270,7 +275,7 @@ public class CheckUpdateCliJsonTests
         ]);
         code.Should().NotBe(0);
         stdout.Should().BeEmpty();
-        stderr.Should().Contain("does not exist");
+        UnwrapLines(stderr).Should().Contain("does not exist");
     }
 
     [Fact]
@@ -368,7 +373,7 @@ public class CheckUpdateCliJsonTests
             code.Should().NotBe(0);
             stdout.Should().BeEmpty();
             stderr.Should().NotBeEmpty();
-            stderr.Should().Contain("a.csproj");
+            UnwrapLines(stderr).Should().Contain("a.csproj");
         }
         finally
         {
