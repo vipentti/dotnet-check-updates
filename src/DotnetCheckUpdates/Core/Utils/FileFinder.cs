@@ -41,11 +41,10 @@ internal class FileFinder : IFileFinder
 
         if (dir.Exists)
         {
-            var file = dir.GetFiles(fileName, SearchOption.TopDirectoryOnly).FirstOrDefault();
-
-            if (file?.Exists is true)
+            var candidate = _fileSystem.Path.Combine(dir.FullName, fileName);
+            if (_fileSystem.File.Exists(candidate))
             {
-                filePath = file.FullName;
+                filePath = _fileSystem.Path.GetFullPath(candidate);
                 return true;
             }
         }
@@ -77,12 +76,10 @@ internal class FileFinder : IFileFinder
         {
             if (cwd.Exists)
             {
-                foreach (var file in cwd.GetFiles(fileName, SearchOption.TopDirectoryOnly))
+                var candidate = _fileSystem.Path.Combine(cwd.FullName, fileName);
+                if (_fileSystem.File.Exists(candidate))
                 {
-                    if (file.Exists)
-                    {
-                        return file.FullName;
-                    }
+                    return _fileSystem.Path.GetFullPath(candidate);
                 }
             }
 
@@ -134,14 +131,10 @@ internal class FileFinder : IFileFinder
             {
                 if (cwd.Exists)
                 {
-                    foreach (
-                        var file in cwd.GetFiles(actualFileName, SearchOption.TopDirectoryOnly)
-                    )
+                    var candidate = _fileSystem.Path.Combine(cwd.FullName, actualFileName);
+                    if (_fileSystem.File.Exists(candidate))
                     {
-                        if (file.Exists)
-                        {
-                            yield return file.FullName;
-                        }
+                        yield return _fileSystem.Path.GetFullPath(candidate);
                     }
                 }
 

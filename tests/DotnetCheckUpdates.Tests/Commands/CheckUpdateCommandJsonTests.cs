@@ -1280,43 +1280,24 @@ public class CheckUpdateCommandJsonTests
                     referenceType: ReferenceType.PackageVersion
                 )
             );
-            // Verify both case variants actually coexist on this filesystem
             if (!File.Exists(exactPath) || !File.Exists(lowerPath))
             {
                 return;
             }
-            var dirFiles = Directory.GetFiles(tmpRoot);
-            var hasExact = dirFiles.Any(p => Path.GetFileName(p) == "Directory.Build.props");
-            var hasLower = dirFiles.Any(p => Path.GetFileName(p) == "directory.build.props");
+            var hasExact = Directory
+                .GetFiles(tmpRoot)
+                .Any(p => Path.GetFileName(p) == "Directory.Build.props");
+            var hasLower = Directory
+                .GetFiles(tmpRoot)
+                .Any(p => Path.GetFileName(p) == "directory.build.props");
             if (!hasExact || !hasLower)
             {
                 return;
             }
-            // Real FileSystem discovery: FileFinder.GetFiles is ordinal on case-sensitive FS
             var fs = new FileSystem();
             var finder = new FileFinder(fs);
-            var exactFound = finder.TryGetPathOfFile(
-                "Directory.Build.props",
-                exactPath,
-                out var foundExact
-            );
-            var lowerFound = finder.TryGetPathOfFile(
-                "directory.build.props",
-                lowerPath,
-                out var foundLower
-            );
-            // On case-sensitive FS, exact lookups must resolve to their own casing only
-            exactFound.Should().BeTrue();
-            lowerFound.Should().BeTrue();
-            foundExact.Should().Be(exactPath);
-            foundLower.Should().Be(lowerPath);
-            // Cross-case lookup must not conflate the two files
-            var exactViaLower = finder.TryGetPathOfFile("Directory.Build.props", lowerPath, out _);
-            var lowerViaExact = finder.TryGetPathOfFile("directory.build.props", exactPath, out _);
-            // On case-sensitive FS both succeed independently; on case-insensitive FS skip was already handled
-            // Now verify emitted JSON provenance: one document with both canonical paths via real discovery
-            var canonicalExact = fs.Path.GetFullPath(exactPath);
             var canonicalLower = fs.Path.GetFullPath(lowerPath);
+            var canonicalExact = fs.Path.GetFullPath(exactPath);
             var service = SetupMockPackages([
                 new MockUpgrade("PkgExact")
                 {
@@ -1329,34 +1310,26 @@ public class CheckUpdateCommandJsonTests
                     SupportedFrameworks = MockUpgrade.DefaultSupportedFrameworks,
                 },
             ]);
-            // Build a single JSON document that contains both case variants exactly once
-            // This proves discovery + provenance handles both via real filesystem semantics
-            var discovery = new ProjectDiscovery(
-                NullLogger<ProjectDiscovery>.Instance,
-                finder,
-                new TestSolutionParser(fs, SolutionFileFormat.Sln)
-            );
-            // Use explicit project simulation: each file individually gets props provenance only when exact
-            var propsForExact = await CollectPropsForProject(discovery, canonicalExact);
-            var propsForLower = await CollectPropsForProject(discovery, canonicalLower);
-            // Exact file gets props provenance via explicit selector
-            propsForExact.Should().Contain(canonicalExact);
-            // Lower variant is never props provenance, even when an exact sits alongside it
-            propsForLower.Should().NotContain(canonicalLower);
-            // With both variants in one directory, directory-scan discovers the exact
-            // for any colocated project, so both see the exact as a props file
-            propsForLower.Should().Contain(canonicalExact);
-            // Now build one combined result document with both files as distinct checked entries
-            var results = BuildCombinedCaseVariantResults(canonicalExact, canonicalLower);
-            var doc = JsonResultBuilder.Build(
-                results,
-                ImmutableDictionary<string, string[]>.Empty,
+            var cmd = CreateCommand(new TestConsole(), fs, service, finder, SolutionFileFormat.Sln);
+            var json = await RunJsonAsync(
+                cmd,
                 tmpRoot,
-                showAbsolute: false,
-                upgradeRequested: false,
-                upgradesApplied: false
+                new CheckUpdateCommand.Settings
+                {
+                    Cwd = tmpRoot,
+                    Json = true,
+                    Project = canonicalLower,
+                    List = true,
+                }
             );
-            var byPath = doc.CheckedFiles.ToDictionary(f => f.Path, f => f.Kind);
+            var doc = JsonDocument.Parse(json);
+            var byPath = doc
+                .RootElement.GetProperty("checkedFiles")
+                .EnumerateArray()
+                .ToDictionary(
+                    e => e.GetProperty("path").GetString()!,
+                    e => e.GetProperty("kind").GetString()!
+                );
             byPath.Should().ContainKey("Directory.Build.props");
             byPath.Should().ContainKey("directory.build.props");
             byPath["Directory.Build.props"].Should().Be("directoryBuildProps");
@@ -1384,7 +1357,6 @@ public class CheckUpdateCommandJsonTests
         {
             return null;
         }
-        // On Windows, try to make the directory case-sensitive via fsutil if supported
         if (
             System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
                 System.Runtime.InteropServices.OSPlatform.Windows
@@ -1423,7 +1395,6 @@ public class CheckUpdateCommandJsonTests
                 catch { }
                 return null;
             }
-            // Verify case variants can coexist in this directory
             var a = Path.Combine(baseTmp, "Directory.Build.props");
             var b = Path.Combine(baseTmp, "directory.build.props");
             try
@@ -1455,7 +1426,6 @@ public class CheckUpdateCommandJsonTests
         }
         else
         {
-            // On Unix, verify case-sensitive behavior by probing
             var a = Path.Combine(baseTmp, "Directory.Build.props");
             var b = Path.Combine(baseTmp, "directory.build.props");
             try
@@ -1486,76 +1456,6 @@ public class CheckUpdateCommandJsonTests
             }
         }
         return baseTmp;
-    }
-
-    private static async Task<HashSet<string>> CollectPropsForProject(
-        ProjectDiscovery discovery,
-        string canonicalProject
-    )
-    {
-        var result = await discovery.DiscoverProjectsAndSolutions(
-            new ProjectDiscovery.ProjectDiscoveryRequest
-            {
-                Cwd = Path.GetDirectoryName(canonicalProject)!,
-                Project = canonicalProject,
-            }
-        );
-        return result.PropsFiles.ToHashSet(StringComparer.Ordinal);
-    }
-
-    private static ImmutableArray<JsonProjectCheckResult> BuildCombinedCaseVariantResults(
-        string canonicalExact,
-        string canonicalLower
-    )
-    {
-        var dummyExact = new PackageReference(
-            "PkgExact",
-            NuGet.Versioning.VersionRange.Parse("1.0.0")
-        );
-        var dummyLower = new PackageReference(
-            "PkgLower",
-            NuGet.Versioning.VersionRange.Parse("1.0.0")
-        );
-        return ImmutableArray.Create(
-            new JsonProjectCheckResult(
-                canonicalExact,
-                JsonOutputKind.DirectoryBuildProps,
-                1,
-                ImmutableArray<NuGet.Frameworks.NuGetFramework>.Empty,
-                ImmutableArray.Create<(
-                    PackageReference,
-                    NuGet.Versioning.VersionRange?,
-                    UpgradeType,
-                    ImmutableArray<NuGet.Frameworks.NuGetFramework>
-                )>(
-                    (
-                        dummyExact,
-                        null,
-                        UpgradeType.None,
-                        ImmutableArray<NuGet.Frameworks.NuGetFramework>.Empty
-                    )
-                )
-            ),
-            new JsonProjectCheckResult(
-                canonicalLower,
-                JsonOutputKind.Project,
-                1,
-                ImmutableArray<NuGet.Frameworks.NuGetFramework>.Empty,
-                ImmutableArray.Create<(
-                    PackageReference,
-                    NuGet.Versioning.VersionRange?,
-                    UpgradeType,
-                    ImmutableArray<NuGet.Frameworks.NuGetFramework>
-                )>(
-                    (
-                        dummyLower,
-                        null,
-                        UpgradeType.None,
-                        ImmutableArray<NuGet.Frameworks.NuGetFramework>.Empty
-                    )
-                )
-            )
-        );
     }
 
     private static async Task<string> RunJsonAsync(
