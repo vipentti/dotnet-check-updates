@@ -4,6 +4,8 @@
 
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using Json.Schema;
 
 namespace DotnetCheckUpdates.Tests.Commands;
 
@@ -106,7 +108,60 @@ public class CheckUpdateCliJsonTests
     private static string UnwrapLines(string value) => value.Replace("\r", "").Replace("\n", "");
 
     [Fact]
-    public async Task Cli_BareJson_EmitsValidJsonOnStdout()
+    public async Task Cli_UpgradeJson_EmitsCompleteDocumentOnStdout()
+    {
+        using var localSource = LocalNuGetSource.CreateWithFlurl("4.0.0");
+        using var dir = TempDir.Create();
+        File.WriteAllText(
+            Path.Combine(dir.Path, "a.csproj"),
+            ProjectFileUtils.ProjectFileXml([("Flurl", "3.0.0")])
+        );
+
+        var (code, stdout, stderr) = await RunCliAsync([
+            "--json",
+            "--upgrade",
+            "--nuget-source",
+            localSource.Path,
+            "--cwd",
+            dir.Path,
+        ]);
+
+        var expected = JsonNode.Parse(
+            """
+            {
+              "schemaVersion": 1,
+              "upgradeRequested": true,
+              "upgradesApplied": true,
+              "solutions": [],
+              "checkedFiles": [
+                {
+                  "path": "a.csproj",
+                  "kind": "project",
+                  "packageCount": 1,
+                  "targetFrameworks": ["net8.0"],
+                  "packages": [
+                    {
+                      "name": "Flurl",
+                      "currentVersion": "3.0.0",
+                      "targetVersion": "4.0.0",
+                      "upgradeType": "major",
+                      "applicableFrameworks": ["net8.0"]
+                    }
+                  ]
+                }
+              ]
+            }
+            """
+        );
+
+        code.Should().Be(0);
+        stderr.Should().BeEmpty();
+        stdout.TrimEnd().Should().NotContain("\n").And.NotContain("\r");
+        JsonNode.DeepEquals(JsonNode.Parse(stdout), expected).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Cli_JsonOutput_ValidatesAgainstSchema_AndRejectsStructuralMismatch()
     {
         using var dir = TempDir.Create();
         File.WriteAllText(
@@ -118,15 +173,27 @@ public class CheckUpdateCliJsonTests
             """.Trim()
         );
         var (code, stdout, stderr) = await RunCliAsync(["--json", "--cwd", dir.Path]);
+        var schemaPath = Path.GetFullPath(
+            Path.Combine(
+                AppContext.BaseDirectory,
+                "..",
+                "..",
+                "..",
+                "..",
+                "..",
+                "schemas",
+                "json-output-v1.schema.json"
+            )
+        );
+        var schema = JsonSchema.FromText(await File.ReadAllTextAsync(schemaPath));
+        var output = JsonNode.Parse(stdout)!;
+
         code.Should().Be(0);
-        var doc = JsonDocument.Parse(stdout);
-        doc.RootElement.GetProperty("schemaVersion").GetInt32().Should().Be(1);
         stderr.Should().BeEmpty();
-        doc.RootElement.GetProperty("checkedFiles")[0]
-            .GetProperty("path")
-            .GetString()
-            .Should()
-            .Contain("a.csproj");
+        schema.Evaluate(JsonSerializer.SerializeToElement(output)).IsValid.Should().BeTrue();
+
+        output.AsObject().Remove("checkedFiles").Should().BeTrue();
+        schema.Evaluate(JsonSerializer.SerializeToElement(output)).IsValid.Should().BeFalse();
     }
 
     [Theory]
