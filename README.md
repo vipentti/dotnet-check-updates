@@ -147,6 +147,8 @@ dotnet-check-updates --json
 
 ### Schema version 1
 
+A [JSON Schema document](schemas/json-output-v1.schema.json) is available for validating output and generating consumer types. It uses JSON Schema Draft 2020-12, is included in the NuGet package at `schemas/json-output-v1.schema.json`, and allows unknown properties so compatible schema version 1 additions remain valid. The CLI does not add a `$schema` property to output; consumers can associate the schema without changing the output contract.
+
 ```json
 {
   "schemaVersion": 1,

@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+- Add `--json` output for non-interactive automation, including schema version 1 and a published JSON Schema document.
+
 ## [0.6.0] / 2026-04-28
 - Update dependencies
 - feat: add TargetFramework condition support for package references

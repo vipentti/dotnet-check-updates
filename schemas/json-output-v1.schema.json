@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/vipentti/dotnet-check-updates/main/schemas/json-output-v1.schema.json",
+  "title": "dotnet-check-updates JSON output, schema version 1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "upgradeRequested",
+    "upgradesApplied",
+    "solutions",
+    "checkedFiles"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "upgradeRequested": {
+      "type": "boolean"
+    },
+    "upgradesApplied": {
+      "type": "boolean"
+    },
+    "solutions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/solution"
+      }
+    },
+    "checkedFiles": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/checkedFile"
+      }
+    }
+  },
+  "$defs": {
+    "solution": {
+      "type": "object",
+      "required": ["path", "projects"],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "projects": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "checkedFile": {
+      "type": "object",
+      "required": ["path", "kind", "packageCount", "targetFrameworks", "packages"],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": ["project", "directoryBuildProps", "directoryPackagesProps"]
+        },
+        "packageCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "targetFrameworks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "packages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/package"
+          }
+        }
+      }
+    },
+    "package": {
+      "type": "object",
+      "required": [
+        "name",
+        "currentVersion",
+        "targetVersion",
+        "upgradeType",
+        "applicableFrameworks"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "targetVersion": {
+                "type": "null"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "upgradeType": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "upgradeType": {
+                "enum": ["none", "major", "minor", "patch", "release"]
+              }
+            }
+          }
+        }
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "currentVersion": {
+          "type": ["string", "null"]
+        },
+        "targetVersion": {
+          "type": ["string", "null"]
+        },
+        "upgradeType": {
+          "type": ["string", "null"],
+          "enum": [null, "none", "major", "minor", "patch", "release"]
+        },
+        "applicableFrameworks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
