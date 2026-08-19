@@ -17,7 +17,7 @@ internal partial class CheckUpdateCommand
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new()
     {
-        WriteIndented = true,
+        WriteIndented = false,
         DefaultIgnoreCondition = JsonIgnoreCondition.Never,
         PropertyNamingPolicy = null,
     };
