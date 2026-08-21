@@ -8,6 +8,7 @@ using DotnetCheckUpdates.Core.Extensions;
 using DotnetCheckUpdates.Core.ProjectModel;
 using Flurl.Util;
 using Microsoft.Extensions.Logging;
+using NuGet.Frameworks;
 using NuGet.Versioning;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -360,5 +361,57 @@ internal static partial class CheckUpdateCommandHelpers
                 node.AddNode(new Padder(renderable, new(0, 0, 0, 1)));
             }
         }
+    }
+
+    public static ProjectFile ApplyFilters(
+        ProjectFile project,
+        ImmutableArray<Filter> includeFilters,
+        ImmutableArray<Filter> excludeFilters
+    )
+    {
+        var packages = ImmutableArray.CreateBuilder<PackageReference>(project.PackageCount);
+        packages.AddRange(project.PackageReferences);
+
+        if (includeFilters.Length > 0)
+        {
+            for (var i = packages.Count - 1; i >= 0; --i)
+            {
+                var pkgName = packages[i].Name;
+                if (!includeFilters.Any(it => it.IsMatch(pkgName)))
+                {
+                    packages.RemoveAt(i);
+                }
+            }
+        }
+
+        if (excludeFilters.Length > 0)
+        {
+            for (var i = packages.Count - 1; i >= 0; --i)
+            {
+                var pkgName = packages[i].Name;
+                if (excludeFilters.Any(it => it.IsMatch(pkgName)))
+                {
+                    packages.RemoveAt(i);
+                }
+            }
+        }
+
+        return project with
+        {
+            PackageReferences = packages.ToImmutable(),
+        };
+    }
+
+    public static ImmutableArray<NuGetFramework> GetEffectiveFrameworks(
+        ProjectFile project,
+        ImmutableArray<NuGetFramework> allFrameworks
+    )
+    {
+        if (project.TargetFrameworks.Length == 0)
+        {
+            return allFrameworks;
+        }
+
+        return project.TargetFrameworks;
     }
 }

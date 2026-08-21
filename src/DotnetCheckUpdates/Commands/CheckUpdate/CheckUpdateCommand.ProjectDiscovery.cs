@@ -39,57 +39,19 @@ internal partial class CheckUpdateCommand
             .ToImmutableArray();
 
         projects = projects.ConvertAll(it =>
-        {
-            var packages = ImmutableArray.CreateBuilder<PackageReference>(it.PackageCount);
-            packages.AddRange(it.PackageReferences);
-
-            if (includeFilters.Length > 0)
-            {
-                for (var i = packages.Count - 1; i >= 0; --i)
-                {
-                    var pkgName = packages[i].Name;
-                    if (!includeFilters.Any(it => it.IsMatch(pkgName)))
-                    {
-                        packages.RemoveAt(i);
-                    }
-                }
-            }
-
-            if (excludeFilters.Length > 0)
-            {
-                for (var i = packages.Count - 1; i >= 0; --i)
-                {
-                    var pkgName = packages[i].Name;
-                    if (excludeFilters.Any(it => it.IsMatch(pkgName)))
-                    {
-                        packages.RemoveAt(i);
-                    }
-                }
-            }
-
-            return it with
-            {
-                PackageReferences = packages.ToImmutable(),
-            };
-        });
+            CheckUpdateCommandHelpers.ApplyFilters(it, includeFilters, excludeFilters)
+        );
 
         projects = projects.ConvertAll(it =>
         {
-            // if we have no targetframeworks specified as part of the original project
-            // for example because we are using Directory.Build.props files for common properties
-            // We do best effort and use all frameworks available in any of the project files
-            //
-            // This is not 100% accurate, because we are not evaluating them like MSBuild does
-            // but it should be good enough for most purposes
-            if (it.TargetFrameworks.Length == 0)
+            var effective = CheckUpdateCommandHelpers.GetEffectiveFrameworks(
+                it,
+                allSpecifiedTargetFrameworks
+            );
+            if (it.TargetFrameworks.Length == 0 && effective.Length > 0)
             {
-                LogFrameworkUpdated(
-                    _logger,
-                    it.FilePath,
-                    it.PackageCount,
-                    allSpecifiedTargetFrameworks
-                );
-                return it with { TargetFrameworks = allSpecifiedTargetFrameworks };
+                LogFrameworkUpdated(_logger, it.FilePath, it.PackageCount, effective);
+                return it with { TargetFrameworks = effective };
             }
             return it;
         });

@@ -131,6 +131,79 @@ dotnet-check-updates --solution path/to/your/solution.sln --upgrade --restore
 
 > **Make sure your projects are in version control and all changes have been committed. This _will_ overwrite your project files.**
 
+## JSON output
+
+For automation, use bare `--json` with non-interactive checks and upgrades:
+
+```shell
+dotnet-check-updates --json
+```
+
+- `--json` is non-interactive only; it cannot be combined with `--interactive` or `--version`.
+- Only bare `--json` is accepted. Forms such as `--json=<value>`, `--json:<value>`, `--json true`, and `--json false` are rejected with a diagnostic on stderr before argument parsing, regardless of placement before `--`.
+- `--help-dump-opencli` is recognized case-insensitively as the first argument; in that mode OpenCLI output is preserved and `--json` does not affect routing.
+- Successful execution writes a single UTF-8 JSON document to stdout. Progress bars, trees, upgrade guidance, optional logging (`DCU_ENABLE_LOGGING`), and restore subprocess output are suppressed from stdout and, when present, appear on stderr. Failed execution writes no partial JSON to stdout and preserves the existing non-zero status.
+- File mutations are non-atomic: files are saved sequentially before restore. A later save or restore failure can leave earlier mutations applied while still returning non-zero without a JSON document.
+
+### Schema version 1
+
+A [JSON Schema document](schemas/json-output-v1.schema.json) is available for validating output and generating consumer types. It uses JSON Schema Draft 2020-12, is included in the NuGet package at `schemas/json-output-v1.schema.json`, and allows unknown properties so compatible schema version 1 additions remain valid. The CLI does not add a `$schema` property to output; consumers can associate the schema without changing the output contract.
+
+```json
+{
+  "schemaVersion": 1,
+  "upgradeRequested": true,
+  "upgradesApplied": true,
+  "solutions": [
+    {
+      "path": "Example.sln",
+      "projects": ["src/App/App.csproj"]
+    }
+  ],
+  "checkedFiles": [
+    {
+      "path": "Directory.Packages.props",
+      "kind": "directoryPackagesProps",
+      "packageCount": 1,
+      "targetFrameworks": ["net8.0", "net9.0"],
+      "packages": [
+        {
+          "name": "Example",
+          "currentVersion": "[1.0.0,)",
+          "targetVersion": "[2.0.0,)",
+          "upgradeType": "major",
+          "applicableFrameworks": ["net8.0"]
+        }
+      ]
+    }
+  ]
+}
+```
+
+| Property | Type | Notes |
+| --- | --- | --- |
+| `schemaVersion` | integer | Always `1`. |
+| `upgradeRequested` | boolean | True when `--upgrade` was supplied. |
+| `upgradesApplied` | boolean | True only when at least one checked file was written with an upgraded package. |
+| `solutions[].path` | string | Normalized JSON solution path. |
+| `solutions[].projects` | string[] | Normalized supported `.csproj`/`.fsproj` members from discovery; props files excluded. |
+| `checkedFiles[].path` | string | Normalized checked-file path. |
+| `checkedFiles[].kind` | string | `project`, `directoryBuildProps`, or `directoryPackagesProps`. |
+| `checkedFiles[].packageCount` | integer | Filtered package-reference count (independent of `packages` length). `--show-package-count` is accepted in JSON mode but has no extra effect. |
+| `checkedFiles[].targetFrameworks` | string[] | Effective frameworks (`net8.0`, `netstandard2.1`, etc.). |
+| `checkedFiles[].packages[].name` | string | Package ID as read. |
+| `checkedFiles[].packages[].currentVersion` | string or null | Pre-upgrade version string; null when versionless. |
+| `checkedFiles[].packages[].targetVersion` | string or null | Proposed/written version; null when no upgrade. |
+| `checkedFiles[].packages[].upgradeType` | string or null | Null when `targetVersion` is null; otherwise `none`, `major`, `minor`, `patch`, `release`. |
+| `checkedFiles[].packages[].applicableFrameworks` | string[] | Frameworks for which the reference was evaluated. |
+
+- All shown properties are required. Arrays are always present (`[]` when empty). Nullable package properties are `null` when absent, not omitted.
+- `--show-absolute` controls absolute vs relative paths: with it, emit canonical full paths; otherwise emit `Path.GetRelativePath(canonicalCwd, canonicalFullPath)` using platform-native separators.
+- Relative `--project`/`--solution` are resolved against the process working directory even when `--cwd` differs; JSON identifies the file actually read or mutated.
+- Default `packages` contains only references with a non-null `targetVersion`; with `--list` every filtered reference is included. Conditioned duplicates remain separate entries; exact duplicates are retained.
+- Deterministic order: `solutions` by path, `solutions[].projects` by path, `checkedFiles` by path, frameworks by string, `packages` by name (case-insensitive then ordinal) then `currentVersion`/`targetVersion`/`upgradeType` (null first) then joined sorted `applicableFrameworks`, stable on ties. `targetVersion`/`upgradeType` use existing `PackageReference.GetVersionString()` normalized form and `UpgradeType` comparison.
+- Version 1 consumers must ignore unknown properties; compatible additions may add properties within `schemaVersion` 1.
+
 ## License
 
 dotnet-check-updates is licensed under the [MIT License](https://github.com/vipentti/dotnet-check-updates/blob/main/LICENSE.md)

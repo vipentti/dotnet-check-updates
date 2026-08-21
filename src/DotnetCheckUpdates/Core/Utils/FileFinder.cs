@@ -41,11 +41,12 @@ internal class FileFinder : IFileFinder
 
         if (dir.Exists)
         {
-            var file = dir.GetFiles(fileName, SearchOption.TopDirectoryOnly).FirstOrDefault();
-
-            if (file?.Exists is true)
+            var candidate = _fileSystem.Path.Combine(dir.FullName, fileName);
+            if (_fileSystem.File.Exists(candidate))
             {
-                filePath = file.FullName;
+                filePath = _fileSystem.Path.GetFullPath(
+                    ResolveExistingFileName(dir, fileName) ?? candidate
+                );
                 return true;
             }
         }
@@ -77,12 +78,12 @@ internal class FileFinder : IFileFinder
         {
             if (cwd.Exists)
             {
-                foreach (var file in cwd.GetFiles(fileName, SearchOption.TopDirectoryOnly))
+                var candidate = _fileSystem.Path.Combine(cwd.FullName, fileName);
+                if (_fileSystem.File.Exists(candidate))
                 {
-                    if (file.Exists)
-                    {
-                        return file.FullName;
-                    }
+                    return _fileSystem.Path.GetFullPath(
+                        ResolveExistingFileName(cwd, fileName) ?? candidate
+                    );
                 }
             }
 
@@ -99,6 +100,34 @@ internal class FileFinder : IFileFinder
                 ?? throw new InvalidOperationException("Must have directory"),
             _fileSystem.Directory.GetCurrentDirectory()
         );
+    }
+
+    // File.Exists can match case-insensitively on case-insensitive filesystems, in
+    // which case the candidate keeps the searched-for casing rather than the actual
+    // on-disk name. Resolve the real directory entry so emitted paths preserve the
+    // real casing and case-sensitive directories keep differently-cased variants of
+    // the same name (e.g. Directory.Build.props vs directory.build.props) distinct.
+    private static string? ResolveExistingFileName(IDirectoryInfo dir, string fileName)
+    {
+        string? caseInsensitiveMatch = null;
+
+        foreach (var file in dir.GetFiles())
+        {
+            if (string.Equals(file.Name, fileName, StringComparison.Ordinal))
+            {
+                return file.FullName;
+            }
+
+            if (
+                caseInsensitiveMatch is null
+                && string.Equals(file.Name, fileName, StringComparison.OrdinalIgnoreCase)
+            )
+            {
+                caseInsensitiveMatch = file.FullName;
+            }
+        }
+
+        return caseInsensitiveMatch;
     }
 
     public IEnumerable<string> GetFilesFromDirectoryAndAbove(string baseDirectory, string fileName)
@@ -134,14 +163,12 @@ internal class FileFinder : IFileFinder
             {
                 if (cwd.Exists)
                 {
-                    foreach (
-                        var file in cwd.GetFiles(actualFileName, SearchOption.TopDirectoryOnly)
-                    )
+                    var candidate = _fileSystem.Path.Combine(cwd.FullName, actualFileName);
+                    if (_fileSystem.File.Exists(candidate))
                     {
-                        if (file.Exists)
-                        {
-                            yield return file.FullName;
-                        }
+                        yield return _fileSystem.Path.GetFullPath(
+                            ResolveExistingFileName(cwd, actualFileName) ?? candidate
+                        );
                     }
                 }
 

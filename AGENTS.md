@@ -30,3 +30,18 @@ This repository uses Planlet for focused implementation plans. A planlet is
 <!-- END PLANLET AGENTS -->
 
 When implementing a Planlet, use the repository-installed `planlet-workflow` skill.
+
+## Testing on Windows
+
+- `MockFileSystem` (System.IO.Abstractions.TestingHelpers) is case-INSENSITIVE on
+  Windows and case-sensitive on Linux/macOS. Tests that create a lowercase
+  `directory.build.props` and expect it to stay distinct from `Directory.Build.props`
+  therefore behave differently per OS. `FileFinder` resolves the real on-disk casing
+  so emitted JSON paths keep actual casing; explicit case-variant files classify as
+  `project`, never as props.
+- Spectre wraps exception/error text at the console width (80 when no terminal is
+  attached). CLI tests asserting substrings on stderr should normalize line breaks
+  (see `UnwrapLines` in `CheckUpdateCliJsonTests`) to stay width-independent.
+- `ValidatePackages` (Nuke target) currently fails on this machine: Nuke's bundled
+  `NuGet.Frameworks 7.9.0.0` cannot be loaded while evaluating the net10.0 TFM under
+  SDK 10.0.400. Pre-existing and unrelated to test results.
