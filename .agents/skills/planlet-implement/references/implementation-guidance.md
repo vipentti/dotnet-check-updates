@@ -2,10 +2,13 @@
 
 ## Trust the CLI as the target authority
 
-`validate`, `list`, `tasks`, and `status` are the only authorities on whether a planlet exists, is
-active, and is well formed. Do not re-derive slug rules, headings, or task-line grammar by reading
-the files; a non-zero exit is a workflow failure to report, never a reason to parse Markdown
-yourself.
+`list` without `--completed` is the authority for which planlets are active. `validate` is the
+authority for well-formedness. A completed logical slug still validates with exit 0 and
+`state: completed`. Proceed only when the slug is in the active `list` and `validate` exits 0
+with a state other than `completed`. Stop when `validate` warns that an active planlet contains
+a completion record; task updates are refused afterward. Do not re-derive slug rules, headings,
+or task-line grammar by reading the files; a non-zero exit is a workflow failure to report,
+never a reason to parse Markdown yourself.
 
 ## Evaluate drift
 
@@ -17,9 +20,9 @@ Treat drift as material when it invalidates the stated approach, changes public 
 
 Before checking a task, confirm that its whole described outcome exists and that relevant verification passed. A code edit alone is not completion. Use targeted checks during implementation and broader checks when the plan or repository requires them.
 
-If a check fails, distinguish an in-scope defect from unrelated existing failure. Fix in-scope defects when the plan authorizes it. Otherwise report the failing command and evidence, leave the task unchecked, and continue only when independent remaining work is safe.
+If a check fails, fix a failure in this planlet's implementation. For a failure outside that work, report the failing command and evidence, leave the task unchecked, and continue only when later tasks do not depend on it.
 
-Treat CLI exit status and stable structured error code as authoritative. Do not parse field order, whitespace, or incidental TOON layout. After a successful task check, inspect canonical task and status results instead of inferring progress from command prose.
+Treat CLI exit status and stable structured error code as authoritative. A successful command can still carry stderr diagnostics; read and report them. Do not parse field order, whitespace, or incidental TOON layout. After a successful task check, inspect canonical task and status results instead of inferring progress from command prose. The `next` value `planlet complete <slug>` is a handoff hint for `planlet-complete`, not an instruction to archive in this workflow.
 
 For newly discovered necessary work, determine whether it is a small implementation detail or a material scope addition. Incorporate small details transparently. For material additions, propose consistent edits to both `plan.md` and `tasks.md`; preserve existing IDs and allocate new IDs above the highest current numeric suffix. The CLI has no revision operation, so these are direct file edits.
 
