@@ -9,35 +9,12 @@ yourself.
 
 ## Require explicit incomplete approval
 
-List each remaining task ID and description before asking. Explain that an override moves the planlet while retaining unchecked tasks. Require an explicit confirmation directed at this planlet and a non-empty reason suitable for the audit trail. If either is absent, stop without editing.
+This approval applies only when tasks remain and the active planlet has no completion record. A `validate` warning that an active planlet contains a completion record, or a `write_conflict` whose details contain `auditRecorded: true`, is resumed by one `complete <slug>` with no `--allow-incomplete` and no new reason. Leave that record untouched. `validate` exiting non-zero with `invalid_plan` is a conflicting record; stop.
 
-Use reason exactly as approved except necessary surrounding-whitespace trimming. Never invent, generalize, or reuse reason from another planlet.
+List each remaining task ID and description before asking. Explain that an override moves the planlet while retaining unchecked tasks. Require an explicit confirmation directed at this planlet and a non-empty single-line reason suitable for the audit trail. If either is absent, stop without editing.
 
-## Read the completion record
+Use reason exactly as approved except necessary surrounding-whitespace trimming. If the approved reason contains a line break, stop and ask for a single-line reason. Do not fold it yourself. Never invent, generalize, or reuse reason from another planlet.
 
-`complete` appends one completion section to `tasks.md` in this shape:
+## Completion record
 
-```markdown
-## Completion
-
-- Completed at: <captured UTC timestamp>
-- Mode: normal
-```
-
-For an approved override, the shape is:
-
-```markdown
-## Completion
-
-- Completed at: <captured UTC timestamp>
-- Mode: incomplete override
-- Remaining tasks: T2, T4
-- Reason: <user-approved reason>
-```
-
-The templates above are read-only reference: report what `complete` wrote and recognize a
-conflicting record from it, but never write the section by hand.
-
-Refuse a pre-existing or conflicting completion record rather than silently rewriting history.
-
-The completion record is a lifecycle audit: it proves when and under what authority the planlet moved, never that verification passed. Leave any optional `## Verification Evidence` section untouched and archive it as written; do not merge it into the completion record, extend the record with verification fields, or add evidence during completion. Such a section is exceptional, so a planlet without one is complete as it stands.
+`complete` writes the completion record. Never write, edit, or delete that section by hand. The completion record is a lifecycle audit: it proves when and under what authority the planlet moved, never that verification passed. Leave any optional `## Verification Evidence` section untouched and archive it as written; do not merge it into the completion record, extend the record with verification fields, or add evidence during completion. Such a section is exceptional, so a planlet without one is complete as it stands.

@@ -24,17 +24,17 @@ strategy or scope change is a plan revision, not an execution journal entry.
 
 Committed verification evidence is exceptional and absent by default. Tests,
 lint, type-checking, builds, ordinary pull-request review, and branch-protected
-CI already hold their own results. Expect a `## Verification Evidence` note
-only when the plan foresees a durable fact that ordinary Git, test,
-pull-request, or CI history cannot reconstruct adequately: external,
-irreversible, non-reproducible, failed, partial, or unavailable verification
-whose residual result affects a later decision. Say so explicitly in
-Verification when the plan expects one, and stay silent otherwise.
+CI already hold their own results. Planning leaves `## Verification Evidence`
+unwritten. When the work depends on a check whose residual result ordinary
+Git, test, pull-request, or CI history cannot reconstruct (external,
+irreversible, non-reproducible, failed, partial, or unavailable), say that
+once in `## Verification` and stay silent otherwise. Implementation writes
+the section in `tasks.md` only after such a result exists.
 
 ## Revision rules
 
-During revision, keep IDs for semantically unchanged work. Allocate every new
-ID above the highest numeric suffix ever present in the current file; do not
+During revision, keep IDs for semantically unchanged work. Allocate each new
+ID as one greater than the highest numeric suffix present in the file; do not
 renumber after removal or reordering. Keep completed tasks unless the user
 explicitly approves a documented change. If revised scope invalidates completed
 work, explain the effect and update both files consistently. Avoid catch-all
