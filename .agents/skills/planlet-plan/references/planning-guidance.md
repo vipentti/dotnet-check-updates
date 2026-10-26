@@ -40,20 +40,22 @@ explicitly approves a documented change. If revised scope invalidates completed
 work, explain the effect and update both files consistently. Avoid catch-all
 tasks such as "finish implementation" or "test everything."
 
-## Review before persistence
+## Persist, then review
 
-Present the proposed title, slug, plan content, and task list before writing.
-Call out only material assumptions, exclusions, and unresolved decisions; do
-not restate the proposed files in a second narrative summary. Treat edits
-requested during review as part of the proposal and ask for confirmation of the
-final version. Confirmation authorizes only creation or revision of the two
-planning files, not product implementation.
+Write the planlet once material decisions are settled; do not present the
+proposed files in conversation or ask for confirmation first. Creating a
+planlet is not approving it, and approving it is not implementing it: the two
+persisted files are reviewable drafts, and implementation needs a separate
+request. Ask unresolved material decisions before creation, never after.
+Explicit discussion-only requests, such as brainstorming or comparing options
+without saving, stay conversational and leave the repository unchanged.
 
-After confirmed creation, populate only stubs produced by `planlet create`.
-After confirmed revision, re-read current files immediately before editing and
+For a new planlet, populate only stubs produced by `planlet create`. For a
+requested revision, re-read current files immediately before editing and
 reconcile both documents in one reviewable change. In either case, targeted
 CLI validation and full post-write inspection must succeed before reporting a
-valid handoff.
+valid handoff. Report only consequential assumptions and unresolved concerns;
+the user reviews the files, so do not restate them in conversation.
 
 ## Handle failures
 
@@ -75,7 +77,7 @@ ideally 25 words or fewer; a complete task normally stays within 50 words
 including any `Verify:` clause or nested list. These are planner judgment
 targets, not parser or validator thresholds, and no tool enforces them.
 
-Before presenting the proposal, run a compression pass: reread the draft
+Before persisting the planlet, run a compression pass: reread the draft
 `tasks.md` against `plan.md` and delete every detail an implementer can recover
 unambiguously from `plan.md`. Keep only detail whose removal would leave the
 outcome or its ownership genuinely ambiguous. Compression relocates detail,
