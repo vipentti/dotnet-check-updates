@@ -78,6 +78,7 @@
     <PackageReference Include="Spectre.Console.Cli" />
     <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="System.Net.Http.Json" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
     <PackageReference Include="Vipentti.IO.Abstractions.FileSystemGlobbing" />
   </ItemGroup>
 
